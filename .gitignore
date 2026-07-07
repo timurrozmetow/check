@@ -7,3 +7,8 @@ build/
 uploads/
 .DS_Store
 Thumbs.db
+
+# Playwright
+playwright-report/
+test-results/
+.playwright/
