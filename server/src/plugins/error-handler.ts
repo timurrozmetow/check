@@ -1,9 +1,10 @@
 import fp from "fastify-plugin";
+import type { FastifyError } from "fastify";
 import { ZodError } from "zod";
 import { AppError } from "../shared/errors";
 
 export default fp(async (app) => {
-  app.setErrorHandler((err, req, reply) => {
+  app.setErrorHandler((err: FastifyError, req, reply) => {
     if (err instanceof AppError) {
       return reply
         .status(err.statusCode)

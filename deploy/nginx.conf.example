@@ -1,0 +1,41 @@
+# Пример конфигурации Nginx для DirectorHub (reverse proxy + статика + /uploads).
+# Скопируйте в /etc/nginx/sites-available/ и поправьте server_name и пути.
+
+server {
+    listen 80;
+    server_name directorhub.example.com;
+
+    client_max_body_size 25m;   # с запасом над лимитом файла 20 МБ
+
+    # Статика собранного фронтенда (client/dist)
+    root /var/www/directorhub/client/dist;
+    index index.html;
+
+    # SPA-роутинг: всё неизвестное отдаём index.html
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    # API → Fastify (PM2, порт 4000)
+    location /api/ {
+        proxy_pass http://127.0.0.1:4000;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        # SSE: отключаем буферизацию и таймауты для /notifications/stream
+        proxy_buffering off;
+        proxy_cache off;
+        proxy_read_timeout 24h;
+    }
+
+    # Загруженные файлы отдаёт Nginx напрямую (быстро, с кэшем)
+    location /uploads/ {
+        alias /var/www/directorhub/server/uploads/;
+        expires 30d;
+        add_header Cache-Control "public, immutable";
+        access_log off;
+    }
+}

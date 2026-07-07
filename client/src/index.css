@@ -1,0 +1,124 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * Токены согласованы с утверждённым дизайн-образцом (claude-design/DirectorHub.dc.html):
+ * шрифт Golos Text, акцент индиго #4F46E5→#6366F1, светлый фон #F6F7F9,
+ * тёмная premium-тема #0B0F19. Значения в HSL для shadcn-совместимости.
+ */
+@layer base {
+  :root {
+    --background: 220 22% 97%; /* #F6F7F9 */
+    --foreground: 222 39% 11%; /* #101828 */
+    --card: 0 0% 100%;
+    --card-foreground: 222 39% 11%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 39% 11%;
+    --primary: 243 75% 59%; /* #4F46E5 */
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 239 84% 67%; /* #6366F1 — второй стоп градиента */
+    --secondary: 220 20% 95%;
+    --secondary-foreground: 222 25% 25%;
+    --muted: 220 20% 94%; /* #EDF0F5 трек прогресса */
+    --muted-foreground: 215 19% 34%; /* #475467 */
+    --accent: 226 100% 97%; /* #EEF2FF */
+    --accent-foreground: 245 58% 51%; /* #4338CA */
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --success: 152 58% 40%;
+    --success-foreground: 0 0% 100%;
+    --warning: 30 90% 51%; /* #C2410C-ish оранжевый акцент тегов */
+    --warning-foreground: 0 0% 100%;
+    --border: 222 22% 92%; /* #E7EAF0 */
+    --input: 222 20% 90%;
+    --ring: 243 75% 59%;
+    --radius: 0.875rem; /* 14px */
+  }
+
+  .dark {
+    --background: 222 43% 7%; /* #0B0F19 */
+    --foreground: 214 41% 96%; /* #F1F4F9 */
+    --card: 223 40% 10%; /* #0D1220 чуть светлее фона */
+    --card-foreground: 214 41% 96%;
+    --popover: 223 40% 11%;
+    --popover-foreground: 214 41% 96%;
+    --primary: 239 84% 67%; /* #6366F1 — в тёмной ярче */
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 243 75% 59%;
+    --secondary: 222 25% 16%;
+    --secondary-foreground: 214 30% 88%;
+    --muted: 222 25% 15%;
+    --muted-foreground: 220 16% 66%; /* #9AA4B8 */
+    --accent: 243 45% 22%;
+    --accent-foreground: 235 90% 88%;
+    --destructive: 0 66% 56%;
+    --destructive-foreground: 0 0% 100%;
+    --success: 152 52% 47%;
+    --success-foreground: 0 0% 100%;
+    --warning: 32 90% 55%;
+    --warning-foreground: 0 0% 100%;
+    --border: 222 20% 20%;
+    --input: 222 20% 22%;
+    --ring: 239 84% 67%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family:
+      "Golos Text",
+      system-ui,
+      -apple-system,
+      "Segoe UI",
+      Roboto,
+      sans-serif;
+    transition:
+      background-color 0.3s ease,
+      color 0.3s ease;
+  }
+
+  /* Табличные цифры для KPI и процентов */
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@layer utilities {
+  .thin-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  .thin-scrollbar::-webkit-scrollbar-thumb {
+    @apply rounded-full bg-muted-foreground/30;
+  }
+
+  /* Мягкая «карточная» тень из дизайн-образца */
+  .shadow-card {
+    box-shadow:
+      0 2px 6px rgba(16, 24, 40, 0.05),
+      0 24px 48px -12px rgba(16, 24, 40, 0.14);
+  }
+  .dark .shadow-card {
+    box-shadow:
+      0 2px 6px rgba(0, 0, 0, 0.3),
+      0 24px 48px -12px rgba(0, 0, 0, 0.5);
+  }
+
+  /* Градиентная заливка прогресс-бара */
+  .progress-fill {
+    background: linear-gradient(
+      90deg,
+      hsl(var(--primary)),
+      hsl(var(--primary-glow))
+    );
+  }
+}
