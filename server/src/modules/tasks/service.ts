@@ -371,7 +371,11 @@ export async function updateTask(
           : {}),
         ...(input.priority !== undefined ? { priority: input.priority } : {}),
         ...(input.deadline !== undefined
-          ? { deadline: parseDeadline(input.deadline) }
+          ? {
+              deadline: parseDeadline(input.deadline),
+              // Новый дедлайн — разрешаем повторное напоминание
+              deadlineRemindedAt: null,
+            }
           : {}),
       })
       .where(eq(tasks.id, taskId));

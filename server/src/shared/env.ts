@@ -16,6 +16,9 @@ const envSchema = z.object({
   CORS_ORIGIN: z.string().default("http://localhost:5173"),
   UPLOADS_DIR: z.string().default("./uploads"),
   MAX_FILE_SIZE_MB: z.coerce.number().default(20),
+  // Напоминания о дедлайнах
+  DEADLINE_REMINDER_HOURS: z.coerce.number().default(24),
+  DEADLINE_CRON: z.string().default("0 * * * *"), // каждый час
 });
 
 export const env = envSchema.parse(process.env);

@@ -74,12 +74,16 @@ export const tasks = mysqlTable(
       .references(() => users.id),
     createdAt: timestamp("created_at").notNull().defaultNow(),
     completedAt: datetime("completed_at"),
+    /** Когда по задаче в последний раз отправлено напоминание о дедлайне
+     * (сбрасывается в null при смене дедлайна). Защита от повторов. */
+    deadlineRemindedAt: datetime("deadline_reminded_at"),
   },
   (t) => [
     index("tasks_project_idx").on(t.projectId),
     index("tasks_status_idx").on(t.status),
     index("tasks_created_idx").on(t.createdAt),
     index("tasks_completed_idx").on(t.completedAt),
+    index("tasks_deadline_idx").on(t.deadline),
   ],
 );
 

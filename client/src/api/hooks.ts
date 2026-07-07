@@ -351,3 +351,12 @@ export function useResetPassword() {
       }),
   });
 }
+
+/* ---------- Профиль ---------- */
+
+export function useChangeOwnPassword() {
+  return useMutation({
+    mutationFn: (body: { currentPassword: string; newPassword: string }) =>
+      api("/auth/change-password", { method: "POST", body }),
+  });
+}

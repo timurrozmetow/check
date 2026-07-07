@@ -2,8 +2,13 @@ import type { FastifyInstance } from "fastify";
 import { env, isProd } from "../../shared/env";
 import { unauthorized } from "../../shared/errors";
 import type { JwtPayload } from "../../plugins/auth";
-import { loginSchema } from "./schemas";
-import { getUserById, toPublicUser, verifyCredentials } from "./service";
+import { changePasswordSchema, loginSchema } from "./schemas";
+import {
+  changeOwnPassword,
+  getUserById,
+  toPublicUser,
+  verifyCredentials,
+} from "./service";
 
 const REFRESH_COOKIE = "refresh_token";
 
@@ -80,4 +85,16 @@ export default async function authRoutes(app: FastifyInstance) {
     if (!user) throw unauthorized();
     return { user: toPublicUser(user) };
   });
+
+  app.post(
+    "/change-password",
+    { preHandler: [app.authenticate] },
+    async (req) => {
+      const { currentPassword, newPassword } = changePasswordSchema.parse(
+        req.body,
+      );
+      await changeOwnPassword(req.user.sub, currentPassword, newPassword);
+      return { ok: true };
+    },
+  );
 }

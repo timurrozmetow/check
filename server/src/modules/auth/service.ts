@@ -2,7 +2,7 @@ import argon2 from "argon2";
 import { eq } from "drizzle-orm";
 import { db } from "../../db/index";
 import { users, type UserRow } from "../../db/schema";
-import { unauthorized } from "../../shared/errors";
+import { AppError, unauthorized } from "../../shared/errors";
 
 export type PublicUser = Omit<UserRow, "passwordHash">;
 
@@ -38,4 +38,19 @@ export async function getUserById(id: number): Promise<UserRow | undefined> {
 
 export function hashPassword(password: string): Promise<string> {
   return argon2.hash(password);
+}
+
+export async function changeOwnPassword(
+  userId: number,
+  currentPassword: string,
+  newPassword: string,
+): Promise<void> {
+  const user = await getUserById(userId);
+  if (!user) throw unauthorized();
+  const ok = await argon2.verify(user.passwordHash, currentPassword);
+  if (!ok) {
+    throw new AppError(400, "WRONG_PASSWORD", "Текущий пароль неверен");
+  }
+  const passwordHash = await argon2.hash(newPassword);
+  await db.update(users).set({ passwordHash }).where(eq(users.id, userId));
 }

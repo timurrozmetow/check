@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { KpiCard } from "@/components/common/KpiCard";
 import { DonutProgress } from "@/components/common/DonutProgress";
+import { DashboardAnalytics } from "@/features/analytics/DashboardAnalytics";
 import { TaskCard } from "@/features/tasks/TaskCard";
 import { EmptyState } from "@/components/common/EmptyState";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -129,6 +130,9 @@ export function AdminDashboard() {
           </div>
         </section>
       )}
+
+      {/* Аналитика */}
+      <DashboardAnalytics tasks={tasks ?? []} />
 
       {/* Последние задачи */}
       <section className="space-y-4">
