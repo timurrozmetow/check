@@ -46,10 +46,10 @@
     --primary: 239 84% 67%; /* #6366F1 — в тёмной ярче */
     --primary-foreground: 0 0% 100%;
     --primary-glow: 243 75% 59%;
-    --secondary: 222 25% 16%;
-    --secondary-foreground: 214 30% 88%;
-    --muted: 222 25% 15%;
-    --muted-foreground: 220 16% 66%; /* #9AA4B8 */
+    --secondary: 222 25% 18%;
+    --secondary-foreground: 214 30% 90%;
+    --muted: 222 25% 16%;
+    --muted-foreground: 219 18% 76%; /* осветлён для контраста ≥ WCAG AA */
     --accent: 243 45% 22%;
     --accent-foreground: 235 90% 88%;
     --destructive: 0 66% 56%;

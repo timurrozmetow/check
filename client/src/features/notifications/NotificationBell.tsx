@@ -36,6 +36,7 @@ export function NotificationBell() {
         <button
           type="button"
           aria-label="Уведомления"
+          title="Уведомления"
           className="relative grid h-10 w-10 place-items-center rounded-[10px] border border-border bg-card text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
         >
           <Bell className={cn("h-[18px] w-[18px]", ringing && "animate-bell-ring")} />

@@ -139,6 +139,27 @@ export function AdminTasks() {
         </Select>
       </div>
 
+      {!isLoading && (
+        <p className="text-sm text-muted-foreground">
+          Найдено задач: <span className="font-semibold text-foreground">{visibleTasks.length}</span>
+          {(projectId !== ALL_PROJECTS ||
+            status !== ANY_STATUS ||
+            query.trim() !== "") && (
+            <button
+              type="button"
+              onClick={() => {
+                setProjectId(ALL_PROJECTS);
+                setStatus(ANY_STATUS);
+                setQuery("");
+              }}
+              className="ml-3 font-medium text-primary hover:underline"
+            >
+              Сбросить фильтры
+            </button>
+          )}
+        </p>
+      )}
+
       {isLoading ? (
         <div className="grid gap-4 md:grid-cols-2">
           {[0, 1, 2, 3].map((i) => (

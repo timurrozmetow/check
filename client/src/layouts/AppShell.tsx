@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { useMemo, useState } from "react";
+import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { LogOut, Menu } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { Logo } from "@/components/common/Logo";
@@ -112,6 +112,17 @@ export function AppShell({
   title: string;
 }) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const location = useLocation();
+
+  // Заголовок шапки = раздел текущего маршрута (точное или префиксное совпадение)
+  const heading = useMemo(() => {
+    const exact = items.find((i) => i.to === location.pathname);
+    if (exact) return exact.label;
+    const prefix = items
+      .filter((i) => location.pathname.startsWith(`${i.to}/`))
+      .sort((a, b) => b.to.length - a.to.length)[0];
+    return prefix?.label ?? title;
+  }, [items, location.pathname, title]);
 
   return (
     <div className="flex min-h-screen bg-background">
@@ -147,7 +158,7 @@ export function AppShell({
             </SheetContent>
           </Sheet>
 
-          <h1 className="text-lg font-bold tracking-tight">{title}</h1>
+          <h1 className="text-lg font-bold tracking-tight">{heading}</h1>
           <div className="flex-1" />
           <ThemeToggle />
           <NotificationBell />

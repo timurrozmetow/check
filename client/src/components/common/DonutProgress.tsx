@@ -6,18 +6,25 @@ export function DonutProgress({
   size = 56,
   stroke = 6,
   color = "hsl(var(--primary))",
+  title = "Средний прогресс активных задач проекта",
 }: {
   value: number;
   size?: number;
   stroke?: number;
   color?: string;
+  /** Подсказка при наведении (полезно, когда прогресс 0%). */
+  title?: string;
 }) {
   const r = (size - stroke) / 2;
   const circumference = 2 * Math.PI * r;
   const offset = circumference * (1 - value / 100);
 
   return (
-    <div className="relative" style={{ width: size, height: size }}>
+    <div
+      className="relative"
+      style={{ width: size, height: size }}
+      title={`${title}: ${value}%`}
+    >
       <svg width={size} height={size} className="-rotate-90">
         <circle
           cx={size / 2}

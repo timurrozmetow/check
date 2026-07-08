@@ -7,6 +7,7 @@ import { ThemeToggle } from "@/components/common/ThemeToggle";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PasswordInput } from "@/components/common/PasswordInput";
 import { login, RequestError } from "@/api/client";
 import { useAuthStore } from "@/stores/auth";
 import { roleHome } from "@/router/role-home";
@@ -86,9 +87,8 @@ export function LoginPage() {
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="password">Пароль</Label>
-              <Input
+              <PasswordInput
                 id="password"
-                type="password"
                 autoComplete="current-password"
                 placeholder="••••••••"
                 value={password}

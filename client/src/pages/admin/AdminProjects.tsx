@@ -35,6 +35,7 @@ import {
 import { ProjectChip } from "@/components/common/ProjectChip";
 import { DonutProgress } from "@/components/common/DonutProgress";
 import { EmptyState } from "@/components/common/EmptyState";
+import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   useCreateProject,
@@ -71,6 +72,7 @@ function ProjectFormDialog({
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [color, setColor] = useState<string>(PROJECT_COLORS[0]);
+  const [nameError, setNameError] = useState<string | null>(null);
 
   const isEdit = project !== null;
   const busy = create.isPending || update.isPending;
@@ -81,15 +83,17 @@ function ProjectFormDialog({
       setName(project?.name ?? "");
       setDescription(project?.description ?? "");
       setColor(project?.color ?? PROJECT_COLORS[0]);
+      setNameError(null);
     }
   }, [open, project]);
 
   async function submit() {
     const trimmed = name.trim();
     if (!trimmed) {
-      toast.error("Введите название проекта");
+      setNameError("Введите название проекта");
       return;
     }
+    setNameError(null);
     try {
       if (project) {
         await update.mutateAsync({
@@ -133,12 +137,22 @@ function ProjectFormDialog({
               id="project-name"
               placeholder="Например: Открытие кофейни"
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e) => {
+                setName(e.target.value);
+                if (nameError) setNameError(null);
+              }}
               autoFocus
+              aria-invalid={nameError !== null}
+              className={cn(
+                nameError && "border-destructive focus-visible:ring-destructive",
+              )}
               onKeyDown={(e) => {
                 if (e.key === "Enter") submit();
               }}
             />
+            {nameError && (
+              <p className="text-xs font-medium text-destructive">{nameError}</p>
+            )}
           </div>
 
           <div className="space-y-1.5">
@@ -217,6 +231,7 @@ function ProjectCard({
   const del = useDeleteProject();
   const busy = update.isPending || del.isPending;
   const isActive = project.status === "active";
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   async function toggleStatus() {
     const nextStatus = isActive ? "archived" : "active";
@@ -235,6 +250,7 @@ function ProjectCard({
     } catch (e) {
       // Напр. PROJECT_HAS_TASKS — сообщение уже на русском.
       toast.error(errorMessage(e));
+      throw e; // не закрывать диалог подтверждения при ошибке
     }
   }
 
@@ -284,7 +300,11 @@ function ProjectCard({
                 )}
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48">
+            <DropdownMenuContent
+              align="end"
+              sideOffset={6}
+              className="w-48 shadow-card"
+            >
               <DropdownMenuItem onSelect={() => onEdit(project)}>
                 <Pencil className="h-4 w-4" />
                 Редактировать
@@ -304,7 +324,12 @@ function ProjectCard({
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem
-                onSelect={remove}
+                onSelect={(e) => {
+                  // Даём меню закрыться и вернуть фокус, затем открываем
+                  // диалог — иначе Radix закроет его сразу же.
+                  e.preventDefault();
+                  setTimeout(() => setConfirmOpen(true), 0);
+                }}
                 className="text-destructive focus:text-destructive"
               >
                 <Trash2 className="h-4 w-4" />
@@ -313,6 +338,15 @@ function ProjectCard({
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
+
+        <ConfirmDialog
+          open={confirmOpen}
+          onOpenChange={setConfirmOpen}
+          title={`Удалить проект «${project.name}»?`}
+          description="Действие необратимо. Проект можно удалить только если в нём нет задач."
+          confirmLabel="Удалить проект"
+          onConfirm={remove}
+        />
 
         <div className="mt-auto flex items-center justify-between gap-3 border-t border-border/60 pt-3 text-sm">
           <span className="text-muted-foreground">

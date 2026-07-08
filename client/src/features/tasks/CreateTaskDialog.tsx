@@ -43,6 +43,7 @@ export function CreateTaskDialog({ trigger }: { trigger?: ReactNode }) {
   const [assigneeIds, setAssigneeIds] = useState<number[]>([]);
   const [priority, setPriority] = useState<TaskPriority>("medium");
   const [deadline, setDeadline] = useState("");
+  const [errors, setErrors] = useState<{ title?: string; project?: string }>({});
 
   const employees = (users ?? []).filter((u) => u.role === "employee");
 
@@ -53,6 +54,7 @@ export function CreateTaskDialog({ trigger }: { trigger?: ReactNode }) {
     setAssigneeIds([]);
     setPriority("medium");
     setDeadline("");
+    setErrors({});
   }
 
   function toggleAssignee(id: number) {
@@ -62,14 +64,12 @@ export function CreateTaskDialog({ trigger }: { trigger?: ReactNode }) {
   }
 
   async function submit() {
-    if (title.trim().length < 1) {
-      toast.error("Укажите название задачи");
-      return;
-    }
-    if (projectId === "") {
-      toast.error("Выберите проект");
-      return;
-    }
+    const next: { title?: string; project?: string } = {};
+    if (title.trim().length < 1) next.title = "Укажите название задачи";
+    if (projectId === "") next.project = "Выберите проект";
+    setErrors(next);
+    if (Object.keys(next).length > 0) return;
+
     try {
       await create.mutateAsync({
         title: title.trim(),
@@ -108,8 +108,20 @@ export function CreateTaskDialog({ trigger }: { trigger?: ReactNode }) {
             <Input
               placeholder="Например: Подготовить договор аренды"
               value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              onChange={(e) => {
+                setTitle(e.target.value);
+                if (errors.title) setErrors((p) => ({ ...p, title: undefined }));
+              }}
+              aria-invalid={!!errors.title}
+              className={cn(
+                errors.title && "border-destructive focus-visible:ring-destructive",
+              )}
             />
+            {errors.title && (
+              <p className="text-xs font-medium text-destructive">
+                {errors.title}
+              </p>
+            )}
           </div>
 
           <div className="space-y-1.5">
@@ -125,8 +137,21 @@ export function CreateTaskDialog({ trigger }: { trigger?: ReactNode }) {
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
               <Label>Проект</Label>
-              <Select value={projectId} onValueChange={setProjectId}>
-                <SelectTrigger>
+              <Select
+                value={projectId}
+                onValueChange={(v) => {
+                  setProjectId(v);
+                  if (errors.project)
+                    setErrors((p) => ({ ...p, project: undefined }));
+                }}
+              >
+                <SelectTrigger
+                  aria-invalid={!!errors.project}
+                  className={cn(
+                    errors.project &&
+                      "border-destructive focus:ring-destructive",
+                  )}
+                >
                   <SelectValue placeholder="Выберите проект" />
                 </SelectTrigger>
                 <SelectContent>
@@ -137,6 +162,11 @@ export function CreateTaskDialog({ trigger }: { trigger?: ReactNode }) {
                   ))}
                 </SelectContent>
               </Select>
+              {errors.project && (
+                <p className="text-xs font-medium text-destructive">
+                  {errors.project}
+                </p>
+              )}
             </div>
 
             <div className="space-y-1.5">

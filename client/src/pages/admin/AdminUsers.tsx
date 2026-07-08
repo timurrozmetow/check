@@ -17,6 +17,8 @@ import { Switch } from "@/components/ui/switch";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/common/EmptyState";
+import { PasswordInput } from "@/components/common/PasswordInput";
+import { cn } from "@/lib/utils";
 import {
   Dialog,
   DialogContent,
@@ -108,6 +110,11 @@ function CreateUserDialog({
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState<Role>("employee");
+  const [errors, setErrors] = useState<{
+    name?: string;
+    email?: string;
+    password?: string;
+  }>({});
 
   useEffect(() => {
     if (open) {
@@ -115,22 +122,18 @@ function CreateUserDialog({
       setEmail("");
       setPassword("");
       setRole("employee");
+      setErrors({});
     }
   }, [open]);
 
   async function submit() {
-    if (name.trim().length < 2) {
-      toast.error("Введите имя (минимум 2 символа)");
-      return;
-    }
-    if (!isEmail(email)) {
-      toast.error("Некорректный email");
-      return;
-    }
-    if (password.length < 8) {
-      toast.error("Пароль минимум 8 символов");
-      return;
-    }
+    const next: typeof errors = {};
+    if (name.trim().length < 2) next.name = "Минимум 2 символа";
+    if (!isEmail(email)) next.email = "Некорректный email";
+    if (password.length < 8) next.password = "Минимум 8 символов";
+    setErrors(next);
+    if (Object.keys(next).length > 0) return;
+
     try {
       await create.mutateAsync({
         name: name.trim(),
@@ -161,10 +164,18 @@ function CreateUserDialog({
             <Input
               id="create-name"
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e) => {
+                setName(e.target.value);
+                if (errors.name) setErrors((p) => ({ ...p, name: undefined }));
+              }}
               placeholder="Иван Петров"
               autoFocus
+              aria-invalid={!!errors.name}
+              className={cn(errors.name && "border-destructive focus-visible:ring-destructive")}
             />
+            {errors.name && (
+              <p className="text-xs font-medium text-destructive">{errors.name}</p>
+            )}
           </div>
           <div className="space-y-2">
             <Label htmlFor="create-email">Email</Label>
@@ -172,19 +183,37 @@ function CreateUserDialog({
               id="create-email"
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                if (errors.email) setErrors((p) => ({ ...p, email: undefined }));
+              }}
               placeholder="ivan@example.com"
+              aria-invalid={!!errors.email}
+              className={cn(errors.email && "border-destructive focus-visible:ring-destructive")}
             />
+            {errors.email && (
+              <p className="text-xs font-medium text-destructive">{errors.email}</p>
+            )}
           </div>
           <div className="space-y-2">
             <Label htmlFor="create-password">Пароль</Label>
-            <Input
+            <PasswordInput
               id="create-password"
-              type="password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                if (errors.password)
+                  setErrors((p) => ({ ...p, password: undefined }));
+              }}
               placeholder="Минимум 8 символов"
+              aria-invalid={!!errors.password}
+              className={cn(errors.password && "border-destructive focus-visible:ring-destructive")}
             />
+            {errors.password && (
+              <p className="text-xs font-medium text-destructive">
+                {errors.password}
+              </p>
+            )}
           </div>
           <div className="space-y-2">
             <Label htmlFor="create-role">Роль</Label>
@@ -352,9 +381,8 @@ function ResetPasswordDialog({
 
         <div className="space-y-2">
           <Label htmlFor="reset-password">Новый пароль</Label>
-          <Input
+          <PasswordInput
             id="reset-password"
-            type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Минимум 8 символов"

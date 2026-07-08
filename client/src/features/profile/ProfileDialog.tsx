@@ -9,8 +9,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PasswordInput } from "@/components/common/PasswordInput";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useChangeOwnPassword } from "@/api/hooks";
@@ -83,9 +83,8 @@ export function ProfileDialog({ trigger }: { trigger: ReactNode }) {
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="cur">Текущий пароль</Label>
-            <Input
+            <PasswordInput
               id="cur"
-              type="password"
               autoComplete="current-password"
               value={current}
               onChange={(e) => setCurrent(e.target.value)}
@@ -94,9 +93,8 @@ export function ProfileDialog({ trigger }: { trigger: ReactNode }) {
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="new">Новый пароль</Label>
-            <Input
+            <PasswordInput
               id="new"
-              type="password"
               autoComplete="new-password"
               value={next}
               onChange={(e) => setNext(e.target.value)}
@@ -105,9 +103,8 @@ export function ProfileDialog({ trigger }: { trigger: ReactNode }) {
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="rep">Повторите новый пароль</Label>
-            <Input
+            <PasswordInput
               id="rep"
-              type="password"
               autoComplete="new-password"
               value={repeat}
               onChange={(e) => setRepeat(e.target.value)}

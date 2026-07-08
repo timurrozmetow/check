@@ -1,40 +1,36 @@
 import { Moon, Sun } from "lucide-react";
 import { useThemeStore } from "@/stores/theme";
-import { cn } from "@/lib/utils";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
-/** Пилюля-переключатель светлой/тёмной темы (как в дизайн-образце). */
+/** Единый переключатель светлой/тёмной темы. */
 export function ThemeToggle() {
   const theme = useThemeStore((s) => s.theme);
   const toggle = useThemeStore((s) => s.toggle);
+  const isDark = theme === "dark";
 
   return (
-    <div className="flex items-center gap-0.5 rounded-full bg-secondary p-0.5">
-      <button
-        type="button"
-        aria-label="Светлая тема"
-        onClick={() => theme === "dark" && toggle()}
-        className={cn(
-          "grid h-6 w-8 place-items-center rounded-full transition-colors",
-          theme === "light"
-            ? "bg-card text-foreground shadow-sm"
-            : "text-muted-foreground hover:text-foreground",
-        )}
-      >
-        <Sun className="h-3.5 w-3.5" />
-      </button>
-      <button
-        type="button"
-        aria-label="Тёмная тема"
-        onClick={() => theme === "light" && toggle()}
-        className={cn(
-          "grid h-6 w-8 place-items-center rounded-full transition-colors",
-          theme === "dark"
-            ? "bg-card text-foreground shadow-sm"
-            : "text-muted-foreground hover:text-foreground",
-        )}
-      >
-        <Moon className="h-3.5 w-3.5" />
-      </button>
-    </div>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <button
+          type="button"
+          onClick={toggle}
+          aria-label={isDark ? "Включить светлую тему" : "Включить тёмную тему"}
+          className="grid h-10 w-10 place-items-center rounded-[10px] border border-border bg-card text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+        >
+          {isDark ? (
+            <Moon className="h-[18px] w-[18px]" />
+          ) : (
+            <Sun className="h-[18px] w-[18px]" />
+          )}
+        </button>
+      </TooltipTrigger>
+      <TooltipContent>
+        {isDark ? "Светлая тема" : "Тёмная тема"}
+      </TooltipContent>
+    </Tooltip>
   );
 }
