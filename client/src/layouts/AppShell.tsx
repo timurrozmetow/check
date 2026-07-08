@@ -140,10 +140,16 @@ export function AppShell({
       <div className="flex min-w-0 flex-1 flex-col">
         {/* Шапка */}
         <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-border bg-card/80 px-4 backdrop-blur md:px-6">
-          {/* Мобильное меню */}
+          {/* Мобильное меню — гамбургер (виден на экранах < 1024px) */}
           <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="lg:hidden">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="lg:hidden"
+                aria-label="Открыть меню разделов"
+                data-testid="mobile-menu-trigger"
+              >
                 <Menu className="h-5 w-5" />
               </Button>
             </SheetTrigger>

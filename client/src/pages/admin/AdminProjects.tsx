@@ -87,33 +87,33 @@ function ProjectFormDialog({
     }
   }, [open, project]);
 
-  async function submit() {
+  function submit() {
+    // Значение читаем из актуального состояния формы на момент сабмита.
     const trimmed = name.trim();
+    const desc = description.trim();
     if (!trimmed) {
       setNameError("Введите название проекта");
       return;
     }
     setNameError(null);
-    try {
-      if (project) {
-        await update.mutateAsync({
-          id: project.id,
-          name: trimmed,
-          description: description.trim() || null,
-          color,
-        });
-        toast.success("Проект обновлён");
-      } else {
-        await create.mutateAsync({
-          name: trimmed,
-          description: description.trim() || undefined,
-          color,
-        });
-        toast.success("Проект создан");
-      }
+
+    // Закрытие и очистка — строго по успешному ответу сервера.
+    const onSuccess = () => {
+      toast.success(project ? "Проект обновлён" : "Проект создан");
       onOpenChange(false);
-    } catch (e) {
-      toast.error(errorMessage(e));
+    };
+    const onError = (e: unknown) => toast.error(errorMessage(e));
+
+    if (project) {
+      update.mutate(
+        { id: project.id, name: trimmed, description: desc || null, color },
+        { onSuccess, onError },
+      );
+    } else {
+      create.mutate(
+        { name: trimmed, description: desc || undefined, color },
+        { onSuccess, onError },
+      );
     }
   }
 
