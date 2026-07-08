@@ -11,12 +11,6 @@ import { login, RequestError } from "@/api/client";
 import { useAuthStore } from "@/stores/auth";
 import { roleHome } from "@/router/role-home";
 
-const DEMO = [
-  { role: "Директор", email: "director@directorhub.ru", password: "director12345" },
-  { role: "Администратор", email: "admin@directorhub.ru", password: "admin12345" },
-  { role: "Сотрудник", email: "ivan@directorhub.ru", password: "employee12345" },
-];
-
 export function LoginPage() {
   const user = useAuthStore((s) => s.user);
   const navigate = useNavigate();
@@ -115,29 +109,6 @@ export function LoginPage() {
             Войти
           </Button>
         </form>
-
-        {/* Демо-доступы */}
-        <div className="mt-5 rounded-xl border border-border bg-card/60 p-4">
-          <p className="mb-2 text-xs font-semibold text-muted-foreground">
-            Демо-доступы (клик — подставить):
-          </p>
-          <div className="flex flex-col gap-1.5">
-            {DEMO.map((d) => (
-              <button
-                key={d.email}
-                type="button"
-                onClick={() => {
-                  setEmail(d.email);
-                  setPassword(d.password);
-                }}
-                className="flex items-center justify-between rounded-lg px-2.5 py-1.5 text-left text-xs transition-colors hover:bg-secondary"
-              >
-                <span className="font-medium">{d.role}</span>
-                <span className="text-muted-foreground">{d.email}</span>
-              </button>
-            ))}
-          </div>
-        </div>
       </motion.div>
     </div>
   );
