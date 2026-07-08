@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Loader2, Plus, Trash2 } from "lucide-react";
+import { ImagePlus, Loader2, Plus, Trash2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -87,17 +87,22 @@ export function CreateDecisionDialog({
                 }))
             : undefined,
       });
-      // Загрузить фото вариантов (по порядку соответствия)
+      // Загрузка фото вариантов — best-effort, не должна мешать закрытию.
       if (type === "choice") {
         const filled = options.filter((o) => o.title.trim());
         await Promise.all(
           res.request.options.map((opt, i) =>
             filled[i]?.files.length
-              ? uploadFiles("decision_option", opt.id, filled[i]!.files)
+              ? uploadFiles("decision_option", opt.id, filled[i]!.files).catch(
+                  () => {
+                    toast.error("Не все файлы удалось загрузить");
+                  },
+                )
               : Promise.resolve([]),
           ),
         );
       }
+      // Успех создания запроса → закрываем и очищаем.
       toast.success("Запрос решения отправлен директору");
       reset();
       setOpen(false);
@@ -189,29 +194,30 @@ export function CreateDecisionDialog({
                       )
                     }
                   />
-                  <input
-                    type="file"
-                    multiple
-                    accept="image/*"
-                    onChange={(e) =>
-                      setOptions((p) =>
-                        p.map((o, j) =>
-                          j === i
-                            ? {
-                                ...o,
-                                files: Array.from(e.target.files ?? []),
-                              }
-                            : o,
-                        ),
-                      )
-                    }
-                    className="block w-full text-xs text-muted-foreground file:mr-3 file:rounded-lg file:border-0 file:bg-secondary file:px-3 file:py-1.5 file:text-xs file:font-medium"
-                  />
-                  {opt.files.length > 0 && (
-                    <p className="text-xs text-muted-foreground">
-                      Прикреплено фото: {opt.files.length}
-                    </p>
-                  )}
+                  <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-border bg-secondary px-3 py-1.5 text-xs font-medium transition-colors hover:bg-secondary/70">
+                    <ImagePlus className="h-3.5 w-3.5" />
+                    {opt.files.length > 0
+                      ? `Фото выбрано: ${opt.files.length}`
+                      : "Прикрепить фото"}
+                    <input
+                      type="file"
+                      multiple
+                      accept="image/*"
+                      className="sr-only"
+                      onChange={(e) =>
+                        setOptions((p) =>
+                          p.map((o, j) =>
+                            j === i
+                              ? {
+                                  ...o,
+                                  files: Array.from(e.target.files ?? []),
+                                }
+                              : o,
+                          ),
+                        )
+                      }
+                    />
+                  </label>
                 </div>
               ))}
               {options.length < 4 && (

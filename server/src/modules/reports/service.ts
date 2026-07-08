@@ -12,6 +12,7 @@ import {
   users,
 } from "../../db/schema";
 import { ACTIVE_TASK_STATUSES, type TaskStatus } from "../../shared/constants";
+import { normalizePayload } from "../../shared/activity";
 
 export interface ReportTaskRow {
   id: number;
@@ -315,7 +316,7 @@ export async function gatherReportData(
       task: t,
       timeline: timelineRows.map((r) => ({
         type: r.type,
-        payload: r.payload,
+        payload: normalizePayload(r.payload),
         createdAt: r.createdAt,
         actorName: r.actorName,
       })),

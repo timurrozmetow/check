@@ -70,21 +70,26 @@ export function CreateTaskDialog({ trigger }: { trigger?: ReactNode }) {
     setErrors(next);
     if (Object.keys(next).length > 0) return;
 
-    try {
-      await create.mutateAsync({
+    // Закрытие/очистка — строго по успешному ответу сервера.
+    create.mutate(
+      {
         title: title.trim(),
         description: description.trim() || undefined,
         projectId: Number(projectId),
         assigneeIds,
         priority,
         deadline: deadline ? new Date(deadline).toISOString() : null,
-      });
-      toast.success("Задача создана");
-      reset();
-      setOpen(false);
-    } catch (e) {
-      toast.error(e instanceof RequestError ? e.message : "Ошибка");
-    }
+      },
+      {
+        onSuccess: () => {
+          toast.success("Задача создана");
+          reset();
+          setOpen(false);
+        },
+        onError: (e) =>
+          toast.error(e instanceof RequestError ? e.message : "Ошибка"),
+      },
+    );
   }
 
   return (

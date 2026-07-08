@@ -10,7 +10,7 @@ import {
   users,
 } from "../../db/schema";
 import type { Role, TaskStatus } from "../../shared/constants";
-import { logActivity } from "../../shared/activity";
+import { logActivity, normalizePayload } from "../../shared/activity";
 import { notify, type NotifyInput } from "../../shared/notify";
 import { getFilesFor, type FileInfo } from "../../shared/file-info";
 import { forbidden, notFound } from "../../shared/errors";
@@ -248,7 +248,7 @@ export async function getTimeline(
   return rows.map((r) => ({
     id: r.id,
     type: r.type,
-    payload: r.payload,
+    payload: normalizePayload(r.payload),
     createdAt: r.createdAt,
     actor: { id: r.actorId, name: r.actorName },
   }));
