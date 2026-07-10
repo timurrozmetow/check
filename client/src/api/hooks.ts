@@ -213,6 +213,10 @@ export function useApproveUpdate() {
       qc.invalidateQueries({ queryKey: ["moderation"] });
       qc.invalidateQueries({ queryKey: ["tasks"] });
       qc.invalidateQueries({ queryKey: ["projects"] });
+      // Одобрение апдейта меняет прогресс задачи и пишет события в таймлайн —
+      // инвалидируем карточку задачи (id апдейта не несёт taskId, поэтому по префиксу).
+      qc.invalidateQueries({ queryKey: ["task"] });
+      qc.invalidateQueries({ queryKey: ["task-timeline"] });
     },
   });
 }
@@ -266,6 +270,10 @@ export function useCreateDecision() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["decisions"] });
       qc.invalidateQueries({ queryKey: ["tasks"] });
+      // Запрос решения переводит задачу в awaiting_decision и пишет событие —
+      // обновляем открытую карточку задачи и её таймлайн.
+      qc.invalidateQueries({ queryKey: ["task"] });
+      qc.invalidateQueries({ queryKey: ["task-timeline"] });
     },
   });
 }
@@ -285,6 +293,10 @@ export function useDecide() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["decisions"] });
       qc.invalidateQueries({ queryKey: ["tasks"] });
+      // Решение меняет статус задачи (awaiting_decision → in_progress) и таймлайн.
+      qc.invalidateQueries({ queryKey: ["task"] });
+      qc.invalidateQueries({ queryKey: ["task-timeline"] });
+      qc.invalidateQueries({ queryKey: ["projects"] });
     },
   });
 }

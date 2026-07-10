@@ -87,6 +87,7 @@ export function FileGrid({ files }: { files: FileInfo[] }) {
               <button
                 type="button"
                 onClick={() => setLightbox(null)}
+                aria-label="Закрыть"
                 className="absolute right-3 top-3 grid h-9 w-9 place-items-center rounded-full bg-black/60 text-white transition-colors hover:bg-black/80"
               >
                 <X className="h-5 w-5" />

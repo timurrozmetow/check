@@ -50,23 +50,42 @@ async function assertEmailFree(email: string, exceptId?: number) {
     .where(eq(users.email, email))
     .limit(1);
   if (existing && existing.id !== exceptId) {
-    throw new AppError(409, "EMAIL_TAKEN", "Этот email уже используется");
+    throw emailTaken();
   }
+}
+
+function emailTaken() {
+  return new AppError(409, "EMAIL_TAKEN", "Этот email уже используется");
+}
+
+/** Гонка: два запроса прошли assertEmailFree до коммита — ловим уникальный индекс. */
+function isDuplicateEmailError(e: unknown): boolean {
+  return (
+    typeof e === "object" &&
+    e !== null &&
+    "code" in e &&
+    (e as { code?: unknown }).code === "ER_DUP_ENTRY"
+  );
 }
 
 export async function createUser(input: CreateUserInput): Promise<PublicUser> {
   await assertEmailFree(input.email);
   const passwordHash = await argon2.hash(input.password);
-  const [inserted] = await db
-    .insert(users)
-    .values({
-      name: input.name,
-      email: input.email,
-      passwordHash,
-      role: input.role,
-    })
-    .$returningId();
-  return getPublicUser(inserted!.id);
+  try {
+    const [inserted] = await db
+      .insert(users)
+      .values({
+        name: input.name,
+        email: input.email,
+        passwordHash,
+        role: input.role,
+      })
+      .$returningId();
+    return getPublicUser(inserted!.id);
+  } catch (e) {
+    if (isDuplicateEmailError(e)) throw emailTaken();
+    throw e;
+  }
 }
 
 export async function updateUser(
@@ -87,15 +106,20 @@ export async function updateUser(
     );
   }
 
-  await db
-    .update(users)
-    .set({
-      ...(input.name !== undefined ? { name: input.name } : {}),
-      ...(input.email !== undefined ? { email: input.email } : {}),
-      ...(input.role !== undefined ? { role: input.role } : {}),
-      ...(input.isActive !== undefined ? { isActive: input.isActive } : {}),
-    })
-    .where(eq(users.id, id));
+  try {
+    await db
+      .update(users)
+      .set({
+        ...(input.name !== undefined ? { name: input.name } : {}),
+        ...(input.email !== undefined ? { email: input.email } : {}),
+        ...(input.role !== undefined ? { role: input.role } : {}),
+        ...(input.isActive !== undefined ? { isActive: input.isActive } : {}),
+      })
+      .where(eq(users.id, id));
+  } catch (e) {
+    if (isDuplicateEmailError(e)) throw emailTaken();
+    throw e;
+  }
 
   return getPublicUser(id);
 }

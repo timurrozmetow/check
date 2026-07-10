@@ -92,6 +92,23 @@ function StatusDonut({ tasks }: { tasks: TaskListItem[] }) {
   );
 }
 
+/** Выбирает чёрный/белый текст с наибольшим контрастом к цвету фона (WCAG). */
+function readableTextColor(hex: string): string {
+  const h = hex.replace("#", "");
+  if (h.length < 6) return "#ffffff";
+  const toLinear = (v: number) => {
+    const s = v / 255;
+    return s <= 0.03928 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4);
+  };
+  const L =
+    0.2126 * toLinear(parseInt(h.slice(0, 2), 16)) +
+    0.7152 * toLinear(parseInt(h.slice(2, 4), 16)) +
+    0.0722 * toLinear(parseInt(h.slice(4, 6), 16));
+  const contrastWhite = 1.05 / (L + 0.05);
+  const contrastBlack = (L + 0.05) / 0.05;
+  return contrastBlack > contrastWhite ? "#0f172a" : "#ffffff";
+}
+
 /** Горизонтальные полосы: количество задач по проектам. */
 function ProjectBars({ tasks }: { tasks: TaskListItem[] }) {
   const bars = useMemo(() => {
@@ -117,8 +134,8 @@ function ProjectBars({ tasks }: { tasks: TaskListItem[] }) {
           </span>
           <div className="h-6 flex-1 overflow-hidden rounded-lg bg-muted">
             <motion.div
-              className="flex h-full items-center justify-end rounded-lg pr-2 text-xs font-bold text-white"
-              style={{ backgroundColor: b.color }}
+              className="flex h-full items-center justify-end rounded-lg pr-2 text-xs font-bold"
+              style={{ backgroundColor: b.color, color: readableTextColor(b.color) }}
               initial={{ width: 0 }}
               animate={{ width: `${(b.count / max) * 100}%` }}
               transition={{

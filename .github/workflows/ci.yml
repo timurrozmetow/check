@@ -1,0 +1,98 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # Типизация, серверные юнит/интеграционные тесты, сборка клиента
+  build-test:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: directorhub_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+    env:
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASSWORD: root
+      DB_NAME: directorhub_test
+      JWT_SECRET: ci-secret-key-at-least-16-chars
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: Типизация (server + client)
+        run: npm run typecheck
+      - name: Серверные тесты (Vitest)
+        run: npm run test -w server
+      - name: Сборка клиента
+        run: npm run build -w client
+
+  # Браузерные e2e-тесты (Playwright) на живом приложении
+  e2e:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: directorhub
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+    env:
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASSWORD: root
+      DB_NAME: directorhub
+      JWT_SECRET: ci-secret-key-at-least-16-chars
+      PORT: 4000
+      HOST: 127.0.0.1
+      CORS_ORIGIN: http://localhost:5173
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: Миграции и демо-seed для e2e
+        run: |
+          npm run db:migrate -w server
+          npm run db:seed:e2e -w server
+      - name: Установка браузеров Playwright
+        run: npx playwright install --with-deps chromium
+        working-directory: client
+      - name: Запуск сервера и клиента
+        run: |
+          npm run dev -w server &
+          npm run dev -w client &
+          npx wait-on http://127.0.0.1:4000/api/v1/health http://localhost:5173
+      - name: E2E-тесты
+        run: npm run test:e2e -w client
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: client/playwright-report/

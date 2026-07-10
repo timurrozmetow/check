@@ -37,8 +37,17 @@ export default fp(async (app) => {
   app.decorate("authenticate", async (req: FastifyRequest) => {
     try {
       // SSE (EventSource) не умеет ставить заголовки — разрешаем токен в query
+      // ТОЛЬКО для стрима уведомлений, чтобы access-JWT не попадал в URL/логи
+      // остальных запросов.
+      const isSseStream =
+        typeof req.url === "string" &&
+        (req.url.split("?")[0] ?? "").endsWith("/notifications/stream");
       const q = req.query as Record<string, unknown> | undefined;
-      if (!req.headers.authorization && typeof q?.token === "string") {
+      if (
+        isSseStream &&
+        !req.headers.authorization &&
+        typeof q?.token === "string"
+      ) {
         req.headers.authorization = `Bearer ${q.token}`;
       }
       await req.jwtVerify();

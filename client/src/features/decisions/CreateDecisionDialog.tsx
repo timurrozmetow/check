@@ -163,6 +163,7 @@ export function CreateDecisionDialog({
                     {options.length > 2 && (
                       <button
                         type="button"
+                        aria-label="Удалить вариант"
                         onClick={() =>
                           setOptions((p) => p.filter((_, j) => j !== i))
                         }

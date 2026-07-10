@@ -1,13 +1,30 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import {
+  QueryClient,
+  QueryCache,
+  QueryClientProvider,
+} from "@tanstack/react-query";
 import { BrowserRouter } from "react-router-dom";
-import { Toaster } from "sonner";
+import { Toaster, toast } from "sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { RequestError } from "@/api/client";
 import App from "./App";
 import "./index.css";
 
 const queryClient = new QueryClient({
+  // Ни одна ошибка загрузки не должна оставаться незамеченной (иначе списки
+  // показывают «пусто» вместо сбоя). 401 — часть auth-потока, его не шумим.
+  queryCache: new QueryCache({
+    onError: (error) => {
+      if (error instanceof RequestError && error.status === 401) return;
+      toast.error(
+        error instanceof RequestError
+          ? error.message
+          : "Не удалось загрузить данные",
+      );
+    },
+  }),
   defaultOptions: {
     queries: {
       retry: 1,

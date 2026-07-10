@@ -22,7 +22,22 @@ import reportsRoutes from "./modules/reports/routes";
 export async function buildApp() {
   const app = Fastify({
     logger: isProd
-      ? true
+      ? {
+          // Не логируем access-токен, если он всё же пришёл в query (?token=…).
+          serializers: {
+            req(request) {
+              return {
+                method: request.method,
+                url: (request.url || "").replace(
+                  /([?&]token=)[^&]+/gi,
+                  "$1[REDACTED]",
+                ),
+                host: request.host,
+                remoteAddress: request.ip,
+              };
+            },
+          },
+        }
       : {
           transport: {
             target: "pino-pretty",

@@ -1,12 +1,13 @@
 import { motion } from "framer-motion";
-import { CheckSquare } from "lucide-react";
+import { CheckSquare, AlertTriangle } from "lucide-react";
 import { TaskCard } from "@/features/tasks/TaskCard";
 import { EmptyState } from "@/components/common/EmptyState";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTasks } from "@/api/hooks";
 
 export function EmployeeTasks() {
-  const { data: tasks, isLoading } = useTasks();
+  const { data: tasks, isLoading, isError, refetch } = useTasks();
 
   return (
     <div className="mx-auto max-w-5xl space-y-5">
@@ -23,6 +24,17 @@ export function EmployeeTasks() {
             <Skeleton key={i} className="h-40 rounded-2xl" />
           ))}
         </div>
+      ) : isError ? (
+        <EmptyState
+          icon={AlertTriangle}
+          title="Не удалось загрузить задачи"
+          description="Проверьте соединение и попробуйте снова."
+          action={
+            <Button variant="outline" onClick={() => refetch()}>
+              Повторить
+            </Button>
+          }
+        />
       ) : (tasks?.length ?? 0) === 0 ? (
         <EmptyState
           icon={CheckSquare}

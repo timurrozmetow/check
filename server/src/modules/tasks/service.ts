@@ -419,6 +419,9 @@ export async function changeStatus(
       patch.progress = 100;
     } else if (task.status === "completed") {
       patch.completedAt = null;
+      // Возврат из «завершено»: снимаем 100%, иначе активная задача висит с
+      // полным прогрессом и завышает avgProgress. Ставим на шаг ниже.
+      if (task.progress >= 100) patch.progress = 95;
     }
 
     await tx.update(tasks).set(patch).where(eq(tasks.id, taskId));
@@ -429,6 +432,20 @@ export async function changeStatus(
       type: "status_changed",
       payload: { from: task.status, to: status },
     });
+
+    // Фиксируем изменение прогресса при возврате из «завершено» (аудит таймлайна).
+    if (
+      status !== "completed" &&
+      patch.progress !== undefined &&
+      patch.progress !== task.progress
+    ) {
+      await logActivity(tx, {
+        taskId,
+        actorId,
+        type: "progress_changed",
+        payload: { from: task.progress, to: patch.progress },
+      });
+    }
 
     if (status === "completed") {
       await logActivity(tx, {

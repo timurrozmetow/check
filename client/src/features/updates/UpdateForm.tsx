@@ -103,6 +103,7 @@ export function UpdateForm({ taskId }: { taskId: number }) {
               </span>
               <button
                 type="button"
+                aria-label="Удалить файл"
                 onClick={() => setFiles((p) => p.filter((_, j) => j !== i))}
                 className="text-muted-foreground hover:text-destructive"
               >

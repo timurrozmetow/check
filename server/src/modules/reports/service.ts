@@ -148,7 +148,18 @@ export async function gatherReportData(
   }
 
   const reportTasks: ReportTaskRow[] = filtered.map((r) => {
-    const completed = r.t.completedAt;
+    // Завершение ПОСЛЕ конца периода не считаем «завершением в этом отчёте»:
+    // на конец месяца задача была ещё активной. Иначе пончик/таблица покажут
+    // её завершённой, а сводка (completedInMonth) — нет (рассинхрон цифр).
+    const completed =
+      r.t.completedAt !== null &&
+      r.t.completedAt.getTime() < periodEnd.getTime()
+        ? r.t.completedAt
+        : null;
+    const status: TaskStatus =
+      r.t.status === "completed" && completed === null
+        ? "in_progress"
+        : r.t.status;
     const durationMs =
       completed !== null
         ? completed.getTime() - r.t.createdAt.getTime()
@@ -163,7 +174,7 @@ export async function gatherReportData(
       description: r.t.description,
       projectName: r.projectName,
       assignees: assigneesByTask.get(r.t.id) ?? [],
-      status: r.t.status,
+      status,
       progress: r.t.progress,
       createdAt: r.t.createdAt,
       completedAt: completed,

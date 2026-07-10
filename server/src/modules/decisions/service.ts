@@ -142,11 +142,19 @@ export async function createDecision(
   actorId: number,
 ): Promise<DecisionRequestDetail> {
   const [task] = await db
-    .select({ id: tasks.id })
+    .select({ id: tasks.id, status: tasks.status })
     .from(tasks)
     .where(eq(tasks.id, input.taskId))
     .limit(1);
   if (!task) throw notFound("Задача не найдена");
+  // Нельзя запрашивать решение по закрытой задаче — иначе она вернётся в
+  // awaiting_decision с живым completedAt/progress=100 (противоречивое состояние).
+  if (task.status === "completed" || task.status === "cancelled") {
+    throw badRequest(
+      "Нельзя запросить решение по завершённой или отменённой задаче",
+      "TASK_CLOSED",
+    );
+  }
 
   if (
     input.type === "choice" &&

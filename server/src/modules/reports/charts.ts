@@ -51,6 +51,16 @@ export async function statusDonutPng(
   for (const item of items) {
     const frac = item.value / total;
     const next = angle + frac * Math.PI * 2;
+    // Единственный ненулевой статус: дуга в 360° вырождается (начало = конец)
+    // и не рисуется. Рисуем полное кольцо двумя окружностями.
+    if (frac > 0.9999) {
+      segments.push(
+        `<circle cx="${cx}" cy="${cy}" r="${rOuter}" fill="${item.color}"/>` +
+          `<circle cx="${cx}" cy="${cy}" r="${rInner}" fill="#ffffff"/>`,
+      );
+      angle = next;
+      continue;
+    }
     const largeArc = frac > 0.5 ? 1 : 0;
     const x1 = cx + rOuter * Math.cos(angle);
     const y1 = cy + rOuter * Math.sin(angle);
@@ -101,10 +111,12 @@ export async function projectsBarPng(
   const chartW = width - marginLeft - marginRight;
   const chartH = height - marginTop - marginBottom;
   const maxVal = Math.max(...data.map((d) => d.count), 1);
-  const barGap = 24;
-  const barW = Math.min(
-    120,
-    (chartW - barGap * (data.length + 1)) / data.length,
+  // Зазор ужимаем при большом числе проектов, ширину столбца держим положительной,
+  // иначе (≈29+ проектов) числитель уходит в минус и столбцы вовсе не рисуются.
+  const barGap = Math.min(24, chartW / (data.length + 1) / 2);
+  const barW = Math.max(
+    4,
+    Math.min(120, (chartW - barGap * (data.length + 1)) / data.length),
   );
   const baseY = marginTop + chartH;
 
