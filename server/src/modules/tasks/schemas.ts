@@ -23,7 +23,7 @@ const deadlineSchema = z
   .or(z.string().length(0).transform(() => null));
 
 export const createTaskSchema = z.object({
-  title: z.string().min(1, "Укажите название").max(200),
+  title: z.string().min(1, "validation.titleRequired").max(200),
   description: z.string().optional(),
   projectId: z.number().int().positive(),
   assigneeIds: z.array(z.number().int().positive()).default([]),
@@ -43,7 +43,7 @@ export const updateTaskSchema = z
     deadline: deadlineSchema,
   })
   .refine((v) => Object.keys(v).length > 0, {
-    message: "Нет полей для обновления",
+    message: "validation.noFieldsToUpdate",
   });
 
 export type UpdateTaskInput = z.infer<typeof updateTaskSchema>;
@@ -59,6 +59,6 @@ export const updateProgressSchema = z.object({
     .min(0)
     .max(100)
     .refine((v) => v % PROGRESS_STEP === 0, {
-      message: `Прогресс должен быть кратен ${PROGRESS_STEP}`,
+      message: "validation.progressStep",
     }),
 });

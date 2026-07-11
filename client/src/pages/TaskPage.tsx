@@ -1,4 +1,5 @@
 import { useParams, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { ArrowLeft, CalendarDays, Gavel, Paperclip } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -18,6 +19,7 @@ import { formatDate, initials, isOverdue } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 export function TaskPage() {
+  const { t } = useTranslation();
   const { id } = useParams();
   const taskId = id ? Number(id) : null;
   const navigate = useNavigate();
@@ -39,12 +41,12 @@ export function TaskPage() {
   if (error || !task) {
     return (
       <div className="mx-auto max-w-4xl py-16 text-center">
-        <p className="text-lg font-semibold">Задача недоступна</p>
+        <p className="text-lg font-semibold">{t("taskPage.unavailableTitle")}</p>
         <p className="mt-1 text-sm text-muted-foreground">
-          Возможно, она вам не назначена или была удалена.
+          {t("taskPage.unavailableDesc")}
         </p>
         <Button variant="outline" className="mt-4" onClick={() => navigate(-1)}>
-          Назад
+          {t("common.back")}
         </Button>
       </div>
     );
@@ -64,7 +66,7 @@ export function TaskPage() {
         className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
       >
         <ArrowLeft className="h-4 w-4" />
-        Назад
+        {t("common.back")}
       </button>
 
       {/* Шапка задачи */}
@@ -76,7 +78,7 @@ export function TaskPage() {
           {task.hasPendingDecision && (
             <span className="inline-flex items-center gap-1 rounded-full bg-accent px-2.5 py-1 text-xs font-semibold text-accent-foreground">
               <Gavel className="h-3.5 w-3.5" />
-              Ждёт решения директора
+              {t("taskPage.awaitingDirector")}
             </span>
           )}
         </div>
@@ -99,12 +101,12 @@ export function TaskPage() {
               )}
             >
               <CalendarDays className="h-4 w-4" />
-              Дедлайн: {formatDate(task.deadline)}
-              {overdue && " · просрочен"}
+              {t("taskPage.deadline", { date: formatDate(task.deadline) })}
+              {overdue && ` · ${t("taskPage.overdue")}`}
             </span>
           )}
           <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">Исполнители:</span>
+            <span className="text-sm text-muted-foreground">{t("taskPage.assignees")}</span>
             <div className="flex -space-x-2">
               {task.assignees.map((a) => (
                 <Avatar
@@ -135,7 +137,7 @@ export function TaskPage() {
               trigger={
                 <Button variant="outline">
                   <Gavel className="mr-2 h-4 w-4" />
-                  Запросить решение директора
+                  {t("taskPage.requestDecision")}
                 </Button>
               }
             />
@@ -146,7 +148,7 @@ export function TaskPage() {
       {/* Отправка обновления — сотрудник */}
       {role === "employee" && (
         <Card className="p-5 shadow-card sm:p-6">
-          <h2 className="mb-3 text-lg font-bold">Отправить обновление</h2>
+          <h2 className="mb-3 text-lg font-bold">{t("taskPage.submitUpdate")}</h2>
           <UpdateForm taskId={task.id} />
         </Card>
       )}
@@ -156,7 +158,7 @@ export function TaskPage() {
         <Card className="p-5 shadow-card sm:p-6">
           <h2 className="mb-3 flex items-center gap-2 text-lg font-bold">
             <Paperclip className="h-5 w-5" />
-            Файлы
+            {t("taskPage.files")}
           </h2>
           <FileGrid files={task.files} />
         </Card>
@@ -164,7 +166,7 @@ export function TaskPage() {
 
       {/* Хронология */}
       <Card className="p-5 shadow-card sm:p-6">
-        <h2 className="mb-4 text-lg font-bold">Хронология</h2>
+        <h2 className="mb-4 text-lg font-bold">{t("taskPage.timeline")}</h2>
         <Timeline events={timeline ?? []} />
       </Card>
     </div>

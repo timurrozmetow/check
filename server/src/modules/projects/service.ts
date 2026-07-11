@@ -117,7 +117,7 @@ export async function getProjectWithStats(
     .from(projects)
     .where(eq(projects.id, id))
     .limit(1);
-  if (!p) throw notFound("Проект не найден");
+  if (!p) throw notFound("error.projectNotFound");
   const stats = await statsByProject([id]);
   return toStats(p, stats.get(id));
 }
@@ -167,7 +167,7 @@ export async function deleteProject(id: number): Promise<void> {
     throw new AppError(
       400,
       "PROJECT_HAS_TASKS",
-      "Нельзя удалить проект с задачами",
+      "error.projectHasTasks",
     );
   }
   await db.delete(projects).where(eq(projects.id, id));

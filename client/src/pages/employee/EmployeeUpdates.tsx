@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 import { Send } from "lucide-react";
 import { UpdateStatusBadge } from "@/components/common/StatusBadge";
@@ -12,13 +13,14 @@ import { formatDateTime } from "@/lib/format";
 export function EmployeeUpdates() {
   const { data: updates, isLoading } = useMyUpdates();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   return (
     <div className="mx-auto max-w-3xl space-y-5">
       <div>
-        <h1 className="text-xl font-bold">Мои обновления</h1>
+        <h1 className="text-xl font-bold">{t("employeeUpdates.title")}</h1>
         <p className="text-sm text-muted-foreground">
-          Статусы отправленных вами обновлений.
+          {t("employeeUpdates.subtitle")}
         </p>
       </div>
 
@@ -31,8 +33,8 @@ export function EmployeeUpdates() {
       ) : (updates?.length ?? 0) === 0 ? (
         <EmptyState
           icon={Send}
-          title="Обновлений пока нет"
-          description="Откройте задачу и отправьте первое обновление."
+          title={t("employeeUpdates.empty")}
+          description={t("employeeUpdates.emptyDesc")}
         />
       ) : (
         <div className="space-y-3">
@@ -62,7 +64,7 @@ export function EmployeeUpdates() {
                 )}
                 {u.status === "rejected" && u.rejectReason && (
                   <div className="mt-3 rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">
-                    <span className="font-semibold">Причина отклонения: </span>
+                    <span className="font-semibold">{t("employeeUpdates.rejectReason")} </span>
                     {u.rejectReason}
                   </div>
                 )}

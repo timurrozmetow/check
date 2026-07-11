@@ -15,13 +15,14 @@ import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useChangeOwnPassword } from "@/api/hooks";
 import { useAuthStore } from "@/stores/auth";
-import { ROLE_LABELS } from "@/lib/labels";
 import { initials } from "@/lib/format";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import { RequestError } from "@/api/client";
 
 /** Диалог профиля: данные пользователя + смена собственного пароля. */
 export function ProfileDialog({ trigger }: { trigger: ReactNode }) {
+  const { t } = useTranslation();
   const user = useAuthStore((s) => s.user);
   const change = useChangeOwnPassword();
   const [open, setOpen] = useState(false);
@@ -34,21 +35,21 @@ export function ProfileDialog({ trigger }: { trigger: ReactNode }) {
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     if (next.length < 8) {
-      toast.error("Новый пароль не короче 8 символов");
+      toast.error(t("profileDialog.passwordTooShort"));
       return;
     }
     if (next !== repeat) {
-      toast.error("Пароли не совпадают");
+      toast.error(t("profileDialog.passwordMismatch"));
       return;
     }
     try {
       await change.mutateAsync({ currentPassword: current, newPassword: next });
-      toast.success("Пароль изменён");
+      toast.success(t("profileDialog.passwordChanged"));
       setCurrent("");
       setNext("");
       setRepeat("");
     } catch (err) {
-      toast.error(err instanceof RequestError ? err.message : "Ошибка");
+      toast.error(err instanceof RequestError ? err.message : t("common.error"));
     }
   }
 
@@ -57,7 +58,7 @@ export function ProfileDialog({ trigger }: { trigger: ReactNode }) {
       <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Профиль</DialogTitle>
+          <DialogTitle>{t("profileDialog.title")}</DialogTitle>
         </DialogHeader>
 
         <div className="flex items-center gap-3">
@@ -69,7 +70,7 @@ export function ProfileDialog({ trigger }: { trigger: ReactNode }) {
           <div className="min-w-0">
             <p className="truncate font-semibold">{user.name}</p>
             <p className="truncate text-sm text-muted-foreground">
-              {user.email} · {ROLE_LABELS[user.role]}
+              {user.email} · {t(`role.${user.role}`)}
             </p>
           </div>
         </div>
@@ -79,10 +80,10 @@ export function ProfileDialog({ trigger }: { trigger: ReactNode }) {
         <form onSubmit={submit} className="space-y-3">
           <div className="flex items-center gap-2 text-sm font-semibold">
             <ShieldCheck className="h-4 w-4 text-primary" />
-            Смена пароля
+            {t("profileDialog.changePassword")}
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="cur">Текущий пароль</Label>
+            <Label htmlFor="cur">{t("profileDialog.currentPassword")}</Label>
             <PasswordInput
               id="cur"
               autoComplete="current-password"
@@ -92,7 +93,7 @@ export function ProfileDialog({ trigger }: { trigger: ReactNode }) {
             />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="new">Новый пароль</Label>
+            <Label htmlFor="new">{t("profileDialog.newPassword")}</Label>
             <PasswordInput
               id="new"
               autoComplete="new-password"
@@ -102,7 +103,7 @@ export function ProfileDialog({ trigger }: { trigger: ReactNode }) {
             />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="rep">Повторите новый пароль</Label>
+            <Label htmlFor="rep">{t("profileDialog.repeatPassword")}</Label>
             <PasswordInput
               id="rep"
               autoComplete="new-password"
@@ -116,7 +117,7 @@ export function ProfileDialog({ trigger }: { trigger: ReactNode }) {
               {change.isPending && (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               )}
-              Изменить пароль
+              {t("profileDialog.submitBtn")}
             </Button>
           </div>
         </form>

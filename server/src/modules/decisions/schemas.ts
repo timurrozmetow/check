@@ -9,8 +9,8 @@ export const createDecisionSchema = z.object({
   taskId: z.number().int().positive(),
   title: z
     .string()
-    .min(1, "Укажите заголовок")
-    .max(200, "Заголовок не длиннее 200 символов"),
+    .min(1, "validation.titleRequired")
+    .max(200, "validation.titleMax"),
   description: z.string().optional(),
   type: z.enum(DECISION_TYPES),
   options: z
@@ -18,8 +18,8 @@ export const createDecisionSchema = z.object({
       z.object({
         title: z
           .string()
-          .min(1, "Укажите название варианта")
-          .max(200, "Название варианта не длиннее 200 символов"),
+          .min(1, "validation.optionTitleRequired")
+          .max(200, "validation.optionTitleMax"),
         description: z.string().optional(),
       }),
     )

@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   ArrowRight,
@@ -16,7 +17,6 @@ import { EmptyState } from "@/components/common/EmptyState";
 import { ProjectChip } from "@/components/common/ProjectChip";
 import { useDecisions } from "@/api/hooks";
 import { formatDateTime } from "@/lib/format";
-import { DECISION_STATUS_LABELS } from "@/lib/labels";
 import { cn } from "@/lib/utils";
 import type { DecisionRequestDetail, DecisionStatus } from "@/api/types";
 
@@ -24,6 +24,7 @@ const CARD_TRANSITION = { duration: 0.35, ease: [0.22, 0.7, 0.3, 1] as const };
 
 /** Мягкий бейдж статуса запроса решения. */
 function DecisionStatusBadge({ status }: { status: DecisionStatus }) {
+  const { t } = useTranslation();
   return (
     <span
       className={cn(
@@ -33,15 +34,18 @@ function DecisionStatusBadge({ status }: { status: DecisionStatus }) {
           : "bg-success/15 text-success",
       )}
     >
-      {DECISION_STATUS_LABELS[status]}
+      {t(`decisionStatus.${status}`)}
     </span>
   );
 }
 
-function typeLabel(request: DecisionRequestDetail): string {
+function typeLabel(
+  request: DecisionRequestDetail,
+  t: (key: string, opts?: Record<string, unknown>) => string,
+): string {
   return request.type === "choice"
-    ? `Выбор из ${request.options.length} вариантов`
-    : "Согласование";
+    ? t("adminDecisions.typeChoice", { count: request.options.length })
+    : t("adminDecisions.typeApproval");
 }
 
 /** Компактная карточка-сводка ожидающего запроса (без кнопок решения). */
@@ -53,6 +57,7 @@ function PendingCard({
   index: number;
 }) {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   return (
     <motion.div
@@ -84,10 +89,12 @@ function PendingCard({
         <div className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
           <span className="inline-flex items-center gap-1.5 font-medium text-foreground">
             <Layers className="h-4 w-4 text-primary" />
-            {typeLabel(request)}
+            {typeLabel(request, t)}
           </span>
           <span aria-hidden>·</span>
-          <span className="truncate">Задача: {request.task.title}</span>
+          <span className="truncate">
+            {t("adminDecisions.taskLabel", { title: request.task.title })}
+          </span>
         </div>
 
         <div className="mt-4 flex justify-end">
@@ -96,7 +103,7 @@ function PendingCard({
             size="sm"
             onClick={() => navigate(`/admin/tasks/${request.taskId}`)}
           >
-            Открыть задачу
+            {t("adminDecisions.openTask")}
             <ArrowRight className="ml-1.5 h-4 w-4" />
           </Button>
         </div>
@@ -114,6 +121,7 @@ function DecidedCard({
   index: number;
 }) {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const selectedOption =
     request.type === "choice"
       ? request.options.find((o) => o.isSelected)
@@ -144,10 +152,12 @@ function DecidedCard({
         <div className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
           <span className="inline-flex items-center gap-1.5 font-medium text-foreground">
             <Layers className="h-4 w-4 text-primary" />
-            {typeLabel(request)}
+            {typeLabel(request, t)}
           </span>
           <span aria-hidden>·</span>
-          <span className="truncate">Задача: {request.task.title}</span>
+          <span className="truncate">
+            {t("adminDecisions.taskLabel", { title: request.task.title })}
+          </span>
         </div>
 
         {/* Итог решения */}
@@ -155,8 +165,9 @@ function DecidedCard({
           <div className="mt-4 flex items-center gap-2 rounded-xl bg-primary/10 px-4 py-3 text-sm font-semibold text-primary">
             <Check className="h-4 w-4 shrink-0" />
             <span>
-              Выбран вариант:{" "}
-              {selectedOption?.title ?? "вариант не отмечен"}
+              {t("adminDecisions.selectedOption", {
+                option: selectedOption?.title ?? t("adminDecisions.noOptionMarked"),
+              })}
             </span>
           </div>
         ) : (
@@ -173,14 +184,18 @@ function DecidedCard({
             ) : (
               <ThumbsDown className="h-4 w-4 shrink-0" />
             )}
-            <span>{request.approved ? "Согласовано" : "Отклонено"}</span>
+            <span>
+              {request.approved
+                ? t("adminDecisions.approved")
+                : t("adminDecisions.rejected")}
+            </span>
           </div>
         )}
 
         {request.directorComment && (
           <div className="mt-3 rounded-xl bg-secondary/60 p-4">
             <p className="text-xs font-semibold text-muted-foreground">
-              Комментарий директора:
+              {t("adminDecisions.directorComment")}
             </p>
             <p className="mt-1 text-sm">{request.directorComment}</p>
           </div>
@@ -192,7 +207,7 @@ function DecidedCard({
             size="sm"
             onClick={() => navigate(`/admin/tasks/${request.taskId}`)}
           >
-            Открыть задачу
+            {t("adminDecisions.openTask")}
             <ArrowRight className="ml-1.5 h-4 w-4" />
           </Button>
         </div>
@@ -219,6 +234,7 @@ function DecisionList({
   items: DecisionRequestDetail[] | undefined;
   variant: "pending" | "decided";
 }) {
+  const { t } = useTranslation();
   if (isLoading) {
     return (
       <div className="space-y-4">
@@ -235,13 +251,13 @@ function DecisionList({
         icon={Gavel}
         title={
           variant === "pending"
-            ? "Нет запросов в ожидании"
-            : "Решённых запросов пока нет"
+            ? t("adminDecisions.emptyPendingTitle")
+            : t("adminDecisions.emptyDecidedTitle")
         }
         description={
           variant === "pending"
-            ? "Здесь появятся запросы, ожидающие решения директора. Создать запрос можно на странице задачи."
-            : "Как только директор примет решения, они появятся в этом разделе."
+            ? t("adminDecisions.emptyPendingDesc")
+            : t("adminDecisions.emptyDecidedDesc")
         }
       />
     );
@@ -263,27 +279,27 @@ function DecisionList({
 }
 
 export function AdminDecisions() {
+  const { t } = useTranslation();
   const pending = useDecisions("pending");
   const decided = useDecisions("decided");
 
   return (
     <div className="mx-auto max-w-6xl space-y-6">
       <div>
-        <h1 className="text-xl font-bold">Решения директора</h1>
+        <h1 className="text-xl font-bold">{t("adminDecisions.title")}</h1>
         <p className="text-sm text-muted-foreground">
-          Мониторинг запросов на решение. Запросы создаются на странице задачи —
-          здесь вы отслеживаете их статус.
+          {t("adminDecisions.subtitle")}
         </p>
       </div>
 
       <Tabs defaultValue="pending" className="space-y-6">
         <TabsList>
           <TabsTrigger value="pending">
-            Ожидают
+            {t("adminDecisions.tabPending")}
             <TabCount count={pending.data?.length ?? 0} />
           </TabsTrigger>
           <TabsTrigger value="decided">
-            Решённые
+            {t("adminDecisions.tabDecided")}
             <TabCount count={decided.data?.length ?? 0} />
           </TabsTrigger>
         </TabsList>

@@ -51,15 +51,15 @@ export default async function authRoutes(app: FastifyInstance) {
     try {
       payload = await req.jwtVerify<JwtPayload>({ onlyCookie: true });
     } catch {
-      throw unauthorized("Сессия истекла, войдите заново");
+      throw unauthorized("error.sessionExpired");
     }
     if (payload.type !== "refresh") {
-      throw unauthorized("Недействительный тип токена");
+      throw unauthorized("error.invalidTokenType");
     }
 
     const user = await getUserById(payload.sub);
     if (!user || !user.isActive) {
-      throw unauthorized("Пользователь не найден или отключён");
+      throw unauthorized("error.userNotFoundOrDisabled");
     }
 
     const accessToken = app.jwt.sign(

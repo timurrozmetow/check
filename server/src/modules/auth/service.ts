@@ -22,11 +22,11 @@ export async function verifyCredentials(
     .limit(1);
 
   if (!user || !user.isActive) {
-    throw unauthorized("Неверный email или пароль");
+    throw unauthorized("error.invalidCredentials");
   }
   const ok = await argon2.verify(user.passwordHash, password);
   if (!ok) {
-    throw unauthorized("Неверный email или пароль");
+    throw unauthorized("error.invalidCredentials");
   }
   return user;
 }
@@ -49,7 +49,7 @@ export async function changeOwnPassword(
   if (!user) throw unauthorized();
   const ok = await argon2.verify(user.passwordHash, currentPassword);
   if (!ok) {
-    throw new AppError(400, "WRONG_PASSWORD", "Текущий пароль неверен");
+    throw new AppError(400, "WRONG_PASSWORD", "error.wrongPassword");
   }
   const passwordHash = await argon2.hash(newPassword);
   await db.update(users).set({ passwordHash }).where(eq(users.id, userId));

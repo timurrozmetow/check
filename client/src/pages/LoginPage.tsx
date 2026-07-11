@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 import { Loader2 } from "lucide-react";
 import { Logo } from "@/components/common/Logo";
 import { ThemeToggle } from "@/components/common/ThemeToggle";
+import { LanguageSwitcher } from "@/components/common/LanguageSwitcher";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,6 +15,7 @@ import { useAuthStore } from "@/stores/auth";
 import { roleHome } from "@/router/role-home";
 
 export function LoginPage() {
+  const { t } = useTranslation();
   const user = useAuthStore((s) => s.user);
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
@@ -30,9 +33,7 @@ export function LoginPage() {
       const u = await login(email, password);
       navigate(roleHome(u.role), { replace: true });
     } catch (err) {
-      setError(
-        err instanceof RequestError ? err.message : "Не удалось войти",
-      );
+      setError(err instanceof RequestError ? err.message : t("login.failed"));
     } finally {
       setLoading(false);
     }
@@ -46,7 +47,8 @@ export function LoginPage() {
         <div className="absolute -bottom-40 -right-40 h-96 w-96 rounded-full bg-primary-glow/20 blur-3xl" />
       </div>
 
-      <div className="absolute right-5 top-5">
+      <div className="absolute right-5 top-5 flex items-center gap-1">
+        <LanguageSwitcher />
         <ThemeToggle />
       </div>
 
@@ -58,23 +60,19 @@ export function LoginPage() {
       >
         <div className="mb-8 flex flex-col items-center gap-3">
           <Logo className="scale-125" />
-          <p className="text-sm text-muted-foreground">
-            Система управления задачами
-          </p>
+          <p className="text-sm text-muted-foreground">{t("login.subtitle")}</p>
         </div>
 
         <form
           onSubmit={submit}
           className="rounded-2xl border border-border bg-card p-6 shadow-card"
         >
-          <h1 className="mb-1 text-xl font-bold">Вход в систему</h1>
-          <p className="mb-6 text-sm text-muted-foreground">
-            Введите email и пароль
-          </p>
+          <h1 className="mb-1 text-xl font-bold">{t("login.title")}</h1>
+          <p className="mb-6 text-sm text-muted-foreground">{t("login.hint")}</p>
 
           <div className="space-y-4">
             <div className="space-y-1.5">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t("login.email")}</Label>
               <Input
                 id="email"
                 type="email"
@@ -86,7 +84,7 @@ export function LoginPage() {
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="password">Пароль</Label>
+              <Label htmlFor="password">{t("login.password")}</Label>
               <PasswordInput
                 id="password"
                 autoComplete="current-password"
@@ -106,7 +104,7 @@ export function LoginPage() {
 
           <Button type="submit" className="mt-6 w-full" disabled={loading}>
             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Войти
+            {t("login.submit")}
           </Button>
         </form>
       </motion.div>

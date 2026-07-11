@@ -20,7 +20,8 @@ import {
   WidthType,
 } from "docx";
 import { env } from "../../shared/env";
-import { ACTIVITY_LABELS_RU, TASK_STATUS_LABELS_RU } from "./labels";
+import { t, type Locale } from "../../shared/i18n";
+import { activityLabel, taskStatusLabel } from "./labels";
 import {
   completedLinePng,
   projectsBarPng,
@@ -65,19 +66,19 @@ function para(text: string, opts: { bold?: boolean; color?: string } = {}) {
   });
 }
 
-function summaryTable(data: ReportData): Table {
+function summaryTable(data: ReportData, locale: Locale): Table {
   const rows: [string, string][] = [
-    ["Всего задач за период", String(data.summary.totalTasks)],
-    ["Завершено в этом месяце", String(data.summary.completedCount)],
-    ["В работе сейчас", String(data.summary.inProgressCount)],
-    ["Просрочено", String(data.summary.overdueCount)],
+    [t(locale, "report.sumTotal"), String(data.summary.totalTasks)],
+    [t(locale, "report.sumCompleted"), String(data.summary.completedCount)],
+    [t(locale, "report.sumInProgress"), String(data.summary.inProgressCount)],
+    [t(locale, "report.sumOverdue"), String(data.summary.overdueCount)],
     [
-      "Среднее время выполнения",
+      t(locale, "report.sumAvgDuration"),
       data.summary.avgDurationMs !== null
-        ? formatDurationRu(data.summary.avgDurationMs)
+        ? formatDurationRu(data.summary.avgDurationMs, locale)
         : "—",
     ],
-    ["Средний % готовности активных", `${data.summary.avgActiveProgress}%`],
+    [t(locale, "report.sumAvgProgress"), `${data.summary.avgActiveProgress}%`],
   ];
 
   return new Table({
@@ -121,37 +122,38 @@ function cell(text: string, opts: { bold?: boolean; header?: boolean } = {}) {
   });
 }
 
-function tasksTable(data: ReportData): Table {
+function tasksTable(data: ReportData, locale: Locale): Table {
   const header = new TableRow({
     tableHeader: true,
     children: [
       cell("№", { header: true }),
-      cell("Задача", { header: true }),
-      cell("Проект", { header: true }),
-      cell("Исполнитель", { header: true }),
-      cell("Статус", { header: true }),
+      cell(t(locale, "report.thTask"), { header: true }),
+      cell(t(locale, "report.thProject"), { header: true }),
+      cell(t(locale, "report.thAssignee"), { header: true }),
+      cell(t(locale, "report.thStatus"), { header: true }),
       cell("%", { header: true }),
-      cell("Время", { header: true }),
-      cell("Дедлайн", { header: true }),
+      cell(t(locale, "report.thTime"), { header: true }),
+      cell(t(locale, "report.thDeadline"), { header: true }),
     ],
   });
 
-  const rows = data.tasks.map((t, i) => {
+  const rows = data.tasks.map((tk, i) => {
     let deadlineText = "—";
-    if (t.deadline) {
-      if (t.deadlineMet === true) deadlineText = "соблюдён ✓";
-      else if (t.deadlineMet === false) deadlineText = "просрочен ✗";
-      else deadlineText = formatDateRu(t.deadline);
+    if (tk.deadline) {
+      if (tk.deadlineMet === true) deadlineText = t(locale, "report.deadlineMet");
+      else if (tk.deadlineMet === false)
+        deadlineText = t(locale, "report.deadlineMissed");
+      else deadlineText = formatDateRu(tk.deadline);
     }
     return new TableRow({
       children: [
         cell(String(i + 1)),
-        cell(t.title),
-        cell(t.projectName),
-        cell(t.assignees.join(", ") || "—"),
-        cell(TASK_STATUS_LABELS_RU[t.status]),
-        cell(`${t.progress}%`),
-        cell(t.durationMs !== null ? formatDurationRu(t.durationMs) : "—"),
+        cell(tk.title),
+        cell(tk.projectName),
+        cell(tk.assignees.join(", ") || "—"),
+        cell(taskStatusLabel(tk.status, locale)),
+        cell(`${tk.progress}%`),
+        cell(tk.durationMs !== null ? formatDurationRu(tk.durationMs, locale) : "—"),
         cell(deadlineText),
       ],
     });
@@ -187,12 +189,15 @@ function chartParagraph(png: Buffer): Paragraph {
 
 function timelineText(
   event: CompletedTaskDetail["timeline"][number],
+  locale: Locale,
 ): string {
-  const base = ACTIVITY_LABELS_RU[event.type] ?? event.type;
+  const base = event.type
+    ? activityLabel(event.type, locale)
+    : event.type;
   const p = event.payload ?? {};
   let extra = "";
   if (event.type === "status_changed" && p.to) {
-    extra = `: ${TASK_STATUS_LABELS_RU[p.to as TaskStatus] ?? p.to}`;
+    extra = `: ${taskStatusLabel(p.to as TaskStatus, locale)}`;
   } else if (event.type === "progress_changed" && p.to !== undefined) {
     extra = `: ${p.from ?? 0}% → ${p.to}%`;
   } else if (event.type === "update_approved" && typeof p.text === "string") {
@@ -203,7 +208,7 @@ function timelineText(
   ) {
     extra = `: ${p.title}`;
   }
-  return `${formatDateTimeRu(event.createdAt)} — ${base}${extra} (${event.actorName})`;
+  return `${formatDateTimeRu(event.createdAt, locale)} — ${base}${extra} (${event.actorName})`;
 }
 
 async function photoRuns(detail: CompletedTaskDetail): Promise<Paragraph[]> {
@@ -238,23 +243,27 @@ async function photoRuns(detail: CompletedTaskDetail): Promise<Paragraph[]> {
   return result;
 }
 
-export async function buildMonthlyReport(data: ReportData): Promise<Buffer> {
+export async function buildMonthlyReport(
+  data: ReportData,
+  locale: Locale = "ru",
+): Promise<Buffer> {
   const donutData = (Object.keys(data.statusCounts) as TaskStatus[]).map(
     (status) => ({
-      label: TASK_STATUS_LABELS_RU[status],
+      label: taskStatusLabel(status, locale),
       value: data.statusCounts[status],
       color: STATUS_COLORS[status],
     }),
   );
 
   const [donutPng, barPng, linePng] = await Promise.all([
-    statusDonutPng(donutData),
-    projectsBarPng(data.tasksByProject),
-    completedLinePng(data.completedByWeek),
+    statusDonutPng(donutData, locale),
+    projectsBarPng(data.tasksByProject, locale),
+    completedLinePng(data.completedByWeek, locale),
   ]);
 
-  const monthTitle = monthYearGenitive(data.month, data.year);
-  const monthShort = monthYearNominative(data.month, data.year);
+  const monthTitle = monthYearGenitive(data.month, data.year, locale);
+  const monthShort = monthYearNominative(data.month, data.year, locale);
+  const projectName = data.projectName ?? t(locale, "report.allProjects");
 
   // Титульная страница
   const titleChildren: Paragraph[] = [
@@ -270,7 +279,7 @@ export async function buildMonthlyReport(data: ReportData): Promise<Buffer> {
       spacing: { after: 400 },
       children: [
         new TextRun({
-          text: `Отчёт о проделанной работе ${monthTitle}`,
+          text: t(locale, "report.coverTitle", { period: monthTitle }),
           bold: true,
           size: 36,
         }),
@@ -281,7 +290,7 @@ export async function buildMonthlyReport(data: ReportData): Promise<Buffer> {
       spacing: { after: 120 },
       children: [
         new TextRun({
-          text: `Проект: ${data.projectName ?? "Все проекты"}`,
+          text: t(locale, "report.coverProject", { name: projectName }),
           size: 26,
         }),
       ],
@@ -290,7 +299,7 @@ export async function buildMonthlyReport(data: ReportData): Promise<Buffer> {
       alignment: AlignmentType.CENTER,
       children: [
         new TextRun({
-          text: `Дата формирования: ${formatDateRu(new Date())}`,
+          text: t(locale, "report.coverDate", { date: formatDateRu(new Date()) }),
           size: 22,
           color: "64748b",
         }),
@@ -302,7 +311,9 @@ export async function buildMonthlyReport(data: ReportData): Promise<Buffer> {
   // Детализация завершённых задач
   const detailChildren: Paragraph[] = [];
   if (data.completedDetails.length > 0) {
-    detailChildren.push(heading("Детализация завершённых задач", HeadingLevel.HEADING_1));
+    detailChildren.push(
+      heading(t(locale, "report.detailsHeading"), HeadingLevel.HEADING_1),
+    );
     for (const detail of data.completedDetails) {
       detailChildren.push(heading(detail.task.title, HeadingLevel.HEADING_2));
       if (detail.task.description) {
@@ -310,38 +321,46 @@ export async function buildMonthlyReport(data: ReportData): Promise<Buffer> {
       }
       detailChildren.push(
         para(
-          `Проект: ${detail.task.projectName} · Исполнители: ${detail.task.assignees.join(", ") || "—"} · Время: ${
-            detail.task.durationMs !== null
-              ? formatDurationRu(detail.task.durationMs)
-              : "—"
-          }`,
+          t(locale, "report.detailMeta", {
+            project: detail.task.projectName,
+            assignees: detail.task.assignees.join(", ") || "—",
+            time:
+              detail.task.durationMs !== null
+                ? formatDurationRu(detail.task.durationMs, locale)
+                : "—",
+          }),
           { color: "64748b" },
         ),
       );
 
       if (detail.timeline.length > 0) {
-        detailChildren.push(para("Хронология:", { bold: true }));
+        detailChildren.push(
+          para(t(locale, "report.timelineLabel"), { bold: true }),
+        );
         for (const ev of detail.timeline) {
           detailChildren.push(
             new Paragraph({
               bullet: { level: 0 },
               spacing: { after: 40 },
-              children: [new TextRun({ text: timelineText(ev), size: 20 })],
+              children: [new TextRun({ text: timelineText(ev, locale), size: 20 })],
             }),
           );
         }
       }
 
       if (detail.decisions.length > 0) {
-        detailChildren.push(para("Решения директора:", { bold: true }));
+        detailChildren.push(
+          para(t(locale, "report.decisionsLabel"), { bold: true }),
+        );
         for (const d of detail.decisions) {
           let text = d.title;
           if (d.type === "choice" && d.selectedOption) {
-            text += ` — выбран вариант «${d.selectedOption}»`;
+            text += ` — ${t(locale, "report.decisionChoice", { option: d.selectedOption })}`;
           } else if (d.type === "approval") {
-            text += ` — ${d.approved ? "согласовано" : "отклонено"}`;
+            text += ` — ${t(locale, d.approved ? "report.decisionApproved" : "report.decisionRejected")}`;
           }
-          if (d.comment) text += `. Комментарий: ${d.comment}`;
+          if (d.comment)
+            text += `. ${t(locale, "report.decisionComment", { comment: d.comment })}`;
           detailChildren.push(
             new Paragraph({
               bullet: { level: 0 },
@@ -353,7 +372,9 @@ export async function buildMonthlyReport(data: ReportData): Promise<Buffer> {
       }
 
       if (detail.photos.length > 0) {
-        detailChildren.push(para("Фото результатов:", { bold: true }));
+        detailChildren.push(
+          para(t(locale, "report.photosLabel"), { bold: true }),
+        );
         const photos = await photoRuns(detail);
         detailChildren.push(...photos);
       }
@@ -378,7 +399,7 @@ export async function buildMonthlyReport(data: ReportData): Promise<Buffer> {
                 alignment: AlignmentType.RIGHT,
                 children: [
                   new TextRun({
-                    text: `DirectorHub · Отчёт ${monthTitle}`,
+                    text: t(locale, "report.headerLine", { period: monthTitle }),
                     size: 16,
                     color: "94a3b8",
                   }),
@@ -393,13 +414,13 @@ export async function buildMonthlyReport(data: ReportData): Promise<Buffer> {
               new Paragraph({
                 alignment: AlignmentType.CENTER,
                 children: [
-                  new TextRun({ text: "Стр. ", size: 16, color: "94a3b8" }),
+                  new TextRun({ text: t(locale, "report.pagePrefix"), size: 16, color: "94a3b8" }),
                   new TextRun({
                     children: [PageNumber.CURRENT],
                     size: 16,
                     color: "94a3b8",
                   }),
-                  new TextRun({ text: " из ", size: 16, color: "94a3b8" }),
+                  new TextRun({ text: t(locale, "report.pageOf"), size: 16, color: "94a3b8" }),
                   new TextRun({
                     children: [PageNumber.TOTAL_PAGES],
                     size: 16,
@@ -413,27 +434,27 @@ export async function buildMonthlyReport(data: ReportData): Promise<Buffer> {
         children: [
           ...titleChildren,
           new Paragraph({ pageBreakBefore: true, children: [] }),
-          heading("Сводка", HeadingLevel.HEADING_1),
-          summaryTable(data),
-          heading("Графики", HeadingLevel.HEADING_1),
+          heading(t(locale, "report.summaryHeading"), HeadingLevel.HEADING_1),
+          summaryTable(data, locale),
+          heading(t(locale, "report.chartsHeading"), HeadingLevel.HEADING_1),
           new Paragraph({
             alignment: AlignmentType.CENTER,
-            children: [new TextRun({ text: "Задачи по статусам", bold: true, size: 20 })],
+            children: [new TextRun({ text: t(locale, "report.chart.byStatus"), bold: true, size: 20 })],
           }),
           chartParagraph(donutPng),
           new Paragraph({
             alignment: AlignmentType.CENTER,
-            children: [new TextRun({ text: "Задачи по проектам", bold: true, size: 20 })],
+            children: [new TextRun({ text: t(locale, "report.chart.byProject"), bold: true, size: 20 })],
           }),
           chartParagraph(barPng),
           new Paragraph({
             alignment: AlignmentType.CENTER,
-            children: [new TextRun({ text: "Завершено по неделям", bold: true, size: 20 })],
+            children: [new TextRun({ text: t(locale, "report.chart.byWeek"), bold: true, size: 20 })],
           }),
           chartParagraph(linePng),
           new Paragraph({ pageBreakBefore: true, children: [] }),
-          heading(`Задачи за период (${monthShort})`, HeadingLevel.HEADING_1),
-          tasksTable(data),
+          heading(t(locale, "report.tasksHeading", { period: monthShort }), HeadingLevel.HEADING_1),
+          tasksTable(data, locale),
           ...detailChildren,
         ],
       },

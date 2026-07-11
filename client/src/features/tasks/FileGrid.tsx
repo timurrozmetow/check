@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { FileText, FileSpreadsheet, Download, X } from "lucide-react";
 import { formatFileSize } from "@/lib/utils";
@@ -15,6 +16,7 @@ function docIcon(mime: string) {
 
 /** Сетка превью изображений (лайтбокс) + строки документов со скачиванием. */
 export function FileGrid({ files }: { files: FileInfo[] }) {
+  const { t } = useTranslation();
   const [lightbox, setLightbox] = useState<FileInfo | null>(null);
   if (files.length === 0) return null;
 
@@ -87,7 +89,7 @@ export function FileGrid({ files }: { files: FileInfo[] }) {
               <button
                 type="button"
                 onClick={() => setLightbox(null)}
-                aria-label="Закрыть"
+                aria-label={t("common.close")}
                 className="absolute right-3 top-3 grid h-9 w-9 place-items-center rounded-full bg-black/60 text-white transition-colors hover:bg-black/80"
               >
                 <X className="h-5 w-5" />

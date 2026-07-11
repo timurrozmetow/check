@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   KeyRound,
@@ -48,12 +49,12 @@ import {
 } from "@/api/hooks";
 import { RequestError } from "@/api/client";
 import { useAuthStore } from "@/stores/auth";
-import { ROLE_LABELS } from "@/lib/labels";
 import { initials } from "@/lib/format";
 import type { Role, User } from "@/api/types";
 import { toast } from "sonner";
+import i18n from "@/i18n";
 
-const ROLE_OPTIONS = Object.entries(ROLE_LABELS) as [Role, string][];
+const ROLE_OPTIONS: Role[] = ["admin", "director", "employee"];
 
 const ROLE_BADGE: Record<Role, "default" | "secondary" | "outline"> = {
   admin: "default",
@@ -66,7 +67,7 @@ function isEmail(value: string): boolean {
 }
 
 function errorMessage(e: unknown): string {
-  return e instanceof RequestError ? e.message : "Что-то пошло не так";
+  return e instanceof RequestError ? e.message : i18n.t("adminUsers.genericError");
 }
 
 /* ---------- Выбор роли ---------- */
@@ -80,15 +81,16 @@ function RoleSelect({
   onChange: (role: Role) => void;
   id?: string;
 }) {
+  const { t } = useTranslation();
   return (
     <Select value={value} onValueChange={(v) => onChange(v as Role)}>
       <SelectTrigger id={id}>
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
-        {ROLE_OPTIONS.map(([role, label]) => (
+        {ROLE_OPTIONS.map((role) => (
           <SelectItem key={role} value={role}>
-            {label}
+            {t(`role.${role}`)}
           </SelectItem>
         ))}
       </SelectContent>
@@ -105,6 +107,7 @@ function CreateUserDialog({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
+  const { t } = useTranslation();
   const create = useCreateUser();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -128,9 +131,9 @@ function CreateUserDialog({
 
   async function submit() {
     const next: typeof errors = {};
-    if (name.trim().length < 2) next.name = "Минимум 2 символа";
-    if (!isEmail(email)) next.email = "Некорректный email";
-    if (password.length < 8) next.password = "Минимум 8 символов";
+    if (name.trim().length < 2) next.name = t("adminUsers.nameMin");
+    if (!isEmail(email)) next.email = t("adminUsers.emailInvalid");
+    if (password.length < 8) next.password = t("adminUsers.passwordHint");
     setErrors(next);
     if (Object.keys(next).length > 0) return;
 
@@ -141,7 +144,7 @@ function CreateUserDialog({
         password,
         role,
       });
-      toast.success("Пользователь создан");
+      toast.success(t("adminUsers.createSuccess"));
       onOpenChange(false);
     } catch (e) {
       toast.error(errorMessage(e));
@@ -152,15 +155,15 @@ function CreateUserDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="rounded-2xl">
         <DialogHeader>
-          <DialogTitle>Новый пользователь</DialogTitle>
+          <DialogTitle>{t("adminUsers.newUser")}</DialogTitle>
           <DialogDescription>
-            Аккаунт создаёт администратор — регистрации нет.
+            {t("adminUsers.createDesc")}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="create-name">Имя</Label>
+            <Label htmlFor="create-name">{t("adminUsers.fieldName")}</Label>
             <Input
               id="create-name"
               value={name}
@@ -168,7 +171,7 @@ function CreateUserDialog({
                 setName(e.target.value);
                 if (errors.name) setErrors((p) => ({ ...p, name: undefined }));
               }}
-              placeholder="Иван Петров"
+              placeholder={t("adminUsers.namePlaceholder")}
               autoFocus
               aria-invalid={!!errors.name}
               className={cn(errors.name && "border-destructive focus-visible:ring-destructive")}
@@ -196,7 +199,7 @@ function CreateUserDialog({
             )}
           </div>
           <div className="space-y-2">
-            <Label htmlFor="create-password">Пароль</Label>
+            <Label htmlFor="create-password">{t("adminUsers.fieldPassword")}</Label>
             <PasswordInput
               id="create-password"
               value={password}
@@ -205,7 +208,7 @@ function CreateUserDialog({
                 if (errors.password)
                   setErrors((p) => ({ ...p, password: undefined }));
               }}
-              placeholder="Минимум 8 символов"
+              placeholder={t("adminUsers.passwordHint")}
               aria-invalid={!!errors.password}
               className={cn(errors.password && "border-destructive focus-visible:ring-destructive")}
             />
@@ -216,7 +219,7 @@ function CreateUserDialog({
             )}
           </div>
           <div className="space-y-2">
-            <Label htmlFor="create-role">Роль</Label>
+            <Label htmlFor="create-role">{t("adminUsers.fieldRole")}</Label>
             <RoleSelect id="create-role" value={role} onChange={setRole} />
           </div>
         </div>
@@ -227,11 +230,11 @@ function CreateUserDialog({
             onClick={() => onOpenChange(false)}
             disabled={create.isPending}
           >
-            Отмена
+            {t("common.cancel")}
           </Button>
           <Button onClick={submit} disabled={create.isPending}>
             {create.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Создать
+            {t("common.create")}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -250,6 +253,7 @@ function EditUserDialog({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
+  const { t } = useTranslation();
   const update = useUpdateUser();
   const [name, setName] = useState(user.name);
   const [email, setEmail] = useState(user.email);
@@ -265,11 +269,11 @@ function EditUserDialog({
 
   async function submit() {
     if (name.trim().length < 2) {
-      toast.error("Введите имя (минимум 2 символа)");
+      toast.error(t("adminUsers.editNameRequired"));
       return;
     }
     if (!isEmail(email)) {
-      toast.error("Некорректный email");
+      toast.error(t("adminUsers.emailInvalid"));
       return;
     }
     try {
@@ -279,7 +283,7 @@ function EditUserDialog({
         email: email.trim(),
         role,
       });
-      toast.success("Изменения сохранены");
+      toast.success(t("adminUsers.editSuccess"));
       onOpenChange(false);
     } catch (e) {
       toast.error(errorMessage(e));
@@ -290,13 +294,13 @@ function EditUserDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="rounded-2xl">
         <DialogHeader>
-          <DialogTitle>Редактировать пользователя</DialogTitle>
-          <DialogDescription>Имя, email и роль аккаунта.</DialogDescription>
+          <DialogTitle>{t("adminUsers.editTitle")}</DialogTitle>
+          <DialogDescription>{t("adminUsers.editDesc")}</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="edit-name">Имя</Label>
+            <Label htmlFor="edit-name">{t("adminUsers.fieldName")}</Label>
             <Input
               id="edit-name"
               value={name}
@@ -314,7 +318,7 @@ function EditUserDialog({
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="edit-role">Роль</Label>
+            <Label htmlFor="edit-role">{t("adminUsers.fieldRole")}</Label>
             <RoleSelect id="edit-role" value={role} onChange={setRole} />
           </div>
         </div>
@@ -325,11 +329,11 @@ function EditUserDialog({
             onClick={() => onOpenChange(false)}
             disabled={update.isPending}
           >
-            Отмена
+            {t("common.cancel")}
           </Button>
           <Button onClick={submit} disabled={update.isPending}>
             {update.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Сохранить
+            {t("common.save")}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -348,6 +352,7 @@ function ResetPasswordDialog({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
+  const { t } = useTranslation();
   const reset = useResetPassword();
   const [password, setPassword] = useState("");
 
@@ -357,12 +362,12 @@ function ResetPasswordDialog({
 
   async function submit() {
     if (password.length < 8) {
-      toast.error("Пароль минимум 8 символов");
+      toast.error(t("adminUsers.resetPasswordMin"));
       return;
     }
     try {
       await reset.mutateAsync({ id: user.id, password });
-      toast.success("Пароль обновлён");
+      toast.success(t("adminUsers.resetSuccess"));
       onOpenChange(false);
     } catch (e) {
       toast.error(errorMessage(e));
@@ -373,19 +378,19 @@ function ResetPasswordDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="rounded-2xl sm:max-w-sm">
         <DialogHeader>
-          <DialogTitle>Сбросить пароль</DialogTitle>
+          <DialogTitle>{t("adminUsers.resetPassword")}</DialogTitle>
           <DialogDescription>
-            Новый пароль для «{user.name}».
+            {t("adminUsers.resetDesc", { name: user.name })}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-2">
-          <Label htmlFor="reset-password">Новый пароль</Label>
+          <Label htmlFor="reset-password">{t("adminUsers.newPassword")}</Label>
           <PasswordInput
             id="reset-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="Минимум 8 символов"
+            placeholder={t("adminUsers.passwordHint")}
             autoFocus
           />
         </div>
@@ -396,11 +401,11 @@ function ResetPasswordDialog({
             onClick={() => onOpenChange(false)}
             disabled={reset.isPending}
           >
-            Отмена
+            {t("common.cancel")}
           </Button>
           <Button onClick={submit} disabled={reset.isPending}>
             {reset.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Сбросить
+            {t("adminUsers.resetBtn")}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -411,6 +416,7 @@ function ResetPasswordDialog({
 /* ---------- Строка пользователя ---------- */
 
 function UserRow({ user, index }: { user: User; index: number }) {
+  const { t } = useTranslation();
   const currentUser = useAuthStore((s) => s.user);
   const update = useUpdateUser();
   const isSelf = currentUser?.id === user.id;
@@ -420,7 +426,9 @@ function UserRow({ user, index }: { user: User; index: number }) {
   async function toggleActive(next: boolean) {
     try {
       await update.mutateAsync({ id: user.id, isActive: next });
-      toast.success(next ? "Пользователь активирован" : "Пользователь отключён");
+      toast.success(
+        next ? t("adminUsers.activatedSuccess") : t("adminUsers.deactivatedSuccess"),
+      );
     } catch (e) {
       toast.error(errorMessage(e));
     }
@@ -448,9 +456,9 @@ function UserRow({ user, index }: { user: User; index: number }) {
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <p className="truncate font-semibold">{user.name}</p>
-            <Badge variant={ROLE_BADGE[user.role]}>{ROLE_LABELS[user.role]}</Badge>
+            <Badge variant={ROLE_BADGE[user.role]}>{t(`role.${user.role}`)}</Badge>
             {isSelf && (
-              <span className="text-xs text-muted-foreground">(это вы)</span>
+              <span className="text-xs text-muted-foreground">{t("adminUsers.isSelf")}</span>
             )}
           </div>
           <p className="truncate text-sm text-muted-foreground">{user.email}</p>
@@ -458,16 +466,16 @@ function UserRow({ user, index }: { user: User; index: number }) {
 
         <div
           className="flex items-center gap-2"
-          title={isSelf ? "Нельзя отключить свой аккаунт" : undefined}
+          title={isSelf ? t("adminUsers.cannotDisableSelf") : undefined}
         >
           <span className="hidden text-xs text-muted-foreground sm:inline">
-            {user.isActive ? "Активен" : "Отключён"}
+            {user.isActive ? t("adminUsers.active") : t("adminUsers.inactive")}
           </span>
           <Switch
             checked={user.isActive}
             onCheckedChange={toggleActive}
             disabled={isSelf || update.isPending}
-            aria-label="Активность пользователя"
+            aria-label={t("adminUsers.activitySwitch")}
           />
         </div>
 
@@ -475,17 +483,17 @@ function UserRow({ user, index }: { user: User; index: number }) {
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="h-9 w-9 shrink-0">
               <MoreHorizontal className="h-4 w-4" />
-              <span className="sr-only">Действия</span>
+              <span className="sr-only">{t("adminUsers.actions")}</span>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem onSelect={() => setEditOpen(true)}>
               <Pencil className="h-4 w-4" />
-              Редактировать
+              {t("common.edit")}
             </DropdownMenuItem>
             <DropdownMenuItem onSelect={() => setResetOpen(true)}>
               <KeyRound className="h-4 w-4" />
-              Сбросить пароль
+              {t("adminUsers.resetPassword")}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -504,6 +512,7 @@ function UserRow({ user, index }: { user: User; index: number }) {
 /* ---------- Страница ---------- */
 
 export function AdminUsers() {
+  const { t } = useTranslation();
   const { data: users, isLoading } = useUsers();
   const [createOpen, setCreateOpen] = useState(false);
 
@@ -511,14 +520,14 @@ export function AdminUsers() {
     <div className="mx-auto max-w-6xl space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl font-bold">Пользователи</h1>
+          <h1 className="text-xl font-bold">{t("adminUsers.title")}</h1>
           <p className="text-sm text-muted-foreground">
-            Создавайте аккаунты, назначайте роли и управляйте доступом.
+            {t("adminUsers.subtitle")}
           </p>
         </div>
         <Button onClick={() => setCreateOpen(true)}>
           <UserPlus className="mr-2 h-4 w-4" />
-          Новый пользователь
+          {t("adminUsers.newUser")}
         </Button>
       </div>
 
@@ -533,12 +542,12 @@ export function AdminUsers() {
       ) : (users?.length ?? 0) === 0 ? (
         <EmptyState
           icon={Users}
-          title="Пользователей пока нет"
-          description="Создайте первый аккаунт кнопкой «Новый пользователь»."
+          title={t("adminUsers.emptyTitle")}
+          description={t("adminUsers.emptyDesc")}
           action={
             <Button onClick={() => setCreateOpen(true)}>
               <UserPlus className="mr-2 h-4 w-4" />
-              Новый пользователь
+              {t("adminUsers.newUser")}
             </Button>
           }
         />

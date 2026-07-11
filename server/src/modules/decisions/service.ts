@@ -133,7 +133,7 @@ export async function listDecisions(
 
 export async function getDecision(id: number): Promise<DecisionRequestDetail> {
   const [detail] = await fetchDetails(db, eq(decisionRequests.id, id));
-  if (!detail) throw notFound("Запрос решения не найден");
+  if (!detail) throw notFound("error.decisionNotFound");
   return detail;
 }
 
@@ -146,12 +146,12 @@ export async function createDecision(
     .from(tasks)
     .where(eq(tasks.id, input.taskId))
     .limit(1);
-  if (!task) throw notFound("Задача не найдена");
+  if (!task) throw notFound("error.taskNotFound");
   // Нельзя запрашивать решение по закрытой задаче — иначе она вернётся в
   // awaiting_decision с живым completedAt/progress=100 (противоречивое состояние).
   if (task.status === "completed" || task.status === "cancelled") {
     throw badRequest(
-      "Нельзя запросить решение по завершённой или отменённой задаче",
+      "error.taskClosed",
       "TASK_CLOSED",
     );
   }
@@ -161,7 +161,7 @@ export async function createDecision(
     (!input.options || input.options.length < 2)
   ) {
     throw badRequest(
-      "Для запроса с выбором нужно минимум два варианта",
+      "error.needOptions",
       "NEED_OPTIONS",
     );
   }
@@ -232,11 +232,11 @@ export async function decideDecision(
     .innerJoin(tasks, eq(decisionRequests.taskId, tasks.id))
     .where(eq(decisionRequests.id, id))
     .limit(1);
-  if (!row) throw notFound("Запрос решения не найден");
+  if (!row) throw notFound("error.decisionNotFound");
 
   const { request, taskStatus } = row;
   if (request.status === "decided") {
-    throw badRequest("Решение уже принято", "ALREADY_DECIDED");
+    throw badRequest("error.alreadyDecided", "ALREADY_DECIDED");
   }
 
   let selectedOption: DecisionOptionRow | undefined;
@@ -244,7 +244,7 @@ export async function decideDecision(
 
   if (request.type === "choice") {
     if (input.optionId === undefined) {
-      throw badRequest("Не выбран вариант", "INVALID_OPTION");
+      throw badRequest("error.optionNotSelected", "INVALID_OPTION");
     }
     const options = await db
       .select()
@@ -253,13 +253,13 @@ export async function decideDecision(
     selectedOption = options.find((o) => o.id === input.optionId);
     if (!selectedOption) {
       throw badRequest(
-        "Вариант не относится к этому запросу",
+        "error.optionNotInRequest",
         "INVALID_OPTION",
       );
     }
   } else {
     if (typeof input.approved !== "boolean") {
-      throw badRequest("Укажите решение: согласовать или отклонить");
+      throw badRequest("error.decisionRequired");
     }
     approvedValue = input.approved;
   }

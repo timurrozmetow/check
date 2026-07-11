@@ -1,4 +1,5 @@
 import { Moon, Sun } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { useThemeStore } from "@/stores/theme";
 import {
   Tooltip,
@@ -8,6 +9,7 @@ import {
 
 /** Единый переключатель светлой/тёмной темы. */
 export function ThemeToggle() {
+  const { t } = useTranslation();
   const theme = useThemeStore((s) => s.theme);
   const toggle = useThemeStore((s) => s.toggle);
   const isDark = theme === "dark";
@@ -18,7 +20,7 @@ export function ThemeToggle() {
         <button
           type="button"
           onClick={toggle}
-          aria-label={isDark ? "Включить светлую тему" : "Включить тёмную тему"}
+          aria-label={isDark ? t("themeToggle.enableLight") : t("themeToggle.enableDark")}
           className="grid h-10 w-10 place-items-center rounded-[10px] border border-border bg-card text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
         >
           {isDark ? (
@@ -29,7 +31,7 @@ export function ThemeToggle() {
         </button>
       </TooltipTrigger>
       <TooltipContent>
-        {isDark ? "Светлая тема" : "Тёмная тема"}
+        {isDark ? t("themeToggle.light") : t("themeToggle.dark")}
       </TooltipContent>
     </Tooltip>
   );

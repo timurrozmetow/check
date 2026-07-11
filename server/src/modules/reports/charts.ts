@@ -1,4 +1,5 @@
 import sharp from "sharp";
+import { t, type Locale } from "../../shared/i18n";
 
 const FONT = 'font-family="Arial, sans-serif"';
 const PALETTE = [
@@ -22,24 +23,30 @@ async function svgToPng(svg: string): Promise<Buffer> {
   return sharp(Buffer.from(svg)).png().toBuffer();
 }
 
-function emptyChart(width: number, height: number, title: string): string {
+function emptyChart(
+  width: number,
+  height: number,
+  title: string,
+  locale: Locale,
+): string {
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
     <rect width="${width}" height="${height}" fill="#ffffff"/>
     <text x="${width / 2}" y="30" text-anchor="middle" font-size="18" font-weight="bold" fill="#1e293b" ${FONT}>${esc(title)}</text>
-    <text x="${width / 2}" y="${height / 2}" text-anchor="middle" font-size="16" fill="#94a3b8" ${FONT}>Нет данных</text>
+    <text x="${width / 2}" y="${height / 2}" text-anchor="middle" font-size="16" fill="#94a3b8" ${FONT}>${esc(t(locale, "report.chart.noData"))}</text>
   </svg>`;
 }
 
 /** Donut «Задачи по статусам». */
 export async function statusDonutPng(
   data: { label: string; value: number; color: string }[],
+  locale: Locale = "ru",
 ): Promise<Buffer> {
   const width = 800;
   const height = 400;
-  const title = "Задачи по статусам";
+  const title = t(locale, "report.chart.byStatus");
   const items = data.filter((d) => d.value > 0);
   const total = items.reduce((a, d) => a + d.value, 0);
-  if (total === 0) return svgToPng(emptyChart(width, height, title));
+  if (total === 0) return svgToPng(emptyChart(width, height, title, locale));
 
   const cx = 240;
   const cy = 220;
@@ -89,7 +96,7 @@ export async function statusDonutPng(
     <text x="40" y="36" font-size="20" font-weight="bold" fill="#1e293b" ${FONT}>${esc(title)}</text>
     ${segments.join("\n")}
     <text x="${cx}" y="${cy - 4}" text-anchor="middle" font-size="30" font-weight="bold" fill="#1e293b" ${FONT}>${total}</text>
-    <text x="${cx}" y="${cy + 20}" text-anchor="middle" font-size="14" fill="#64748b" ${FONT}>всего</text>
+    <text x="${cx}" y="${cy + 20}" text-anchor="middle" font-size="14" fill="#64748b" ${FONT}>${esc(t(locale, "report.chart.total"))}</text>
     ${legend}
   </svg>`;
   return svgToPng(svg);
@@ -98,11 +105,12 @@ export async function statusDonutPng(
 /** Bar «Задачи по проектам». */
 export async function projectsBarPng(
   data: { name: string; count: number }[],
+  locale: Locale = "ru",
 ): Promise<Buffer> {
   const width = 800;
   const height = 400;
-  const title = "Задачи по проектам";
-  if (data.length === 0) return svgToPng(emptyChart(width, height, title));
+  const title = t(locale, "report.chart.byProject");
+  if (data.length === 0) return svgToPng(emptyChart(width, height, title, locale));
 
   const marginLeft = 50;
   const marginRight = 40;
@@ -146,12 +154,13 @@ export async function projectsBarPng(
 /** Line «Завершено по неделям месяца». */
 export async function completedLinePng(
   weeks: number[],
+  locale: Locale = "ru",
 ): Promise<Buffer> {
   const width = 800;
   const height = 400;
-  const title = "Завершено задач по неделям";
+  const title = t(locale, "report.chart.byWeekFull");
   if (weeks.length === 0 || weeks.every((w) => w === 0)) {
-    return svgToPng(emptyChart(width, height, title));
+    return svgToPng(emptyChart(width, height, title, locale));
   }
 
   const marginLeft = 50;
@@ -176,7 +185,7 @@ export async function completedLinePng(
       (p) =>
         `<circle cx="${p.x}" cy="${p.y}" r="5" fill="#6366f1"/>
        <text x="${p.x}" y="${p.y - 12}" text-anchor="middle" font-size="14" font-weight="bold" fill="#1e293b" ${FONT}>${p.v}</text>
-       <text x="${p.x}" y="${baseY + 22}" text-anchor="middle" font-size="13" fill="#475569" ${FONT}>${p.i + 1}-я нед.</text>`,
+       <text x="${p.x}" y="${baseY + 22}" text-anchor="middle" font-size="13" fill="#475569" ${FONT}>${esc(t(locale, "report.chart.weekShort", { n: p.i + 1 }))}</text>`,
     )
     .join("\n");
 

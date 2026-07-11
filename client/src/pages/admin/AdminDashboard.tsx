@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   AlertTriangle,
@@ -19,6 +20,7 @@ import { useDecisions, useModeration, useProjects, useTasks } from "@/api/hooks"
 import { isOverdue } from "@/lib/format";
 
 export function AdminDashboard() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { data: tasks, isLoading } = useTasks();
   const { data: projects } = useProjects();
@@ -77,9 +79,9 @@ export function AdminDashboard() {
     <div className="mx-auto max-w-6xl space-y-8">
       {/* KPI */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <KpiCard label="Всего задач" value={kpi.total} icon={ListTodo} index={0} />
+        <KpiCard label={t("adminDashboard.kpiTotal")} value={kpi.total} icon={ListTodo} index={0} />
         <KpiCard
-          label="На модерации"
+          label={t("adminDashboard.kpiModeration")}
           value={kpi.moderation}
           icon={ShieldCheck}
           variant="accent"
@@ -87,14 +89,14 @@ export function AdminDashboard() {
           index={1}
         />
         <KpiCard
-          label="Ждут решения директора"
+          label={t("adminDashboard.kpiAwaiting")}
           value={kpi.awaiting}
           icon={Gavel}
           onClick={() => navigate("/admin/decisions")}
           index={2}
         />
         <KpiCard
-          label="Просрочено"
+          label={t("adminDashboard.kpiOverdue")}
           value={kpi.overdue}
           icon={AlertTriangle}
           variant="danger"
@@ -107,7 +109,7 @@ export function AdminDashboard() {
         <section className="space-y-4">
           <div className="flex items-center gap-2">
             <FolderKanban className="h-5 w-5 text-primary" />
-            <h2 className="text-lg font-bold">Проекты</h2>
+            <h2 className="text-lg font-bold">{t("adminDashboard.projectsTitle")}</h2>
           </div>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {projects?.map((p, i) => (
@@ -122,7 +124,10 @@ export function AdminDashboard() {
                 <div className="min-w-0 flex-1">
                   <p className="truncate font-semibold">{p.name}</p>
                   <p className="text-sm text-muted-foreground">
-                    {p.activeTaskCount} активных · {p.totalTaskCount} всего
+                    {t("adminDashboard.projectTasks", {
+                      active: p.activeTaskCount,
+                      total: p.totalTaskCount,
+                    })}
                   </p>
                 </div>
               </motion.div>
@@ -139,7 +144,7 @@ export function AdminDashboard() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <ListTodo className="h-5 w-5 text-primary" />
-            <h2 className="text-lg font-bold">Последние задачи</h2>
+            <h2 className="text-lg font-bold">{t("adminDashboard.recentTasksTitle")}</h2>
           </div>
           {sortedTasks.length > 6 && (
             <Button
@@ -147,7 +152,7 @@ export function AdminDashboard() {
               size="sm"
               onClick={() => setShowAll((v) => !v)}
             >
-              {showAll ? "Свернуть" : "Показать все"}
+              {showAll ? t("adminDashboard.collapse") : t("adminDashboard.showAll")}
             </Button>
           )}
         </div>
@@ -155,8 +160,8 @@ export function AdminDashboard() {
         {visibleTasks.length === 0 ? (
           <EmptyState
             icon={ListTodo}
-            title="Задач пока нет"
-            description="Создайте первую задачу, чтобы начать работу."
+            title={t("adminDashboard.emptyTitle")}
+            description={t("adminDashboard.emptyDescription")}
           />
         ) : (
           <motion.div layout className="grid gap-4 md:grid-cols-2">

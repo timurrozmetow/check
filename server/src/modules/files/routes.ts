@@ -14,7 +14,7 @@ export default async function filesRoutes(app: FastifyInstance) {
   // POST /api/v1/files — multipart: сначала поля entityType/entityId, затем файлы
   app.post("/", { preHandler: [app.authenticate] }, async (req) => {
     if (!req.isMultipart()) {
-      throw badRequest("Ожидается multipart/form-data");
+      throw badRequest("error.multipartExpected");
     }
 
     let entityType: FileEntityType | undefined;
@@ -28,7 +28,7 @@ export default async function filesRoutes(app: FastifyInstance) {
         if (part.fieldname === "entityType") {
           const value = String(part.value);
           if (!FILE_ENTITY_TYPES.includes(value as FileEntityType)) {
-            throw badRequest("Недопустимый тип сущности");
+            throw badRequest("error.invalidEntityType");
           }
           entityType = value as FileEntityType;
         } else if (part.fieldname === "entityId") {
@@ -38,9 +38,7 @@ export default async function filesRoutes(app: FastifyInstance) {
         // файл
         if (entityType === undefined || !entityId) {
           part.file.resume();
-          throw badRequest(
-            "Сначала должны идти поля entityType и entityId",
-          );
+          throw badRequest("error.fieldsBeforeFiles");
         }
         if (!authChecked) {
           await assertCanAttach(
@@ -56,10 +54,10 @@ export default async function filesRoutes(app: FastifyInstance) {
     }
 
     if (entityType === undefined || !entityId) {
-      throw badRequest("Не переданы entityType и entityId");
+      throw badRequest("error.entityFieldsMissing");
     }
     if (saved.length === 0) {
-      throw badRequest("Не переданы файлы");
+      throw badRequest("error.filesMissing");
     }
 
     const result = await saveFiles(

@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   AlertTriangle,
@@ -20,6 +21,7 @@ import { ACTIVE_STATUSES } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
 export function DirectorDashboard() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { data: tasks, isLoading } = useTasks();
   const { data: projects } = useProjects();
@@ -63,16 +65,16 @@ export function DirectorDashboard() {
     <div className="mx-auto max-w-6xl space-y-8">
       {/* KPI */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <KpiCard label="Активных задач" value={kpi.active} icon={ListTodo} index={0} />
+        <KpiCard label={t("directorDashboard.kpiActive")} value={kpi.active} icon={ListTodo} index={0} />
         <KpiCard
-          label="Завершено за месяц"
+          label={t("directorDashboard.kpiCompletedThisMonth")}
           value={kpi.completedThisMonth}
           icon={CheckCircle2}
           variant="success"
           index={1}
         />
         <KpiCard
-          label="Ждут решения"
+          label={t("directorDashboard.kpiAwaiting")}
           value={kpi.awaiting}
           icon={Gavel}
           variant="accent"
@@ -80,7 +82,7 @@ export function DirectorDashboard() {
           index={2}
         />
         <KpiCard
-          label="Просрочено"
+          label={t("directorDashboard.kpiOverdue")}
           value={kpi.overdue}
           icon={AlertTriangle}
           variant="danger"
@@ -93,7 +95,7 @@ export function DirectorDashboard() {
         <section className="space-y-4">
           <div className="flex items-center gap-2">
             <Gavel className="h-5 w-5 text-primary" />
-            <h2 className="text-lg font-bold">Ждут вашего решения</h2>
+            <h2 className="text-lg font-bold">{t("directorDashboard.awaitingDecisionTitle")}</h2>
             <span className="grid h-6 min-w-6 place-items-center rounded-full bg-primary px-2 text-xs font-bold text-primary-foreground">
               {pending?.length}
             </span>
@@ -109,7 +111,7 @@ export function DirectorDashboard() {
       {/* Сводный прогресс проектов */}
       {(projects?.length ?? 0) > 0 && (
         <section className="space-y-4">
-          <h2 className="text-lg font-bold">Проекты</h2>
+          <h2 className="text-lg font-bold">{t("directorDashboard.projectsTitle")}</h2>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {projects?.map((p) => (
               <button
@@ -129,7 +131,10 @@ export function DirectorDashboard() {
                 <div className="min-w-0 flex-1">
                   <p className="truncate font-semibold">{p.name}</p>
                   <p className="text-sm text-muted-foreground">
-                    {p.activeTaskCount} активных · {p.totalTaskCount} всего
+                    {t("directorDashboard.projectTaskCounts", {
+                      active: p.activeTaskCount,
+                      total: p.totalTaskCount,
+                    })}
                   </p>
                 </div>
               </button>
@@ -142,7 +147,8 @@ export function DirectorDashboard() {
       <section className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-bold">
-            Задачи{projectFilter ? " · выбранный проект" : ""}
+            {t("directorDashboard.tasksTitle")}
+            {projectFilter ? t("directorDashboard.tasksSelectedSuffix") : ""}
           </h2>
           {projectFilter && (
             <Button
@@ -150,7 +156,7 @@ export function DirectorDashboard() {
               size="sm"
               onClick={() => setProjectFilter(null)}
             >
-              Показать все
+              {t("directorDashboard.showAll")}
             </Button>
           )}
         </div>
@@ -162,7 +168,7 @@ export function DirectorDashboard() {
             ))}
           </div>
         ) : visibleTasks.length === 0 ? (
-          <EmptyState icon={ListTodo} title="Задач пока нет" />
+          <EmptyState icon={ListTodo} title={t("directorDashboard.emptyTasks")} />
         ) : (
           <motion.div layout className="grid gap-4 md:grid-cols-2">
             <AnimatePresence mode="popLayout">

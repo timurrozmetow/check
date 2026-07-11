@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { ImagePlus, Loader2, Plus, Trash2 } from "lucide-react";
 import {
   Dialog,
@@ -37,6 +38,7 @@ export function CreateDecisionDialog({
   taskId: number;
   trigger: ReactNode;
 }) {
+  const { t } = useTranslation();
   const create = useCreateDecision();
   const [open, setOpen] = useState(false);
   const [type, setType] = useState<"choice" | "approval">("choice");
@@ -60,13 +62,13 @@ export function CreateDecisionDialog({
 
   async function submit() {
     if (title.trim().length < 1) {
-      toast.error("Укажите заголовок");
+      toast.error(t("createDecisionDialog.titleRequired"));
       return;
     }
     if (type === "choice") {
       const filled = options.filter((o) => o.title.trim().length > 0);
       if (filled.length < 2) {
-        toast.error("Нужно минимум два варианта");
+        toast.error(t("createDecisionDialog.minTwoOptions"));
         return;
       }
     }
@@ -95,7 +97,7 @@ export function CreateDecisionDialog({
             filled[i]?.files.length
               ? uploadFiles("decision_option", opt.id, filled[i]!.files).catch(
                   () => {
-                    toast.error("Не все файлы удалось загрузить");
+                    toast.error(t("createDecisionDialog.uploadPartialError"));
                   },
                 )
               : Promise.resolve([]),
@@ -103,11 +105,11 @@ export function CreateDecisionDialog({
         );
       }
       // Успех создания запроса → закрываем и очищаем.
-      toast.success("Запрос решения отправлен директору");
+      toast.success(t("createDecisionDialog.success"));
       reset();
       setOpen(false);
     } catch (e) {
-      toast.error(e instanceof RequestError ? e.message : "Ошибка");
+      toast.error(e instanceof RequestError ? e.message : t("common.error"));
     } finally {
       setBusy(false);
     }
@@ -118,32 +120,35 @@ export function CreateDecisionDialog({
       <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent className="max-h-[85vh] max-w-2xl overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Запрос решения директора</DialogTitle>
+          <DialogTitle>{t("createDecisionDialog.title")}</DialogTitle>
         </DialogHeader>
 
         <Tabs value={type} onValueChange={(v) => setType(v as typeof type)}>
           <TabsList className="w-full">
             <TabsTrigger value="choice" className="flex-1">
-              Выбор варианта
+              {t("createDecisionDialog.typeChoice")}
             </TabsTrigger>
             <TabsTrigger value="approval" className="flex-1">
-              Согласование
+              {t("createDecisionDialog.typeApproval")}
             </TabsTrigger>
           </TabsList>
 
           <div className="mt-4 space-y-4">
             <div className="space-y-1.5">
-              <Label>Заголовок</Label>
+              <Label>{t("createDecisionDialog.fieldTitle")}</Label>
               <Input
-                placeholder="Например: Выбор кофемашины"
+                placeholder={t("createDecisionDialog.titlePlaceholder")}
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
               />
             </div>
             <div className="space-y-1.5">
-              <Label>Описание (необязательно)</Label>
+              <Label>
+                {t("createDecisionDialog.fieldDescription")} (
+                {t("common.optional")})
+              </Label>
               <Textarea
-                placeholder="Поясните суть вопроса…"
+                placeholder={t("createDecisionDialog.descriptionPlaceholder")}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 rows={2}
@@ -158,12 +163,12 @@ export function CreateDecisionDialog({
                 >
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-semibold">
-                      Вариант {i + 1}
+                      {t("createDecisionDialog.optionLabel", { n: i + 1 })}
                     </span>
                     {options.length > 2 && (
                       <button
                         type="button"
-                        aria-label="Удалить вариант"
+                        aria-label={t("createDecisionDialog.deleteOption")}
                         onClick={() =>
                           setOptions((p) => p.filter((_, j) => j !== i))
                         }
@@ -174,7 +179,7 @@ export function CreateDecisionDialog({
                     )}
                   </div>
                   <Input
-                    placeholder="Название варианта"
+                    placeholder={t("createDecisionDialog.optionTitlePlaceholder")}
                     value={opt.title}
                     onChange={(e) =>
                       setOptions((p) =>
@@ -185,7 +190,9 @@ export function CreateDecisionDialog({
                     }
                   />
                   <Input
-                    placeholder="Детали: цена, срок, гарантия…"
+                    placeholder={t(
+                      "createDecisionDialog.optionDescriptionPlaceholder",
+                    )}
                     value={opt.description}
                     onChange={(e) =>
                       setOptions((p) =>
@@ -198,8 +205,10 @@ export function CreateDecisionDialog({
                   <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-border bg-secondary px-3 py-1.5 text-xs font-medium transition-colors hover:bg-secondary/70">
                     <ImagePlus className="h-3.5 w-3.5" />
                     {opt.files.length > 0
-                      ? `Фото выбрано: ${opt.files.length}`
-                      : "Прикрепить фото"}
+                      ? t("createDecisionDialog.photoSelected", {
+                          count: opt.files.length,
+                        })
+                      : t("createDecisionDialog.attachPhoto")}
                     <input
                       type="file"
                       multiple
@@ -234,14 +243,14 @@ export function CreateDecisionDialog({
                   }
                 >
                   <Plus className="mr-2 h-4 w-4" />
-                  Добавить вариант
+                  {t("createDecisionDialog.addOption")}
                 </Button>
               )}
             </TabsContent>
 
             <TabsContent value="approval">
               <p className="rounded-xl bg-secondary/60 p-3 text-sm text-muted-foreground">
-                Директор увидит две кнопки: «Согласовать» и «Отклонить».
+                {t("createDecisionDialog.approvalHint")}
               </p>
             </TabsContent>
           </div>
@@ -249,11 +258,11 @@ export function CreateDecisionDialog({
 
         <div className="mt-4 flex justify-end gap-2">
           <Button variant="ghost" onClick={() => setOpen(false)}>
-            Отмена
+            {t("common.cancel")}
           </Button>
           <Button onClick={submit} disabled={busy}>
             {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Отправить директору
+            {t("createDecisionDialog.submit")}
           </Button>
         </div>
       </DialogContent>

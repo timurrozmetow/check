@@ -10,9 +10,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { useChangeProgress, useChangeStatus } from "@/api/hooks";
 import { ALL_STATUSES } from "@/lib/constants";
-import { TASK_STATUS_LABELS } from "@/lib/labels";
 import { RequestError } from "@/api/client";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import type { TaskDetail, TaskStatus } from "@/api/types";
 
 /**
@@ -21,6 +21,7 @@ import type { TaskDetail, TaskStatus } from "@/api/types";
  * абсолютным значением с дебаунсом — без гонки при частых кликах.
  */
 export function AdminTaskControls({ task }: { task: TaskDetail }) {
+  const { t } = useTranslation();
   const changeStatus = useChangeStatus();
   const changeProgress = useChangeProgress();
 
@@ -50,7 +51,7 @@ export function AdminTaskControls({ task }: { task: TaskDetail }) {
         {
           onError: (e) =>
             toast.error(
-              e instanceof RequestError ? e.message : "Не удалось сохранить",
+              e instanceof RequestError ? e.message : t("adminTaskControls.saveError"),
             ),
         },
       );
@@ -61,7 +62,7 @@ export function AdminTaskControls({ task }: { task: TaskDetail }) {
     <div className="flex flex-col gap-5 rounded-2xl border border-border bg-card p-5 shadow-card">
       <div className="flex items-center gap-3">
         <span className="w-24 text-sm font-medium text-muted-foreground">
-          Статус
+          {t("adminTaskControls.status")}
         </span>
         <Select
           value={task.status}
@@ -75,7 +76,7 @@ export function AdminTaskControls({ task }: { task: TaskDetail }) {
           <SelectContent>
             {ALL_STATUSES.map((s) => (
               <SelectItem key={s} value={s}>
-                {TASK_STATUS_LABELS[s]}
+                {t(`taskStatus.${s}`)}
               </SelectItem>
             ))}
           </SelectContent>
@@ -84,14 +85,14 @@ export function AdminTaskControls({ task }: { task: TaskDetail }) {
 
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
         <span className="w-24 shrink-0 text-sm font-medium text-muted-foreground">
-          Готовность
+          {t("adminTaskControls.progress")}
         </span>
         <div className="flex flex-1 items-center gap-3">
           <Button
             variant="outline"
             size="icon"
             className="h-9 w-9 shrink-0"
-            aria-label="Уменьшить на 5%"
+            aria-label={t("adminTaskControls.decrease")}
             onClick={() => commit(progress - 5)}
             disabled={progress <= 0}
           >
@@ -105,7 +106,7 @@ export function AdminTaskControls({ task }: { task: TaskDetail }) {
             step={5}
             value={progress}
             onChange={(e) => commit(Number(e.target.value))}
-            aria-label="Готовность задачи в процентах"
+            aria-label={t("adminTaskControls.progressSlider")}
             className="h-2 flex-1 cursor-pointer appearance-none rounded-full bg-muted accent-primary"
           />
 
@@ -113,7 +114,7 @@ export function AdminTaskControls({ task }: { task: TaskDetail }) {
             variant="outline"
             size="icon"
             className="h-9 w-9 shrink-0"
-            aria-label="Увеличить на 5%"
+            aria-label={t("adminTaskControls.increase")}
             onClick={() => commit(progress + 5)}
             disabled={progress >= 100}
           >

@@ -1,7 +1,7 @@
 import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 import { Card } from "@/components/ui/card";
-import { TASK_STATUS_LABELS } from "@/lib/labels";
 import type { TaskListItem, TaskStatus } from "@/api/types";
 
 const STATUS_COLORS: Record<TaskStatus, string> = {
@@ -16,6 +16,7 @@ const STATUS_COLORS: Record<TaskStatus, string> = {
 
 /** Кольцевая диаграмма распределения задач по статусам. */
 function StatusDonut({ tasks }: { tasks: TaskListItem[] }) {
+  const { t } = useTranslation();
   const segments = useMemo(() => {
     const counts = new Map<TaskStatus, number>();
     for (const t of tasks) counts.set(t.status, (counts.get(t.status) ?? 0) + 1);
@@ -71,7 +72,9 @@ function StatusDonut({ tasks }: { tasks: TaskListItem[] }) {
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center rotate-0">
           <span className="text-2xl font-extrabold tabular">{total}</span>
-          <span className="text-xs text-muted-foreground">задач</span>
+          <span className="text-xs text-muted-foreground">
+            {t("dashboardAnalytics.tasksLabel", { count: total })}
+          </span>
         </div>
       </div>
       <div className="flex flex-col gap-1.5">
@@ -82,7 +85,7 @@ function StatusDonut({ tasks }: { tasks: TaskListItem[] }) {
               style={{ backgroundColor: STATUS_COLORS[s.status] }}
             />
             <span className="text-muted-foreground">
-              {TASK_STATUS_LABELS[s.status]}
+              {t(`taskStatus.${s.status}`)}
             </span>
             <span className="font-semibold tabular">{s.value}</span>
           </div>
@@ -155,20 +158,21 @@ function ProjectBars({ tasks }: { tasks: TaskListItem[] }) {
 
 /** Секция аналитики для дашборда админа. */
 export function DashboardAnalytics({ tasks }: { tasks: TaskListItem[] }) {
+  const { t } = useTranslation();
   if (tasks.length === 0) return null;
   return (
     <section className="space-y-4">
-      <h2 className="text-lg font-bold">Аналитика</h2>
+      <h2 className="text-lg font-bold">{t("dashboardAnalytics.title")}</h2>
       <div className="grid gap-4 lg:grid-cols-2">
         <Card className="p-5 shadow-card">
           <h3 className="mb-4 text-sm font-semibold text-muted-foreground">
-            Задачи по статусам
+            {t("dashboardAnalytics.byStatus")}
           </h3>
           <StatusDonut tasks={tasks} />
         </Card>
         <Card className="p-5 shadow-card">
           <h3 className="mb-4 text-sm font-semibold text-muted-foreground">
-            Задачи по проектам
+            {t("dashboardAnalytics.byProject")}
           </h3>
           <ProjectBars tasks={tasks} />
         </Card>

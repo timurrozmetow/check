@@ -1,26 +1,37 @@
+import { t, type Locale } from "./i18n";
+
+type Params = Record<string, string | number>;
+
 /**
- * Ошибка приложения с машинным кодом. Глобальный error handler
- * превращает её в ответ вида { error: { code, message } }.
+ * Ошибка приложения с машинным кодом и ключом локализации.
+ * Глобальный error handler рендерит сообщение в локали запроса:
+ * { error: { code, message } }. Если key не найден в каталоге —
+ * он отображается как есть (обратная совместимость со старым текстом).
  */
 export class AppError extends Error {
   constructor(
     public readonly statusCode: number,
     public readonly code: string,
-    message: string,
+    public readonly key: string,
+    public readonly params?: Params,
   ) {
-    super(message);
+    super(t("ru", key, params)); // для логов
     this.name = "AppError";
+  }
+
+  localized(locale: Locale): string {
+    return t(locale, this.key, this.params);
   }
 }
 
-export const notFound = (message = "Не найдено") =>
-  new AppError(404, "NOT_FOUND", message);
+export const notFound = (key = "error.notFound", params?: Params) =>
+  new AppError(404, "NOT_FOUND", key, params);
 
-export const forbidden = (message = "Недостаточно прав") =>
-  new AppError(403, "FORBIDDEN", message);
+export const forbidden = (key = "error.forbidden", params?: Params) =>
+  new AppError(403, "FORBIDDEN", key, params);
 
-export const badRequest = (message: string, code = "BAD_REQUEST") =>
-  new AppError(400, code, message);
+export const badRequest = (key: string, code = "BAD_REQUEST", params?: Params) =>
+  new AppError(400, code, key, params);
 
-export const unauthorized = (message = "Требуется авторизация") =>
-  new AppError(401, "UNAUTHORIZED", message);
+export const unauthorized = (key = "error.unauthorized", params?: Params) =>
+  new AppError(401, "UNAUTHORIZED", key, params);

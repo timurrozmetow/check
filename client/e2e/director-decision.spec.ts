@@ -5,6 +5,7 @@ import { expect, test } from "@playwright/test";
  * Требует свежий seed (запрос «Выбор кофемашины» в статусе pending).
  */
 test("директор видит блок «Ждут вашего решения»", async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem("lang", "ru"));
   await page.goto("/login");
   await page.getByLabel("Email").fill("director@directorhub.ru");
   await page.getByLabel("Пароль", { exact: true }).fill("director12345");

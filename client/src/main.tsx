@@ -10,6 +10,7 @@ import { Toaster, toast } from "sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { RequestError } from "@/api/client";
 import App from "./App";
+import "@/i18n";
 import "./index.css";
 
 const queryClient = new QueryClient({

@@ -1,11 +1,9 @@
+import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import {
   TASK_PRIORITY_BADGE,
-  TASK_PRIORITY_LABELS,
   TASK_STATUS_BADGE,
-  TASK_STATUS_LABELS,
   UPDATE_STATUS_BADGE,
-  UPDATE_STATUS_LABELS,
 } from "@/lib/labels";
 import type { TaskPriority, TaskStatus, UpdateStatus } from "@/api/types";
 
@@ -19,9 +17,10 @@ export function StatusBadge({
   status: TaskStatus;
   className?: string;
 }) {
+  const { t } = useTranslation();
   return (
     <span className={cn(base, TASK_STATUS_BADGE[status], className)}>
-      {TASK_STATUS_LABELS[status]}
+      {t(`taskStatus.${status}`)}
     </span>
   );
 }
@@ -33,9 +32,10 @@ export function PriorityBadge({
   priority: TaskPriority;
   className?: string;
 }) {
+  const { t } = useTranslation();
   return (
     <span className={cn(base, TASK_PRIORITY_BADGE[priority], className)}>
-      {TASK_PRIORITY_LABELS[priority]}
+      {t(`taskPriority.${priority}`)}
     </span>
   );
 }
@@ -47,9 +47,10 @@ export function UpdateStatusBadge({
   status: UpdateStatus;
   className?: string;
 }) {
+  const { t } = useTranslation();
   return (
     <span className={cn(base, UPDATE_STATUS_BADGE[status], className)}>
-      {UPDATE_STATUS_LABELS[status]}
+      {t(`updateStatus.${status}`)}
     </span>
   );
 }

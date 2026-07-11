@@ -5,16 +5,18 @@ import { EmptyState } from "@/components/common/EmptyState";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTasks } from "@/api/hooks";
+import { useTranslation } from "react-i18next";
 
 export function EmployeeTasks() {
+  const { t } = useTranslation();
   const { data: tasks, isLoading, isError, refetch } = useTasks();
 
   return (
     <div className="mx-auto max-w-5xl space-y-5">
       <div>
-        <h1 className="text-xl font-bold">Мои задачи</h1>
+        <h1 className="text-xl font-bold">{t("employeeTasks.title")}</h1>
         <p className="text-sm text-muted-foreground">
-          Задачи, назначенные вам. Нажмите, чтобы открыть и отправить обновление.
+          {t("employeeTasks.subtitle")}
         </p>
       </div>
 
@@ -27,19 +29,19 @@ export function EmployeeTasks() {
       ) : isError ? (
         <EmptyState
           icon={AlertTriangle}
-          title="Не удалось загрузить задачи"
-          description="Проверьте соединение и попробуйте снова."
+          title={t("employeeTasks.loadErrorTitle")}
+          description={t("employeeTasks.loadErrorDesc")}
           action={
             <Button variant="outline" onClick={() => refetch()}>
-              Повторить
+              {t("common.retry")}
             </Button>
           }
         />
       ) : (tasks?.length ?? 0) === 0 ? (
         <EmptyState
           icon={CheckSquare}
-          title="Задач пока нет"
-          description="Когда администратор назначит вам задачу, она появится здесь."
+          title={t("employeeTasks.emptyTitle")}
+          description={t("employeeTasks.emptyDesc")}
         />
       ) : (
         <motion.div layout className="grid gap-4 md:grid-cols-2">

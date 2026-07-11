@@ -192,7 +192,7 @@ async function assertAccess(taskId: number, role: Role, userId: number) {
       and(eq(taskAssignees.taskId, taskId), eq(taskAssignees.userId, userId)),
     )
     .limit(1);
-  if (!row) throw forbidden("Задача вам не назначена");
+  if (!row) throw forbidden("error.taskNotAssigned");
 }
 
 async function getListItem(taskId: number, role: Role): Promise<TaskListItem> {
@@ -202,7 +202,7 @@ async function getListItem(taskId: number, role: Role): Promise<TaskListItem> {
     .innerJoin(projects, eq(tasks.projectId, projects.id))
     .where(eq(tasks.id, taskId))
     .limit(1);
-  if (!row) throw notFound("Задача не найдена");
+  if (!row) throw notFound("error.taskNotFound");
   const [item] = await enrich([row], role);
   return item!;
 }
@@ -229,7 +229,7 @@ export async function getTimeline(
     .from(tasks)
     .where(eq(tasks.id, taskId))
     .limit(1);
-  if (!task) throw notFound("Задача не найдена");
+  if (!task) throw notFound("error.taskNotFound");
 
   const rows = await db
     .select({
@@ -289,7 +289,7 @@ export async function createTask(
     .from(projects)
     .where(eq(projects.id, input.projectId))
     .limit(1);
-  if (!project) throw notFound("Проект не найден");
+  if (!project) throw notFound("error.projectNotFound");
 
   const taskId = await db.transaction(async (tx) => {
     const [inserted] = await tx
@@ -347,7 +347,7 @@ export async function updateTask(
     .from(tasks)
     .where(eq(tasks.id, taskId))
     .limit(1);
-  if (!task) throw notFound("Задача не найдена");
+  if (!task) throw notFound("error.taskNotFound");
 
   if (input.projectId) {
     const [project] = await db
@@ -355,7 +355,7 @@ export async function updateTask(
       .from(projects)
       .where(eq(projects.id, input.projectId))
       .limit(1);
-    if (!project) throw notFound("Проект не найден");
+    if (!project) throw notFound("error.projectNotFound");
   }
 
   await db.transaction(async (tx) => {
@@ -410,7 +410,7 @@ export async function changeStatus(
     .from(tasks)
     .where(eq(tasks.id, taskId))
     .limit(1);
-  if (!task) throw notFound("Задача не найдена");
+  if (!task) throw notFound("error.taskNotFound");
 
   await db.transaction(async (tx) => {
     const patch: Partial<typeof tasks.$inferInsert> = { status };
@@ -470,7 +470,7 @@ export async function changeProgress(
     .from(tasks)
     .where(eq(tasks.id, taskId))
     .limit(1);
-  if (!task) throw notFound("Задача не найдена");
+  if (!task) throw notFound("error.taskNotFound");
 
   await db.transaction(async (tx) => {
     await tx.update(tasks).set({ progress }).where(eq(tasks.id, taskId));
@@ -491,6 +491,6 @@ export async function deleteTask(taskId: number): Promise<void> {
     .from(tasks)
     .where(eq(tasks.id, taskId))
     .limit(1);
-  if (!task) throw notFound("Задача не найдена");
+  if (!task) throw notFound("error.taskNotFound");
   await db.delete(tasks).where(eq(tasks.id, taskId));
 }

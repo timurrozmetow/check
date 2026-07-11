@@ -23,15 +23,16 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useCreateTask, useProjects, useUsers } from "@/api/hooks";
 import { ALL_PRIORITIES } from "@/lib/constants";
-import { TASK_PRIORITY_LABELS } from "@/lib/labels";
 import { initials } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import { RequestError } from "@/api/client";
 import type { TaskPriority } from "@/api/types";
 
 /** Диалог создания задачи админом: проект, исполнители, приоритет, дедлайн. */
 export function CreateTaskDialog({ trigger }: { trigger?: ReactNode }) {
+  const { t } = useTranslation();
   const create = useCreateTask();
   const { data: projects } = useProjects();
   const { data: users } = useUsers();
@@ -65,8 +66,8 @@ export function CreateTaskDialog({ trigger }: { trigger?: ReactNode }) {
 
   async function submit() {
     const next: { title?: string; project?: string } = {};
-    if (title.trim().length < 1) next.title = "Укажите название задачи";
-    if (projectId === "") next.project = "Выберите проект";
+    if (title.trim().length < 1) next.title = t("createTaskDialog.titleRequired");
+    if (projectId === "") next.project = t("createTaskDialog.projectRequired");
     setErrors(next);
     if (Object.keys(next).length > 0) return;
 
@@ -82,12 +83,12 @@ export function CreateTaskDialog({ trigger }: { trigger?: ReactNode }) {
       },
       {
         onSuccess: () => {
-          toast.success("Задача создана");
+          toast.success(t("createTaskDialog.created"));
           reset();
           setOpen(false);
         },
         onError: (e) =>
-          toast.error(e instanceof RequestError ? e.message : "Ошибка"),
+          toast.error(e instanceof RequestError ? e.message : t("common.error")),
       },
     );
   }
@@ -98,20 +99,20 @@ export function CreateTaskDialog({ trigger }: { trigger?: ReactNode }) {
         {trigger ?? (
           <Button>
             <Plus className="mr-2 h-4 w-4" />
-            Новая задача
+            {t("createTaskDialog.newTask")}
           </Button>
         )}
       </DialogTrigger>
       <DialogContent className="max-h-[85vh] max-w-2xl overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Новая задача</DialogTitle>
+          <DialogTitle>{t("createTaskDialog.newTask")}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
           <div className="space-y-1.5">
-            <Label>Название</Label>
+            <Label>{t("createTaskDialog.titleLabel")}</Label>
             <Input
-              placeholder="Например: Подготовить договор аренды"
+              placeholder={t("createTaskDialog.titlePlaceholder")}
               value={title}
               onChange={(e) => {
                 setTitle(e.target.value);
@@ -130,9 +131,9 @@ export function CreateTaskDialog({ trigger }: { trigger?: ReactNode }) {
           </div>
 
           <div className="space-y-1.5">
-            <Label>Описание (необязательно)</Label>
+            <Label>{t("createTaskDialog.descriptionLabel")}</Label>
             <Textarea
-              placeholder="Детали задачи…"
+              placeholder={t("createTaskDialog.descriptionPlaceholder")}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
@@ -141,7 +142,7 @@ export function CreateTaskDialog({ trigger }: { trigger?: ReactNode }) {
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
-              <Label>Проект</Label>
+              <Label>{t("createTaskDialog.projectLabel")}</Label>
               <Select
                 value={projectId}
                 onValueChange={(v) => {
@@ -157,7 +158,7 @@ export function CreateTaskDialog({ trigger }: { trigger?: ReactNode }) {
                       "border-destructive focus:ring-destructive",
                   )}
                 >
-                  <SelectValue placeholder="Выберите проект" />
+                  <SelectValue placeholder={t("createTaskDialog.projectRequired")} />
                 </SelectTrigger>
                 <SelectContent>
                   {(projects ?? []).map((p) => (
@@ -175,7 +176,7 @@ export function CreateTaskDialog({ trigger }: { trigger?: ReactNode }) {
             </div>
 
             <div className="space-y-1.5">
-              <Label>Приоритет</Label>
+              <Label>{t("createTaskDialog.priorityLabel")}</Label>
               <Select
                 value={priority}
                 onValueChange={(v) => setPriority(v as TaskPriority)}
@@ -186,7 +187,7 @@ export function CreateTaskDialog({ trigger }: { trigger?: ReactNode }) {
                 <SelectContent>
                   {ALL_PRIORITIES.map((p) => (
                     <SelectItem key={p} value={p}>
-                      {TASK_PRIORITY_LABELS[p]}
+                      {t(`taskPriority.${p}`)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -195,7 +196,7 @@ export function CreateTaskDialog({ trigger }: { trigger?: ReactNode }) {
           </div>
 
           <div className="space-y-1.5">
-            <Label>Дедлайн (необязательно)</Label>
+            <Label>{t("createTaskDialog.deadlineLabel")}</Label>
             <Input
               type="date"
               value={deadline}
@@ -204,10 +205,10 @@ export function CreateTaskDialog({ trigger }: { trigger?: ReactNode }) {
           </div>
 
           <div className="space-y-2">
-            <Label>Исполнители</Label>
+            <Label>{t("createTaskDialog.assigneesLabel")}</Label>
             {employees.length === 0 ? (
               <p className="rounded-xl bg-secondary/60 p-3 text-sm text-muted-foreground">
-                Нет доступных сотрудников.
+                {t("createTaskDialog.noEmployees")}
               </p>
             ) : (
               <div className="grid gap-2 sm:grid-cols-2">
@@ -248,11 +249,11 @@ export function CreateTaskDialog({ trigger }: { trigger?: ReactNode }) {
 
         <div className="mt-2 flex justify-end gap-2">
           <Button variant="ghost" onClick={() => setOpen(false)}>
-            Отмена
+            {t("common.cancel")}
           </Button>
           <Button onClick={submit} disabled={create.isPending}>
             {create.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Создать задачу
+            {t("createTaskDialog.createBtn")}
           </Button>
         </div>
       </DialogContent>

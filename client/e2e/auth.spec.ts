@@ -1,5 +1,10 @@
 import { expect, test } from "@playwright/test";
 
+// Язык интерфейса фиксируем на RU — спеки проверяют русский текст детерминированно.
+test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem("lang", "ru"));
+});
+
 async function login(page, email: string, password: string) {
   await page.goto("/login");
   await page.getByLabel("Email").fill(email);

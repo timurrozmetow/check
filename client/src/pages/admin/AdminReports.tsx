@@ -27,42 +27,22 @@ import {
 import { useProjects } from "@/api/hooks";
 import { apiDownload, RequestError } from "@/api/client";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
-const MONTHS = [
-  "Январь",
-  "Февраль",
-  "Март",
-  "Апрель",
-  "Май",
-  "Июнь",
-  "Июль",
-  "Август",
-  "Сентябрь",
-  "Октябрь",
-  "Ноябрь",
-  "Декабрь",
-];
+const MONTHS = Array.from({ length: 12 }, (_, i) => i + 1);
 
 const ALL_PROJECTS = "all";
 
-const REPORT_SECTIONS: { icon: typeof FileText; text: string }[] = [
-  { icon: FileText, text: "Титульная страница с названием и датой генерации" },
-  {
-    icon: FileText,
-    text: "Сводка: всего задач, завершено, в работе, просрочено, среднее время",
-  },
-  {
-    icon: BarChart3,
-    text: "Три графика: по статусам, по проектам и завершено по неделям",
-  },
-  { icon: Table2, text: "Таблица задач с процентом готовности и временем" },
-  {
-    icon: Images,
-    text: "Детализация завершённых задач с фото результатов",
-  },
+const REPORT_SECTIONS: { icon: typeof FileText; key: string }[] = [
+  { icon: FileText, key: "cover" },
+  { icon: FileText, key: "summary" },
+  { icon: BarChart3, key: "charts" },
+  { icon: Table2, key: "table" },
+  { icon: Images, key: "details" },
 ];
 
 export function AdminReports() {
+  const { t } = useTranslation();
   const { data: projects } = useProjects();
   const now = new Date();
   const currentYear = now.getFullYear();
@@ -86,9 +66,9 @@ export function AdminReports() {
       const mm = String(monthNum).padStart(2, "0");
       const filename = `report-${yearNum}-${mm}.docx`;
       await apiDownload(path, filename);
-      toast.success("Отчёт сформирован и скачан");
+      toast.success(t("adminReports.successToast"));
     } catch (e) {
-      toast.error(e instanceof RequestError ? e.message : "Не удалось скачать отчёт");
+      toast.error(e instanceof RequestError ? e.message : t("adminReports.errorToast"));
     } finally {
       setBusy(false);
     }
@@ -97,9 +77,9 @@ export function AdminReports() {
   return (
     <div className="mx-auto max-w-xl space-y-6">
       <div className="text-center">
-        <h1 className="text-xl font-bold">Месячный отчёт</h1>
+        <h1 className="text-xl font-bold">{t("adminReports.title")}</h1>
         <p className="text-sm text-muted-foreground">
-          Сформируйте полный отчёт о проделанной работе в формате Word.
+          {t("adminReports.subtitle")}
         </p>
       </div>
 
@@ -112,17 +92,17 @@ export function AdminReports() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-lg">
               <FileText className="h-5 w-5 text-primary" />
-              Параметры отчёта
+              {t("adminReports.cardTitle")}
             </CardTitle>
             <CardDescription>
-              Выберите период и, при необходимости, конкретный проект.
+              {t("adminReports.cardDescription")}
             </CardDescription>
           </CardHeader>
 
           <CardContent className="space-y-5">
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-1.5">
-                <Label>Год</Label>
+                <Label>{t("adminReports.yearLabel")}</Label>
                 <Select value={year} onValueChange={setYear}>
                   <SelectTrigger>
                     <SelectValue />
@@ -138,15 +118,15 @@ export function AdminReports() {
               </div>
 
               <div className="space-y-1.5">
-                <Label>Месяц</Label>
+                <Label>{t("adminReports.monthLabel")}</Label>
                 <Select value={month} onValueChange={setMonth}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {MONTHS.map((name, i) => (
-                      <SelectItem key={i} value={String(i + 1)}>
-                        {name}
+                    {MONTHS.map((m) => (
+                      <SelectItem key={m} value={String(m)}>
+                        {t(`adminReports.months.${m}`)}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -155,13 +135,13 @@ export function AdminReports() {
             </div>
 
             <div className="space-y-1.5">
-              <Label>Проект</Label>
+              <Label>{t("adminReports.projectLabel")}</Label>
               <Select value={project} onValueChange={setProject}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value={ALL_PROJECTS}>Все проекты</SelectItem>
+                  <SelectItem value={ALL_PROJECTS}>{t("adminReports.allProjects")}</SelectItem>
                   {projects?.map((p) => (
                     <SelectItem key={p.id} value={String(p.id)}>
                       {p.name}
@@ -172,7 +152,7 @@ export function AdminReports() {
             </div>
 
             <div className="rounded-2xl bg-secondary/50 p-4">
-              <p className="mb-3 text-sm font-semibold">Что войдёт в отчёт</p>
+              <p className="mb-3 text-sm font-semibold">{t("adminReports.sectionsTitle")}</p>
               <ul className="space-y-2.5">
                 {REPORT_SECTIONS.map((section, i) => {
                   const Icon = section.icon;
@@ -180,7 +160,7 @@ export function AdminReports() {
                     <li key={i} className="flex items-start gap-2.5 text-sm">
                       <Icon className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
                       <span className="text-muted-foreground">
-                        {section.text}
+                        {t(`adminReports.sections.${section.key}`)}
                       </span>
                     </li>
                   );
@@ -199,7 +179,7 @@ export function AdminReports() {
               ) : (
                 <Download className="mr-2 h-4 w-4" />
               )}
-              Скачать отчёт (.docx)
+              {t("adminReports.downloadBtn")}
             </Button>
           </CardContent>
         </Card>

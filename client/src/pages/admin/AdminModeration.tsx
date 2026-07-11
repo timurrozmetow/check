@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { motion, AnimatePresence } from "framer-motion";
 import { Check, Loader2, ShieldCheck, X } from "lucide-react";
 import { Card } from "@/components/ui/card";
@@ -16,6 +17,7 @@ import { RequestError } from "@/api/client";
 import type { ModerationItem } from "@/api/types";
 
 function ModerationRow({ item }: { item: ModerationItem }) {
+  const { t } = useTranslation();
   const approve = useApproveUpdate();
   const reject = useRejectUpdate();
   const [progress, setProgress] = useState<string>("");
@@ -26,26 +28,26 @@ function ModerationRow({ item }: { item: ModerationItem }) {
     try {
       const prog = progress.trim() === "" ? undefined : Number(progress);
       if (prog !== undefined && (prog < 0 || prog > 100 || prog % 5 !== 0)) {
-        toast.error("Процент 0–100, кратно 5");
+        toast.error(t("adminModeration.progressError"));
         return;
       }
       await approve.mutateAsync({ id: item.id, progress: prog });
-      toast.success("Обновление принято");
+      toast.success(t("adminModeration.approved"));
     } catch (e) {
-      toast.error(e instanceof RequestError ? e.message : "Ошибка");
+      toast.error(e instanceof RequestError ? e.message : t("common.error"));
     }
   }
 
   async function doReject() {
     if (reason.trim().length < 3) {
-      toast.error("Укажите причину");
+      toast.error(t("adminModeration.reasonRequired"));
       return;
     }
     try {
       await reject.mutateAsync({ id: item.id, reason: reason.trim() });
-      toast.success("Обновление отклонено");
+      toast.success(t("adminModeration.rejected"));
     } catch (e) {
-      toast.error(e instanceof RequestError ? e.message : "Ошибка");
+      toast.error(e instanceof RequestError ? e.message : t("common.error"));
     }
   }
 
@@ -85,7 +87,7 @@ function ModerationRow({ item }: { item: ModerationItem }) {
         {rejecting ? (
           <div className="mt-4 space-y-2">
             <Textarea
-              placeholder="Причина отклонения…"
+              placeholder={t("adminModeration.reasonPlaceholder")}
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               rows={2}
@@ -93,7 +95,7 @@ function ModerationRow({ item }: { item: ModerationItem }) {
             />
             <div className="flex justify-end gap-2">
               <Button variant="ghost" size="sm" onClick={() => setRejecting(false)}>
-                Отмена
+                {t("common.cancel")}
               </Button>
               <Button
                 variant="destructive"
@@ -104,7 +106,7 @@ function ModerationRow({ item }: { item: ModerationItem }) {
                 {reject.isPending && (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 )}
-                Отклонить
+                {t("adminModeration.reject")}
               </Button>
             </div>
           </div>
@@ -112,7 +114,7 @@ function ModerationRow({ item }: { item: ModerationItem }) {
           <div className="mt-4 flex flex-wrap items-center justify-end gap-2">
             <div className="mr-auto flex items-center gap-2">
               <span className="text-xs text-muted-foreground">
-                Выставить %:
+                {t("adminModeration.setProgress")}
               </span>
               <Input
                 type="number"
@@ -131,7 +133,7 @@ function ModerationRow({ item }: { item: ModerationItem }) {
               onClick={() => setRejecting(true)}
             >
               <X className="mr-1.5 h-4 w-4" />
-              Отклонить
+              {t("adminModeration.reject")}
             </Button>
             <Button size="sm" onClick={doApprove} disabled={approve.isPending}>
               {approve.isPending ? (
@@ -139,7 +141,7 @@ function ModerationRow({ item }: { item: ModerationItem }) {
               ) : (
                 <Check className="mr-1.5 h-4 w-4" />
               )}
-              Принять
+              {t("adminModeration.approve")}
             </Button>
           </div>
         )}
@@ -149,14 +151,15 @@ function ModerationRow({ item }: { item: ModerationItem }) {
 }
 
 export function AdminModeration() {
+  const { t } = useTranslation();
   const { data: updates, isLoading } = useModeration();
 
   return (
     <div className="mx-auto max-w-3xl space-y-5">
       <div>
-        <h1 className="text-xl font-bold">Модерация обновлений</h1>
+        <h1 className="text-xl font-bold">{t("adminModeration.title")}</h1>
         <p className="text-sm text-muted-foreground">
-          Подтверждённые обновления попадают в хронологию и видны директору.
+          {t("adminModeration.subtitle")}
         </p>
       </div>
 
@@ -169,8 +172,8 @@ export function AdminModeration() {
       ) : (updates?.length ?? 0) === 0 ? (
         <EmptyState
           icon={ShieldCheck}
-          title="Очередь пуста"
-          description="Все обновления промодерированы."
+          title={t("adminModeration.empty")}
+          description={t("adminModeration.emptyDescription")}
         />
       ) : (
         <div className="space-y-3">

@@ -8,7 +8,8 @@ import {
   Flag,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { ACTIVITY_TYPE_LABELS, TASK_STATUS_LABELS } from "@/lib/labels";
+import { useTranslation } from "react-i18next";
+import type { TFunction } from "i18next";
 import { formatDateTime } from "@/lib/format";
 import type { ActivityItem, TaskStatus } from "@/api/types";
 
@@ -22,41 +23,48 @@ const ICONS: Record<string, LucideIcon> = {
   task_completed: CheckCircle2,
 };
 
-function describe(event: ActivityItem): string {
+function describe(event: ActivityItem, t: TFunction): string {
   const p = event.payload ?? {};
   switch (event.type) {
     case "status_changed":
-      return `Статус → ${TASK_STATUS_LABELS[p.to as TaskStatus] ?? p.to}`;
+      return t("timeline.statusChanged", {
+        status: t(`taskStatus.${p.to as TaskStatus}`, {
+          defaultValue: String(p.to),
+        }),
+      });
     case "progress_changed":
-      return `Прогресс ${p.from ?? 0}% → ${p.to}%`;
+      return t("timeline.progressChanged", { from: p.from ?? 0, to: p.to });
     case "update_approved":
       return typeof p.text === "string"
-        ? `Обновление принято: ${p.text}`
-        : "Обновление принято";
+        ? t("timeline.updateApprovedWithText", { text: p.text })
+        : t("timeline.updateApproved");
     case "decision_requested":
       return typeof p.title === "string"
-        ? `Запрошено решение: ${p.title}`
-        : "Запрошено решение директора";
+        ? t("timeline.decisionRequestedWithTitle", { title: p.title })
+        : t("timeline.decisionRequested");
     case "decision_made": {
-      const opt = typeof p.option === "string" ? `выбран «${p.option}»` : null;
-      const appr =
-        typeof p.approved === "boolean"
-          ? p.approved
-            ? "согласовано"
-            : "отклонено"
-          : null;
-      return `Решение принято${opt ? `: ${opt}` : appr ? `: ${appr}` : ""}`;
+      if (typeof p.option === "string") {
+        return t("timeline.decisionMadeOption", { option: p.option });
+      }
+      if (typeof p.approved === "boolean") {
+        return p.approved
+          ? t("timeline.decisionMadeApproved")
+          : t("timeline.decisionMadeRejected");
+      }
+      return t("timeline.decisionMade");
     }
     default:
-      return ACTIVITY_TYPE_LABELS[event.type] ?? event.type;
+      return t(`activityType.${event.type}`, { defaultValue: event.type });
   }
 }
 
 export function Timeline({ events }: { events: ActivityItem[] }) {
+  const { t } = useTranslation();
+
   if (events.length === 0) {
     return (
       <p className="py-6 text-center text-sm text-muted-foreground">
-        Событий пока нет
+        {t("timeline.empty")}
       </p>
     );
   }
@@ -76,7 +84,7 @@ export function Timeline({ events }: { events: ActivityItem[] }) {
             </span>
             <div className="min-w-0 flex-1 pb-1">
               <p className="text-sm font-medium leading-snug">
-                {describe(event)}
+                {describe(event, t)}
               </p>
               <p className="mt-0.5 text-xs text-muted-foreground">
                 {event.actor.name} · {formatDateTime(event.createdAt)}

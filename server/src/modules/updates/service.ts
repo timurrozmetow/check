@@ -38,7 +38,7 @@ async function buildUpdateItem(updateId: number): Promise<UpdateItem> {
     .innerJoin(users, eq(taskUpdates.authorId, users.id))
     .where(eq(taskUpdates.id, updateId))
     .limit(1);
-  if (!row) throw notFound("Обновление не найдено");
+  if (!row) throw notFound("error.updateNotFound");
   const filesMap = await getFilesFor(db, "task_update", [updateId]);
   return {
     id: row.u.id,
@@ -79,13 +79,13 @@ export async function createUpdate(
     .from(tasks)
     .where(eq(tasks.id, taskId))
     .limit(1);
-  if (!task) throw notFound("Задача не найдена");
+  if (!task) throw notFound("error.taskNotFound");
 
   if (role === "employee" && !(await isAssignee(taskId, userId))) {
-    throw forbidden("Задача вам не назначена");
+    throw forbidden("error.taskNotAssigned");
   }
   if (role === "director") {
-    throw forbidden("Директор не отправляет обновления");
+    throw forbidden("error.directorCannotSubmitUpdate");
   }
 
   const updateId = await db.transaction(async (tx) => {
@@ -205,9 +205,9 @@ async function loadPendingUpdate(updateId: number) {
     .from(taskUpdates)
     .where(eq(taskUpdates.id, updateId))
     .limit(1);
-  if (!update) throw notFound("Обновление не найдено");
+  if (!update) throw notFound("error.updateNotFound");
   if (update.status !== "pending") {
-    throw badRequest("Обновление уже промодерировано", "ALREADY_REVIEWED");
+    throw badRequest("error.updateAlreadyReviewed", "ALREADY_REVIEWED");
   }
   return update;
 }

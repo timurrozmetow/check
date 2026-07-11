@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 
 /** Круговой индикатор сводного прогресса проекта. */
 export function DonutProgress({
@@ -6,7 +7,7 @@ export function DonutProgress({
   size = 56,
   stroke = 6,
   color = "hsl(var(--primary))",
-  title = "Средний прогресс активных задач проекта",
+  title,
 }: {
   value: number;
   size?: number;
@@ -15,15 +16,17 @@ export function DonutProgress({
   /** Подсказка при наведении (полезно, когда прогресс 0%). */
   title?: string;
 }) {
+  const { t } = useTranslation();
   const r = (size - stroke) / 2;
   const circumference = 2 * Math.PI * r;
   const offset = circumference * (1 - value / 100);
+  const resolvedTitle = title ?? t("donutProgress.title");
 
   return (
     <div
       className="relative"
       style={{ width: size, height: size }}
-      title={`${title}: ${value}%`}
+      title={`${resolvedTitle}: ${value}%`}
     >
       <svg width={size} height={size} className="-rotate-90">
         <circle

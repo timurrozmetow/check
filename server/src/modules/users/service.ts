@@ -39,7 +39,7 @@ async function getPublicUser(id: number): Promise<PublicUser> {
     .from(users)
     .where(eq(users.id, id))
     .limit(1);
-  if (!user) throw notFound("Пользователь не найден");
+  if (!user) throw notFound("error.userNotFound");
   return user;
 }
 
@@ -55,7 +55,7 @@ async function assertEmailFree(email: string, exceptId?: number) {
 }
 
 function emailTaken() {
-  return new AppError(409, "EMAIL_TAKEN", "Этот email уже используется");
+  return new AppError(409, "EMAIL_TAKEN", "error.emailTaken");
 }
 
 /** Гонка: два запроса прошли assertEmailFree до коммита — ловим уникальный индекс. */
@@ -102,7 +102,7 @@ export async function updateUser(
     throw new AppError(
       400,
       "CANNOT_DEACTIVATE_SELF",
-      "Нельзя отключить собственную учётную запись",
+      "error.cannotDeactivateSelf",
     );
   }
 

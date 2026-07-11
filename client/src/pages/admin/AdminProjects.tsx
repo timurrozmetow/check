@@ -1,4 +1,5 @@
 import { useEffect, useState, type CSSProperties } from "react";
+import { useTranslation } from "react-i18next";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   Archive,
@@ -44,16 +45,16 @@ import {
   useUpdateProject,
 } from "@/api/hooks";
 import { PROJECT_COLORS } from "@/lib/constants";
-import { PROJECT_STATUS_LABELS } from "@/lib/labels";
 import { cn } from "@/lib/utils";
 import { RequestError } from "@/api/client";
 import { toast } from "sonner";
+import i18n from "@/i18n";
 import type { ProjectWithStats } from "@/api/types";
 
 const EASE: [number, number, number, number] = [0.22, 0.7, 0.3, 1];
 
 function errorMessage(e: unknown): string {
-  return e instanceof RequestError ? e.message : "Что-то пошло не так";
+  return e instanceof RequestError ? e.message : i18n.t("common.error");
 }
 
 /* -------------------- Форма создания/редактирования -------------------- */
@@ -67,6 +68,7 @@ function ProjectFormDialog({
   onOpenChange: (v: boolean) => void;
   project: ProjectWithStats | null;
 }) {
+  const { t } = useTranslation();
   const create = useCreateProject();
   const update = useUpdateProject();
   const [name, setName] = useState("");
@@ -92,14 +94,16 @@ function ProjectFormDialog({
     const trimmed = name.trim();
     const desc = description.trim();
     if (!trimmed) {
-      setNameError("Введите название проекта");
+      setNameError(t("adminProjects.nameRequired"));
       return;
     }
     setNameError(null);
 
     // Закрытие и очистка — строго по успешному ответу сервера.
     const onSuccess = () => {
-      toast.success(project ? "Проект обновлён" : "Проект создан");
+      toast.success(
+        project ? t("adminProjects.updated") : t("adminProjects.created"),
+      );
       onOpenChange(false);
     };
     const onError = (e: unknown) => toast.error(errorMessage(e));
@@ -122,20 +126,23 @@ function ProjectFormDialog({
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>
-            {isEdit ? "Редактировать проект" : "Новый проект"}
+            {isEdit
+              ? t("adminProjects.editTitle")
+              : t("adminProjects.newTitle")}
           </DialogTitle>
           <DialogDescription>
-            Задачи всегда привязаны к проекту. Цвет помогает быстро различать их
-            в списках.
+            {t("adminProjects.formDescription")}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
           <div className="space-y-1.5">
-            <Label htmlFor="project-name">Название</Label>
+            <Label htmlFor="project-name">
+              {t("adminProjects.nameLabel")}
+            </Label>
             <Input
               id="project-name"
-              placeholder="Например: Открытие кофейни"
+              placeholder={t("adminProjects.namePlaceholder")}
               value={name}
               onChange={(e) => {
                 setName(e.target.value);
@@ -156,10 +163,12 @@ function ProjectFormDialog({
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="project-description">Описание (необязательно)</Label>
+            <Label htmlFor="project-description">
+              {t("adminProjects.descriptionLabel")} ({t("common.optional")})
+            </Label>
             <Textarea
               id="project-description"
-              placeholder="Коротко о проекте…"
+              placeholder={t("adminProjects.descriptionPlaceholder")}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
@@ -167,7 +176,7 @@ function ProjectFormDialog({
           </div>
 
           <div className="space-y-2">
-            <Label>Цвет</Label>
+            <Label>{t("adminProjects.colorLabel")}</Label>
             <div className="flex flex-wrap gap-2">
               {PROJECT_COLORS.map((c) => {
                 const active = color === c;
@@ -176,7 +185,7 @@ function ProjectFormDialog({
                     key={c}
                     type="button"
                     onClick={() => setColor(c)}
-                    aria-label={`Выбрать цвет ${c}`}
+                    aria-label={t("adminProjects.pickColor", { color: c })}
                     aria-pressed={active}
                     className={cn(
                       "grid h-9 w-9 place-items-center rounded-full transition-transform hover:scale-110",
@@ -204,11 +213,11 @@ function ProjectFormDialog({
             onClick={() => onOpenChange(false)}
             disabled={busy}
           >
-            Отмена
+            {t("common.cancel")}
           </Button>
           <Button onClick={submit} disabled={busy}>
             {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {isEdit ? "Сохранить" : "Создать"}
+            {isEdit ? t("common.save") : t("common.create")}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -227,6 +236,7 @@ function ProjectCard({
   index: number;
   onEdit: (p: ProjectWithStats) => void;
 }) {
+  const { t } = useTranslation();
   const update = useUpdateProject();
   const del = useDeleteProject();
   const busy = update.isPending || del.isPending;
@@ -237,7 +247,11 @@ function ProjectCard({
     const nextStatus = isActive ? "archived" : "active";
     try {
       await update.mutateAsync({ id: project.id, status: nextStatus });
-      toast.success(isActive ? "Проект в архиве" : "Проект активирован");
+      toast.success(
+        isActive
+          ? t("adminProjects.archived")
+          : t("adminProjects.activated"),
+      );
     } catch (e) {
       toast.error(errorMessage(e));
     }
@@ -246,7 +260,7 @@ function ProjectCard({
   async function remove() {
     try {
       await del.mutateAsync(project.id);
-      toast.success("Проект удалён");
+      toast.success(t("adminProjects.deleted"));
     } catch (e) {
       // Напр. PROJECT_HAS_TASKS — сообщение уже на русском.
       toast.error(errorMessage(e));
@@ -279,7 +293,7 @@ function ProjectCard({
               </p>
             ) : (
               <p className="mt-2 text-sm italic text-muted-foreground/70">
-                Без описания
+                {t("adminProjects.noDescription")}
               </p>
             )}
           </div>
@@ -291,7 +305,7 @@ function ProjectCard({
                 size="icon"
                 className="-mr-1 -mt-1 h-8 w-8 shrink-0 text-muted-foreground"
                 disabled={busy}
-                aria-label="Действия с проектом"
+                aria-label={t("adminProjects.actions")}
               >
                 {busy ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -307,18 +321,18 @@ function ProjectCard({
             >
               <DropdownMenuItem onSelect={() => onEdit(project)}>
                 <Pencil className="h-4 w-4" />
-                Редактировать
+                {t("common.edit")}
               </DropdownMenuItem>
               <DropdownMenuItem onSelect={toggleStatus}>
                 {isActive ? (
                   <>
                     <Archive className="h-4 w-4" />
-                    Архивировать
+                    {t("adminProjects.archive")}
                   </>
                 ) : (
                   <>
                     <ArchiveRestore className="h-4 w-4" />
-                    Активировать
+                    {t("adminProjects.activate")}
                   </>
                 )}
               </DropdownMenuItem>
@@ -333,7 +347,7 @@ function ProjectCard({
                 className="text-destructive focus:text-destructive"
               >
                 <Trash2 className="h-4 w-4" />
-                Удалить
+                {t("common.delete")}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -342,18 +356,21 @@ function ProjectCard({
         <ConfirmDialog
           open={confirmOpen}
           onOpenChange={setConfirmOpen}
-          title={`Удалить проект «${project.name}»?`}
-          description="Действие необратимо. Проект можно удалить только если в нём нет задач."
-          confirmLabel="Удалить проект"
+          title={t("adminProjects.deleteConfirmTitle", { name: project.name })}
+          description={t("adminProjects.deleteConfirmDescription")}
+          confirmLabel={t("adminProjects.deleteConfirmLabel")}
           onConfirm={remove}
         />
 
         <div className="mt-auto flex items-center justify-between gap-3 border-t border-border/60 pt-3 text-sm">
           <span className="text-muted-foreground">
-            {project.activeTaskCount} активных · {project.totalTaskCount} всего
+            {t("adminProjects.taskCount", {
+              active: project.activeTaskCount,
+              total: project.totalTaskCount,
+            })}
           </span>
           <Badge variant={isActive ? "success" : "secondary"}>
-            {PROJECT_STATUS_LABELS[project.status]}
+            {t(`projectStatus.${project.status}`)}
           </Badge>
         </div>
       </Card>
@@ -364,6 +381,7 @@ function ProjectCard({
 /* -------------------- Страница -------------------- */
 
 export function AdminProjects() {
+  const { t } = useTranslation();
   const { data: projects, isLoading } = useProjects();
   const [formOpen, setFormOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<ProjectWithStats | null>(null);
@@ -382,14 +400,14 @@ export function AdminProjects() {
     <div className="mx-auto max-w-6xl space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-xl font-bold">Проекты</h1>
+          <h1 className="text-xl font-bold">{t("adminProjects.title")}</h1>
           <p className="text-sm text-muted-foreground">
-            Компании и направления, к которым привязаны задачи.
+            {t("adminProjects.subtitle")}
           </p>
         </div>
         <Button onClick={openCreate}>
           <Plus className="mr-2 h-4 w-4" />
-          Новый проект
+          {t("adminProjects.newProject")}
         </Button>
       </div>
 
@@ -402,12 +420,12 @@ export function AdminProjects() {
       ) : (projects?.length ?? 0) === 0 ? (
         <EmptyState
           icon={FolderKanban}
-          title="Проектов пока нет"
-          description="Создайте первый проект, чтобы начать ставить задачи."
+          title={t("adminProjects.emptyTitle")}
+          description={t("adminProjects.emptyDescription")}
           action={
             <Button onClick={openCreate}>
               <Plus className="mr-2 h-4 w-4" />
-              Новый проект
+              {t("adminProjects.newProject")}
             </Button>
           }
         />

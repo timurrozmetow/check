@@ -1,0 +1,456 @@
+{
+  "activityType": {
+    "task_created": "Görev oluşturuldu",
+    "status_changed": "Durum değişti",
+    "progress_changed": "İlerleme güncellendi",
+    "update_approved": "Güncelleme onaylandı",
+    "decision_requested": "Direktör kararı istendi",
+    "decision_made": "Direktör karar verdi",
+    "task_completed": "Görev tamamlandı"
+  },
+  "adminDashboard": {
+    "kpiTotal": "Toplam görev",
+    "kpiModeration": "Moderasyonda",
+    "kpiAwaiting": "Direktör kararı bekliyor",
+    "kpiOverdue": "Gecikmiş",
+    "projectsTitle": "Projeler",
+    "projectTasks": "{{active}} aktif · {{total}} toplam",
+    "recentTasksTitle": "Son görevler",
+    "collapse": "Daralt",
+    "showAll": "Tümünü göster",
+    "emptyTitle": "Henüz görev yok",
+    "emptyDescription": "Başlamak için ilk görevi oluşturun."
+  },
+  "adminDecisions": {
+    "typeChoice_one": "{{count}} seçenek arasından seçim",
+    "typeChoice_other": "{{count}} seçenek arasından seçim",
+    "typeApproval": "Onay",
+    "taskLabel": "Görev: {{title}}",
+    "openTask": "Görevi aç",
+    "selectedOption": "Seçilen seçenek: {{option}}",
+    "noOptionMarked": "seçenek işaretlenmedi",
+    "approved": "Onaylandı",
+    "rejected": "Reddedildi",
+    "directorComment": "Direktör yorumu:",
+    "emptyPendingTitle": "Bekleyen karar talebi yok",
+    "emptyPendingDesc": "Direktör kararı bekleyen talepler burada görünür. Talebi görev sayfasından oluşturabilirsiniz.",
+    "emptyDecidedTitle": "Henüz kararlaştırılmış talep yok",
+    "emptyDecidedDesc": "Direktör kararları verdikçe bu bölümde görünürler.",
+    "title": "Direktör kararları",
+    "subtitle": "Karar taleplerini izleyin. Talepler görev sayfasında oluşturulur — durumlarını buradan takip edersiniz.",
+    "tabPending": "Bekleyenler",
+    "tabDecided": "Kararlaştırılanlar"
+  },
+  "adminLayout": {
+    "overview": "Genel Bakış",
+    "projects": "Projeler",
+    "tasks": "Görevler",
+    "moderation": "Moderasyon",
+    "decisions": "Kararlar",
+    "users": "Kullanıcılar",
+    "reports": "Raporlar",
+    "title": "Yönetici Paneli"
+  },
+  "adminModeration": {
+    "title": "Güncelleme moderasyonu",
+    "subtitle": "Onaylanan güncellemeler zaman çizelgesine eklenir ve direktör tarafından görülür.",
+    "empty": "Sıra boş",
+    "emptyDescription": "Tüm güncellemeler modere edildi.",
+    "setProgress": "İlerleme (%):",
+    "approve": "Onayla",
+    "reject": "Reddet",
+    "reasonPlaceholder": "Reddetme nedeni…",
+    "progressError": "Yüzde 0–100 arasında ve 5'in katı olmalı",
+    "reasonRequired": "Bir neden belirtin",
+    "approved": "Güncelleme onaylandı",
+    "rejected": "Güncelleme reddedildi"
+  },
+  "adminProjects": {
+    "editTitle": "Projeyi düzenle",
+    "newTitle": "Yeni proje",
+    "formDescription": "Görevler her zaman bir projeye bağlıdır. Renk, onları listelerde hızlıca ayırt etmeye yardımcı olur.",
+    "nameLabel": "Ad",
+    "namePlaceholder": "Örneğin: Kafe açılışı",
+    "descriptionLabel": "Açıklama",
+    "descriptionPlaceholder": "Proje hakkında kısaca…",
+    "colorLabel": "Renk",
+    "pickColor": "{{color}} rengini seç",
+    "nameRequired": "Proje adını girin",
+    "updated": "Proje güncellendi",
+    "created": "Proje oluşturuldu",
+    "archived": "Proje arşivlendi",
+    "activated": "Proje etkinleştirildi",
+    "deleted": "Proje silindi",
+    "noDescription": "Açıklama yok",
+    "actions": "Proje işlemleri",
+    "archive": "Arşivle",
+    "activate": "Etkinleştir",
+    "deleteConfirmTitle": "«{{name}}» projesi silinsin mi?",
+    "deleteConfirmDescription": "Bu işlem geri alınamaz. Bir proje yalnızca içinde görev yoksa silinebilir.",
+    "deleteConfirmLabel": "Projeyi sil",
+    "taskCount": "{{active}} aktif · {{total}} toplam",
+    "title": "Projeler",
+    "subtitle": "Görevlerin bağlı olduğu şirketler ve yönler.",
+    "newProject": "Yeni proje",
+    "emptyTitle": "Henüz proje yok",
+    "emptyDescription": "Görev atamaya başlamak için ilk projeyi oluşturun."
+  },
+  "adminReports": {
+    "title": "Aylık rapor",
+    "subtitle": "Yapılan işlere dair eksiksiz raporu Word formatında oluşturun.",
+    "cardTitle": "Rapor parametreleri",
+    "cardDescription": "Dönemi ve gerekirse belirli bir projeyi seçin.",
+    "yearLabel": "Yıl",
+    "monthLabel": "Ay",
+    "projectLabel": "Proje",
+    "allProjects": "Tüm projeler",
+    "sectionsTitle": "Rapora neler dahil olacak",
+    "downloadBtn": "Raporu indir (.docx)",
+    "successToast": "Rapor oluşturuldu ve indirildi",
+    "errorToast": "Rapor indirilemedi",
+    "months": {
+      "1": "Ocak",
+      "2": "Şubat",
+      "3": "Mart",
+      "4": "Nisan",
+      "5": "Mayıs",
+      "6": "Haziran",
+      "7": "Temmuz",
+      "8": "Ağustos",
+      "9": "Eylül",
+      "10": "Ekim",
+      "11": "Kasım",
+      "12": "Aralık"
+    },
+    "sections": {
+      "cover": "Başlık ve oluşturma tarihini içeren kapak sayfası",
+      "summary": "Özet: toplam görev, tamamlanan, devam eden, geciken, ortalama süre",
+      "charts": "Üç grafik: durumlara, projelere ve haftalık tamamlananlara göre",
+      "table": "Tamamlanma yüzdesi ve süresiyle görev tablosu",
+      "details": "Tamamlanan görevlerin sonuç fotoğraflarıyla ayrıntıları"
+    }
+  },
+  "adminTaskControls": {
+    "saveError": "Kaydedilemedi",
+    "status": "Durum",
+    "progress": "İlerleme",
+    "decrease": "%5 azalt",
+    "progressSlider": "Görev ilerlemesi (yüzde)",
+    "increase": "%5 artır"
+  },
+  "adminTasks": {
+    "title": "Görevler",
+    "subtitle": "Proje ve duruma göre filtrelerle şirketin tüm görevleri.",
+    "searchPlaceholder": "Başlığa göre ara…",
+    "allProjects": "Tüm projeler",
+    "anyStatus": "Herhangi bir durum",
+    "found": "Bulunan görevler:",
+    "resetFilters": "Filtreleri sıfırla",
+    "emptyTitle": "Görev bulunamadı",
+    "emptyDescription": "Filtreleri veya aramayı değiştirin ya da yeni bir görev oluşturun.",
+    "sort": {
+      "created": "Önce yeniler",
+      "deadline": "Son tarihe göre",
+      "progress": "İlerlemeye göre",
+      "priority": "Önceliğe göre"
+    }
+  },
+  "adminUsers": {
+    "genericError": "Bir şeyler ters gitti",
+    "title": "Kullanıcılar",
+    "subtitle": "Hesap oluşturun, rol atayın ve erişimi yönetin.",
+    "newUser": "Yeni kullanıcı",
+    "createDesc": "Hesabı yönetici oluşturur — kayıt yoktur.",
+    "createSuccess": "Kullanıcı oluşturuldu",
+    "fieldName": "Ad",
+    "namePlaceholder": "Ahmet Yılmaz",
+    "fieldPassword": "Parola",
+    "fieldRole": "Rol",
+    "passwordHint": "En az 8 karakter",
+    "nameMin": "En az 2 karakter",
+    "emailInvalid": "Geçersiz e-posta",
+    "editTitle": "Kullanıcıyı düzenle",
+    "editDesc": "Hesabın adı, e-postası ve rolü.",
+    "editNameRequired": "Ad girin (en az 2 karakter)",
+    "editSuccess": "Değişiklikler kaydedildi",
+    "resetPassword": "Parolayı sıfırla",
+    "resetDesc": "«{{name}}» için yeni parola.",
+    "newPassword": "Yeni parola",
+    "resetBtn": "Sıfırla",
+    "resetPasswordMin": "Parola en az 8 karakter olmalı",
+    "resetSuccess": "Parola güncellendi",
+    "isSelf": "(siz)",
+    "cannotDisableSelf": "Kendi hesabınızı devre dışı bırakamazsınız",
+    "active": "Etkin",
+    "inactive": "Devre dışı",
+    "activitySwitch": "Kullanıcı etkinliği",
+    "actions": "İşlemler",
+    "activatedSuccess": "Kullanıcı etkinleştirildi",
+    "deactivatedSuccess": "Kullanıcı devre dışı bırakıldı",
+    "emptyTitle": "Henüz kullanıcı yok",
+    "emptyDesc": "«Yeni kullanıcı» düğmesiyle ilk hesabı oluşturun."
+  },
+  "appShell": {
+    "logout": "Çıkış yap",
+    "openMenu": "Bölüm menüsünü aç"
+  },
+  "common": {
+    "cancel": "İptal",
+    "save": "Kaydet",
+    "create": "Oluştur",
+    "delete": "Sil",
+    "edit": "Düzenle",
+    "close": "Kapat",
+    "retry": "Tekrar dene",
+    "confirm": "Onayla",
+    "loading": "Yükleniyor…",
+    "back": "Geri",
+    "search": "Ara",
+    "optional": "isteğe bağlı",
+    "error": "Bir şeyler yanlış gitti",
+    "loadError": "Veriler yüklenemedi",
+    "noData": "Veri yok"
+  },
+  "confirmDialog": {},
+  "createDecisionDialog": {
+    "titleRequired": "Başlık girin",
+    "minTwoOptions": "En az iki seçenek gerekli",
+    "uploadPartialError": "Bazı dosyalar yüklenemedi",
+    "success": "Karar talebi direktöre gönderildi",
+    "title": "Direktör karar talebi",
+    "typeChoice": "Seçenek seçimi",
+    "typeApproval": "Onay",
+    "fieldTitle": "Başlık",
+    "titlePlaceholder": "Örneğin: Kahve makinesi seçimi",
+    "fieldDescription": "Açıklama",
+    "descriptionPlaceholder": "Sorunun özünü açıklayın…",
+    "optionLabel": "Seçenek {{n}}",
+    "deleteOption": "Seçeneği sil",
+    "optionTitlePlaceholder": "Seçenek adı",
+    "optionDescriptionPlaceholder": "Detaylar: fiyat, son tarih, garanti…",
+    "photoSelected": "Seçilen fotoğraf: {{count}}",
+    "attachPhoto": "Fotoğraf ekle",
+    "addOption": "Seçenek ekle",
+    "approvalHint": "Direktör iki düğme görecek: «Onayla» ve «Reddet».",
+    "submit": "Direktöre gönder"
+  },
+  "createTaskDialog": {
+    "newTask": "Yeni görev",
+    "titleLabel": "Başlık",
+    "titlePlaceholder": "Örneğin: Kira sözleşmesi hazırla",
+    "titleRequired": "Görev başlığını girin",
+    "descriptionLabel": "Açıklama (isteğe bağlı)",
+    "descriptionPlaceholder": "Görev ayrıntıları…",
+    "projectLabel": "Proje",
+    "projectRequired": "Proje seçin",
+    "priorityLabel": "Öncelik",
+    "deadlineLabel": "Son tarih (isteğe bağlı)",
+    "assigneesLabel": "Sorumlular",
+    "noEmployees": "Uygun çalışan yok.",
+    "createBtn": "Görev oluştur",
+    "created": "Görev oluşturuldu"
+  },
+  "dashboardAnalytics": {
+    "title": "Analitik",
+    "byStatus": "Duruma göre görevler",
+    "byProject": "Projeye göre görevler",
+    "tasksLabel_one": "görev",
+    "tasksLabel_other": "görev"
+  },
+  "decisionCard": {
+    "decisionMade": "Karar alındı",
+    "approved": "Onaylandı",
+    "rejected": "Reddedildi",
+    "taskLabel": "Görev: {{title}}",
+    "chosen": "Seçildi",
+    "notChosen": "Seçilmedi",
+    "chooseOption": "Bu seçeneği seç",
+    "approve": "Onayla",
+    "reject": "Reddet",
+    "commentPlaceholder": "Yorum (isteğe bağlı)…",
+    "directorComment": "Direktör yorumu:"
+  },
+  "decisionStatus": {
+    "pending": "Karar bekliyor",
+    "decided": "Karar verildi"
+  },
+  "dialog": {
+    "close": "Kapat"
+  },
+  "directorDashboard": {
+    "kpiActive": "Aktif görevler",
+    "kpiCompletedThisMonth": "Bu ay tamamlanan",
+    "kpiAwaiting": "Karar bekleyen",
+    "kpiOverdue": "Gecikmiş",
+    "awaitingDecisionTitle": "Kararınızı bekliyor",
+    "projectsTitle": "Projeler",
+    "projectTaskCounts": "{{active}} aktif · toplam {{total}}",
+    "tasksTitle": "Görevler",
+    "tasksSelectedSuffix": " · seçili proje",
+    "showAll": "Tümünü göster",
+    "emptyTasks": "Henüz görev yok"
+  },
+  "directorDecisions": {
+    "pendingTab": "Karar bekliyor",
+    "decidedTab": "Karara bağlananlar",
+    "pendingEmptyTitle": "Her şey karara bağlandı",
+    "pendingEmptyDesc": "Kararınızı bekleyen talep yok.",
+    "decidedEmptyTitle": "Henüz karara bağlanan talep yok"
+  },
+  "directorLayout": {
+    "dashboard": "Kontrol paneli",
+    "pendingDecisions": "Karar bekliyor",
+    "title": "Direktör paneli"
+  },
+  "donutProgress": {
+    "title": "Projenin aktif görevlerinin ortalama ilerlemesi"
+  },
+  "employeeLayout": {
+    "myTasks": "Görevlerim",
+    "myUpdates": "Güncellemelerim"
+  },
+  "employeeTasks": {
+    "title": "Görevlerim",
+    "subtitle": "Size atanan görevler. Açmak ve güncelleme göndermek için tıklayın.",
+    "loadErrorTitle": "Görevler yüklenemedi",
+    "loadErrorDesc": "Bağlantınızı kontrol edip tekrar deneyin.",
+    "emptyTitle": "Henüz görev yok",
+    "emptyDesc": "Yönetici size bir görev atadığında burada görünecek."
+  },
+  "employeeUpdates": {
+    "title": "Güncellemelerim",
+    "subtitle": "Gönderdiğiniz güncellemelerin durumları.",
+    "empty": "Henüz güncelleme yok",
+    "emptyDesc": "Bir görev açın ve ilk güncellemenizi gönderin.",
+    "rejectReason": "Reddetme nedeni:"
+  },
+  "fileGrid": {},
+  "language": {
+    "ru": "Русский",
+    "tr": "Türkçe",
+    "switch": "Dil"
+  },
+  "login": {
+    "subtitle": "Görev yönetim sistemi",
+    "title": "Sisteme giriş",
+    "hint": "E-posta ve şifrenizi girin",
+    "email": "E-posta",
+    "password": "Şifre",
+    "submit": "Giriş yap",
+    "failed": "Giriş yapılamadı"
+  },
+  "notificationBell": {
+    "title": "Bildirimler",
+    "markAllRead": "Tümünü okundu işaretle",
+    "empty": "Henüz bildirim yok"
+  },
+  "notificationTitle": {
+    "task_assigned": "Size görev atandı",
+    "update_submitted": "Onay bekleyen yeni güncelleme",
+    "update_approved": "Güncellemeniz onaylandı",
+    "update_rejected": "Güncelleme reddedildi",
+    "decision_requested": "Kararınız gerekiyor",
+    "decision_made": "Direktör karar verdi",
+    "deadline_soon": "Son tarih yaklaşıyor"
+  },
+  "notificationType": {
+    "task_assigned": "Yeni görev",
+    "update_submitted": "Onay bekleyen güncelleme",
+    "update_approved": "Güncelleme onaylandı",
+    "update_rejected": "Güncelleme reddedildi",
+    "decision_requested": "Karar gerekiyor",
+    "decision_made": "Karar verildi",
+    "deadline_soon": "Son tarih yaklaşıyor"
+  },
+  "passwordInput": {
+    "hide": "Parolayı gizle",
+    "show": "Parolayı göster"
+  },
+  "profileDialog": {
+    "title": "Profil",
+    "changePassword": "Parola değişikliği",
+    "currentPassword": "Mevcut parola",
+    "newPassword": "Yeni parola",
+    "repeatPassword": "Yeni parolayı tekrarlayın",
+    "submitBtn": "Parolayı değiştir",
+    "passwordTooShort": "Yeni parola en az 8 karakter olmalı",
+    "passwordMismatch": "Parolalar eşleşmiyor",
+    "passwordChanged": "Parola değiştirildi"
+  },
+  "projectStatus": {
+    "active": "Aktif",
+    "archived": "Arşivlendi"
+  },
+  "role": {
+    "admin": "Yönetici",
+    "director": "Direktör",
+    "employee": "Çalışan"
+  },
+  "sheet": {
+    "close": "Kapat"
+  },
+  "taskCard": {
+    "awaitingDecision": "Karar bekliyor"
+  },
+  "taskPage": {
+    "unavailableTitle": "Görev kullanılamıyor",
+    "unavailableDesc": "Size atanmamış veya silinmiş olabilir.",
+    "awaitingDirector": "Direktör kararı bekliyor",
+    "deadline": "Son tarih: {{date}}",
+    "overdue": "gecikti",
+    "assignees": "Sorumlular:",
+    "requestDecision": "Direktör kararı iste",
+    "submitUpdate": "Güncelleme gönder",
+    "files": "Dosyalar",
+    "timeline": "Zaman çizelgesi"
+  },
+  "taskPriority": {
+    "low": "Düşük",
+    "medium": "Orta",
+    "high": "Yüksek",
+    "urgent": "Acil"
+  },
+  "taskStatus": {
+    "new": "Yeni",
+    "in_progress": "Devam ediyor",
+    "review": "İncelemede",
+    "awaiting_decision": "Karar bekliyor",
+    "completed": "Tamamlandı",
+    "paused": "Duraklatıldı",
+    "cancelled": "İptal edildi"
+  },
+  "themeToggle": {
+    "enableLight": "Açık temaya geç",
+    "enableDark": "Koyu temaya geç",
+    "light": "Açık tema",
+    "dark": "Koyu tema"
+  },
+  "timeline": {
+    "empty": "Henüz etkinlik yok",
+    "statusChanged": "Durum → {{status}}",
+    "progressChanged": "İlerleme {{from}}% → {{to}}%",
+    "updateApproved": "Güncelleme onaylandı",
+    "updateApprovedWithText": "Güncelleme onaylandı: {{text}}",
+    "decisionRequested": "Direktör kararı istendi",
+    "decisionRequestedWithTitle": "Karar istendi: {{title}}",
+    "decisionMade": "Karar verildi",
+    "decisionMadeOption": "Karar verildi: «{{option}}» seçildi",
+    "decisionMadeApproved": "Karar verildi: onaylandı",
+    "decisionMadeRejected": "Karar verildi: reddedildi"
+  },
+  "updateForm": {
+    "errTooShort": "Mesaj çok kısa",
+    "sentForReview": "Güncelleme incelemeye gönderildi",
+    "submitFailed": "Gönderilemedi",
+    "textPlaceholder": "Görev için yapılanları açıklayın…",
+    "dropzone": "Dosyaları buraya sürükleyin veya seçmek için tıklayın",
+    "dropzoneHint": "Fotoğraf, PDF, Word, Excel · en fazla 20 MB",
+    "removeFile": "Dosyayı sil",
+    "submit": "Gönder"
+  },
+  "updateStatus": {
+    "pending": "İncelemede",
+    "approved": "Onaylandı",
+    "rejected": "Reddedildi"
+  }
+}

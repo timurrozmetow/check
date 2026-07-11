@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { AnimatePresence, motion } from "framer-motion";
 import { Bell, CheckCheck } from "lucide-react";
 import {
@@ -14,6 +15,7 @@ import { cn } from "@/lib/utils";
 import { useNotificationsCtx } from "./NotificationsProvider";
 
 export function NotificationBell() {
+  const { t } = useTranslation();
   const { data } = useNotifications();
   const markRead = useMarkRead();
   const navigate = useNavigate();
@@ -35,8 +37,8 @@ export function NotificationBell() {
       <PopoverTrigger asChild>
         <button
           type="button"
-          aria-label="Уведомления"
-          title="Уведомления"
+          aria-label={t("notificationBell.title")}
+          title={t("notificationBell.title")}
           className="relative grid h-10 w-10 place-items-center rounded-[10px] border border-border bg-card text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
         >
           <Bell className={cn("h-[18px] w-[18px]", ringing && "animate-bell-ring")} />
@@ -49,7 +51,7 @@ export function NotificationBell() {
       </PopoverTrigger>
       <PopoverContent align="end" className="w-80 p-0">
         <div className="flex items-center justify-between border-b border-border px-4 py-3">
-          <span className="font-semibold">Уведомления</span>
+          <span className="font-semibold">{t("notificationBell.title")}</span>
           {unread > 0 && (
             <Button
               variant="ghost"
@@ -58,14 +60,14 @@ export function NotificationBell() {
               onClick={() => markRead.mutate(undefined)}
             >
               <CheckCheck className="h-3.5 w-3.5" />
-              Прочитать все
+              {t("notificationBell.markAllRead")}
             </Button>
           )}
         </div>
         <div className="thin-scrollbar max-h-96 overflow-y-auto">
           {items.length === 0 ? (
             <div className="px-4 py-10 text-center text-sm text-muted-foreground">
-              Уведомлений пока нет
+              {t("notificationBell.empty")}
             </div>
           ) : (
             <AnimatePresence initial={false}>
@@ -91,7 +93,7 @@ export function NotificationBell() {
                     )}
                     <div className="min-w-0 flex-1">
                       <p className="text-sm font-medium leading-snug">
-                        {n.title}
+                        {t(`notificationTitle.${n.type}`, { defaultValue: n.title })}
                       </p>
                       {n.body && (
                         <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">

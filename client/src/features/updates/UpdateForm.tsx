@@ -8,9 +8,11 @@ import { formatFileSize, cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { RequestError } from "@/api/client";
 import { useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 
 /** Форма отправки обновления по задаче: текст + перетаскивание файлов. */
 export function UpdateForm({ taskId }: { taskId: number }) {
+  const { t } = useTranslation();
   const create = useCreateUpdate();
   const qc = useQueryClient();
   const [text, setText] = useState("");
@@ -26,7 +28,7 @@ export function UpdateForm({ taskId }: { taskId: number }) {
 
   async function submit() {
     if (text.trim().length < 3) {
-      toast.error("Сообщение слишком короткое");
+      toast.error(t("updateForm.errTooShort"));
       return;
     }
     setBusy(true);
@@ -36,11 +38,11 @@ export function UpdateForm({ taskId }: { taskId: number }) {
         await uploadFiles("task_update", res.update.id, files);
       }
       qc.invalidateQueries({ queryKey: ["my-updates"] });
-      toast.success("Обновление отправлено на проверку");
+      toast.success(t("updateForm.sentForReview"));
       setText("");
       setFiles([]);
     } catch (e) {
-      toast.error(e instanceof RequestError ? e.message : "Не удалось отправить");
+      toast.error(e instanceof RequestError ? e.message : t("updateForm.submitFailed"));
     } finally {
       setBusy(false);
     }
@@ -49,7 +51,7 @@ export function UpdateForm({ taskId }: { taskId: number }) {
   return (
     <div className="space-y-3">
       <Textarea
-        placeholder="Опишите, что сделано по задаче…"
+        placeholder={t("updateForm.textPlaceholder")}
         value={text}
         onChange={(e) => setText(e.target.value)}
         rows={3}
@@ -75,9 +77,9 @@ export function UpdateForm({ taskId }: { taskId: number }) {
         )}
       >
         <Paperclip className="h-5 w-5" />
-        <span>Перетащите файлы сюда или нажмите, чтобы выбрать</span>
+        <span>{t("updateForm.dropzone")}</span>
         <span className="text-xs text-muted-foreground/70">
-          Фото, PDF, Word, Excel · до 20 МБ
+          {t("updateForm.dropzoneHint")}
         </span>
         <input
           ref={inputRef}
@@ -103,7 +105,7 @@ export function UpdateForm({ taskId }: { taskId: number }) {
               </span>
               <button
                 type="button"
-                aria-label="Удалить файл"
+                aria-label={t("updateForm.removeFile")}
                 onClick={() => setFiles((p) => p.filter((_, j) => j !== i))}
                 className="text-muted-foreground hover:text-destructive"
               >
@@ -121,7 +123,7 @@ export function UpdateForm({ taskId }: { taskId: number }) {
           ) : (
             <Send className="mr-2 h-4 w-4" />
           )}
-          Отправить
+          {t("updateForm.submit")}
         </Button>
       </div>
     </div>

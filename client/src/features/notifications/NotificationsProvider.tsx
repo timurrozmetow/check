@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import { useAuthStore } from "@/stores/auth";
 
 interface NotificationsContextValue {
@@ -25,8 +26,12 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
   const token = useAuthStore((s) => s.accessToken);
   const user = useAuthStore((s) => s.user);
   const qc = useQueryClient();
+  const { t } = useTranslation();
   const [ringKey, setRingKey] = useState(0);
   const esRef = useRef<EventSource | null>(null);
+  // t в ref, чтобы смена языка не пересоздавала SSE-соединение
+  const tRef = useRef(t);
+  tRef.current = t;
 
   useEffect(() => {
     if (!token || !user) return;
@@ -39,10 +44,16 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
     es.addEventListener("notification", (e) => {
       try {
         const data = JSON.parse((e as MessageEvent).data) as {
+          type: string;
           title: string;
           body: string | null;
         };
-        toast(data.title, { description: data.body ?? undefined });
+        toast(
+          tRef.current(`notificationTitle.${data.type}`, {
+            defaultValue: data.title,
+          }),
+          { description: data.body ?? undefined },
+        );
       } catch {
         /* ignore */
       }

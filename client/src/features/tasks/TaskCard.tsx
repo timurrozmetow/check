@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { CalendarDays, Gavel, MessageSquare } from "lucide-react";
 import { ProgressBar } from "@/components/common/ProgressBar";
 import { ProjectChip } from "@/components/common/ProjectChip";
@@ -20,6 +21,7 @@ export function TaskCard({
   index?: number;
 }) {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const overdue =
     task.deadline &&
     isOverdue(task.deadline) &&
@@ -43,7 +45,7 @@ export function TaskCard({
             {task.hasPendingDecision && (
               <span className="inline-flex items-center gap-1 rounded-full bg-accent px-2 py-0.5 text-xs font-semibold text-accent-foreground">
                 <Gavel className="h-3 w-3" />
-                Ждёт решения
+                {t("taskCard.awaitingDecision")}
               </span>
             )}
           </div>

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Loader2 } from "lucide-react";
 import {
   Dialog,
@@ -19,8 +20,8 @@ export function ConfirmDialog({
   onOpenChange,
   title,
   description,
-  confirmLabel = "Удалить",
-  cancelLabel = "Отмена",
+  confirmLabel,
+  cancelLabel,
   destructive = true,
   onConfirm,
 }: {
@@ -33,6 +34,7 @@ export function ConfirmDialog({
   destructive?: boolean;
   onConfirm: () => void | Promise<void>;
 }) {
+  const { t } = useTranslation();
   const [busy, setBusy] = useState(false);
 
   async function handleConfirm() {
@@ -58,7 +60,7 @@ export function ConfirmDialog({
             onClick={() => onOpenChange(false)}
             disabled={busy}
           >
-            {cancelLabel}
+            {cancelLabel ?? t("common.cancel")}
           </Button>
           <Button
             variant={destructive ? "destructive" : "default"}
@@ -66,7 +68,7 @@ export function ConfirmDialog({
             disabled={busy}
           >
             {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {confirmLabel}
+            {confirmLabel ?? t("common.delete")}
           </Button>
         </DialogFooter>
       </DialogContent>

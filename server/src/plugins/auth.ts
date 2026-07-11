@@ -55,7 +55,7 @@ export default fp(async (app) => {
       throw unauthorized();
     }
     if (req.user.type !== "access") {
-      throw unauthorized("Недействительный тип токена");
+      throw unauthorized("error.invalidTokenType");
     }
   });
 

@@ -1,0 +1,460 @@
+{
+  "activityType": {
+    "task_created": "Задача создана",
+    "status_changed": "Статус изменён",
+    "progress_changed": "Прогресс обновлён",
+    "update_approved": "Обновление принято",
+    "decision_requested": "Запрошено решение директора",
+    "decision_made": "Директор принял решение",
+    "task_completed": "Задача завершена"
+  },
+  "adminDashboard": {
+    "kpiTotal": "Всего задач",
+    "kpiModeration": "На модерации",
+    "kpiAwaiting": "Ждут решения директора",
+    "kpiOverdue": "Просрочено",
+    "projectsTitle": "Проекты",
+    "projectTasks": "{{active}} активных · {{total}} всего",
+    "recentTasksTitle": "Последние задачи",
+    "collapse": "Свернуть",
+    "showAll": "Показать все",
+    "emptyTitle": "Задач пока нет",
+    "emptyDescription": "Создайте первую задачу, чтобы начать работу."
+  },
+  "adminDecisions": {
+    "typeChoice_one": "Выбор из {{count}} варианта",
+    "typeChoice_few": "Выбор из {{count}} вариантов",
+    "typeChoice_many": "Выбор из {{count}} вариантов",
+    "typeApproval": "Согласование",
+    "taskLabel": "Задача: {{title}}",
+    "openTask": "Открыть задачу",
+    "selectedOption": "Выбран вариант: {{option}}",
+    "noOptionMarked": "вариант не отмечен",
+    "approved": "Согласовано",
+    "rejected": "Отклонено",
+    "directorComment": "Комментарий директора:",
+    "emptyPendingTitle": "Нет запросов в ожидании",
+    "emptyPendingDesc": "Здесь появятся запросы, ожидающие решения директора. Создать запрос можно на странице задачи.",
+    "emptyDecidedTitle": "Решённых запросов пока нет",
+    "emptyDecidedDesc": "Как только директор примет решения, они появятся в этом разделе.",
+    "title": "Решения директора",
+    "subtitle": "Мониторинг запросов на решение. Запросы создаются на странице задачи — здесь вы отслеживаете их статус.",
+    "tabPending": "Ожидают",
+    "tabDecided": "Решённые",
+    "typeChoice_other": "Выбор из {{count}} вариантов"
+  },
+  "adminLayout": {
+    "overview": "Обзор",
+    "projects": "Проекты",
+    "tasks": "Задачи",
+    "moderation": "Модерация",
+    "decisions": "Решения",
+    "users": "Пользователи",
+    "reports": "Отчёты",
+    "title": "Панель администратора"
+  },
+  "adminModeration": {
+    "title": "Модерация обновлений",
+    "subtitle": "Подтверждённые обновления попадают в хронологию и видны директору.",
+    "empty": "Очередь пуста",
+    "emptyDescription": "Все обновления промодерированы.",
+    "setProgress": "Выставить %:",
+    "approve": "Принять",
+    "reject": "Отклонить",
+    "reasonPlaceholder": "Причина отклонения…",
+    "progressError": "Процент 0–100, кратно 5",
+    "reasonRequired": "Укажите причину",
+    "approved": "Обновление принято",
+    "rejected": "Обновление отклонено"
+  },
+  "adminProjects": {
+    "editTitle": "Редактировать проект",
+    "newTitle": "Новый проект",
+    "formDescription": "Задачи всегда привязаны к проекту. Цвет помогает быстро различать их в списках.",
+    "nameLabel": "Название",
+    "namePlaceholder": "Например: Открытие кофейни",
+    "descriptionLabel": "Описание",
+    "descriptionPlaceholder": "Коротко о проекте…",
+    "colorLabel": "Цвет",
+    "pickColor": "Выбрать цвет {{color}}",
+    "nameRequired": "Введите название проекта",
+    "updated": "Проект обновлён",
+    "created": "Проект создан",
+    "archived": "Проект в архиве",
+    "activated": "Проект активирован",
+    "deleted": "Проект удалён",
+    "noDescription": "Без описания",
+    "actions": "Действия с проектом",
+    "archive": "Архивировать",
+    "activate": "Активировать",
+    "deleteConfirmTitle": "Удалить проект «{{name}}»?",
+    "deleteConfirmDescription": "Действие необратимо. Проект можно удалить только если в нём нет задач.",
+    "deleteConfirmLabel": "Удалить проект",
+    "taskCount": "{{active}} активных · {{total}} всего",
+    "title": "Проекты",
+    "subtitle": "Компании и направления, к которым привязаны задачи.",
+    "newProject": "Новый проект",
+    "emptyTitle": "Проектов пока нет",
+    "emptyDescription": "Создайте первый проект, чтобы начать ставить задачи."
+  },
+  "adminReports": {
+    "title": "Месячный отчёт",
+    "subtitle": "Сформируйте полный отчёт о проделанной работе в формате Word.",
+    "cardTitle": "Параметры отчёта",
+    "cardDescription": "Выберите период и, при необходимости, конкретный проект.",
+    "yearLabel": "Год",
+    "monthLabel": "Месяц",
+    "projectLabel": "Проект",
+    "allProjects": "Все проекты",
+    "sectionsTitle": "Что войдёт в отчёт",
+    "downloadBtn": "Скачать отчёт (.docx)",
+    "successToast": "Отчёт сформирован и скачан",
+    "errorToast": "Не удалось скачать отчёт",
+    "months": {
+      "1": "Январь",
+      "2": "Февраль",
+      "3": "Март",
+      "4": "Апрель",
+      "5": "Май",
+      "6": "Июнь",
+      "7": "Июль",
+      "8": "Август",
+      "9": "Сентябрь",
+      "10": "Октябрь",
+      "11": "Ноябрь",
+      "12": "Декабрь"
+    },
+    "sections": {
+      "cover": "Титульная страница с названием и датой генерации",
+      "summary": "Сводка: всего задач, завершено, в работе, просрочено, среднее время",
+      "charts": "Три графика: по статусам, по проектам и завершено по неделям",
+      "table": "Таблица задач с процентом готовности и временем",
+      "details": "Детализация завершённых задач с фото результатов"
+    }
+  },
+  "adminTaskControls": {
+    "saveError": "Не удалось сохранить",
+    "status": "Статус",
+    "progress": "Готовность",
+    "decrease": "Уменьшить на 5%",
+    "progressSlider": "Готовность задачи в процентах",
+    "increase": "Увеличить на 5%"
+  },
+  "adminTasks": {
+    "title": "Задачи",
+    "subtitle": "Все задачи компании с фильтрами по проекту и статусу.",
+    "searchPlaceholder": "Поиск по названию…",
+    "allProjects": "Все проекты",
+    "anyStatus": "Любой статус",
+    "found": "Найдено задач:",
+    "resetFilters": "Сбросить фильтры",
+    "emptyTitle": "Задач не найдено",
+    "emptyDescription": "Измените фильтры, поиск или создайте новую задачу.",
+    "sort": {
+      "created": "Сначала новые",
+      "deadline": "По дедлайну",
+      "progress": "По прогрессу",
+      "priority": "По приоритету"
+    }
+  },
+  "adminUsers": {
+    "genericError": "Что-то пошло не так",
+    "title": "Пользователи",
+    "subtitle": "Создавайте аккаунты, назначайте роли и управляйте доступом.",
+    "newUser": "Новый пользователь",
+    "createDesc": "Аккаунт создаёт администратор — регистрации нет.",
+    "createSuccess": "Пользователь создан",
+    "fieldName": "Имя",
+    "namePlaceholder": "Иван Петров",
+    "fieldPassword": "Пароль",
+    "fieldRole": "Роль",
+    "passwordHint": "Минимум 8 символов",
+    "nameMin": "Минимум 2 символа",
+    "emailInvalid": "Некорректный email",
+    "editTitle": "Редактировать пользователя",
+    "editDesc": "Имя, email и роль аккаунта.",
+    "editNameRequired": "Введите имя (минимум 2 символа)",
+    "editSuccess": "Изменения сохранены",
+    "resetPassword": "Сбросить пароль",
+    "resetDesc": "Новый пароль для «{{name}}».",
+    "newPassword": "Новый пароль",
+    "resetBtn": "Сбросить",
+    "resetPasswordMin": "Пароль минимум 8 символов",
+    "resetSuccess": "Пароль обновлён",
+    "isSelf": "(это вы)",
+    "cannotDisableSelf": "Нельзя отключить свой аккаунт",
+    "active": "Активен",
+    "inactive": "Отключён",
+    "activitySwitch": "Активность пользователя",
+    "actions": "Действия",
+    "activatedSuccess": "Пользователь активирован",
+    "deactivatedSuccess": "Пользователь отключён",
+    "emptyTitle": "Пользователей пока нет",
+    "emptyDesc": "Создайте первый аккаунт кнопкой «Новый пользователь»."
+  },
+  "appShell": {
+    "logout": "Выйти",
+    "openMenu": "Открыть меню разделов"
+  },
+  "common": {
+    "cancel": "Отмена",
+    "save": "Сохранить",
+    "create": "Создать",
+    "delete": "Удалить",
+    "edit": "Редактировать",
+    "close": "Закрыть",
+    "retry": "Повторить",
+    "confirm": "Подтвердить",
+    "loading": "Загрузка…",
+    "back": "Назад",
+    "search": "Поиск",
+    "optional": "необязательно",
+    "error": "Что-то пошло не так",
+    "loadError": "Не удалось загрузить данные",
+    "noData": "Нет данных"
+  },
+  "confirmDialog": {},
+  "createDecisionDialog": {
+    "titleRequired": "Укажите заголовок",
+    "minTwoOptions": "Нужно минимум два варианта",
+    "uploadPartialError": "Не все файлы удалось загрузить",
+    "success": "Запрос решения отправлен директору",
+    "title": "Запрос решения директора",
+    "typeChoice": "Выбор варианта",
+    "typeApproval": "Согласование",
+    "fieldTitle": "Заголовок",
+    "titlePlaceholder": "Например: Выбор кофемашины",
+    "fieldDescription": "Описание",
+    "descriptionPlaceholder": "Поясните суть вопроса…",
+    "optionLabel": "Вариант {{n}}",
+    "deleteOption": "Удалить вариант",
+    "optionTitlePlaceholder": "Название варианта",
+    "optionDescriptionPlaceholder": "Детали: цена, срок, гарантия…",
+    "photoSelected": "Фото выбрано: {{count}}",
+    "attachPhoto": "Прикрепить фото",
+    "addOption": "Добавить вариант",
+    "approvalHint": "Директор увидит две кнопки: «Согласовать» и «Отклонить».",
+    "submit": "Отправить директору"
+  },
+  "createTaskDialog": {
+    "newTask": "Новая задача",
+    "titleLabel": "Название",
+    "titlePlaceholder": "Например: Подготовить договор аренды",
+    "titleRequired": "Укажите название задачи",
+    "descriptionLabel": "Описание (необязательно)",
+    "descriptionPlaceholder": "Детали задачи…",
+    "projectLabel": "Проект",
+    "projectRequired": "Выберите проект",
+    "priorityLabel": "Приоритет",
+    "deadlineLabel": "Дедлайн (необязательно)",
+    "assigneesLabel": "Исполнители",
+    "noEmployees": "Нет доступных сотрудников.",
+    "createBtn": "Создать задачу",
+    "created": "Задача создана"
+  },
+  "dashboardAnalytics": {
+    "title": "Аналитика",
+    "byStatus": "Задачи по статусам",
+    "byProject": "Задачи по проектам",
+    "tasksLabel_one": "задача",
+    "tasksLabel_few": "задачи",
+    "tasksLabel_many": "задач",
+    "tasksLabel_other": "задач"
+  },
+  "decisionCard": {
+    "decisionMade": "Решение принято",
+    "approved": "Согласовано",
+    "rejected": "Отклонено",
+    "taskLabel": "Задача: {{title}}",
+    "chosen": "Выбрано",
+    "notChosen": "Не выбрано",
+    "chooseOption": "Выбрать этот вариант",
+    "approve": "Согласовать",
+    "reject": "Отклонить",
+    "commentPlaceholder": "Комментарий (необязательно)…",
+    "directorComment": "Комментарий директора:"
+  },
+  "decisionStatus": {
+    "pending": "Ожидает решения",
+    "decided": "Решено"
+  },
+  "dialog": {
+    "close": "Закрыть"
+  },
+  "directorDashboard": {
+    "kpiActive": "Активных задач",
+    "kpiCompletedThisMonth": "Завершено за месяц",
+    "kpiAwaiting": "Ждут решения",
+    "kpiOverdue": "Просрочено",
+    "awaitingDecisionTitle": "Ждут вашего решения",
+    "projectsTitle": "Проекты",
+    "projectTaskCounts": "{{active}} активных · {{total}} всего",
+    "tasksTitle": "Задачи",
+    "tasksSelectedSuffix": " · выбранный проект",
+    "showAll": "Показать все",
+    "emptyTasks": "Задач пока нет"
+  },
+  "directorDecisions": {
+    "pendingTab": "Ждут решения",
+    "decidedTab": "Решённые",
+    "pendingEmptyTitle": "Всё решено",
+    "pendingEmptyDesc": "Нет запросов, ожидающих вашего решения.",
+    "decidedEmptyTitle": "Решённых запросов пока нет"
+  },
+  "directorLayout": {
+    "dashboard": "Дашборд",
+    "pendingDecisions": "Ждут решения",
+    "title": "Кабинет директора"
+  },
+  "donutProgress": {
+    "title": "Средний прогресс активных задач проекта"
+  },
+  "employeeLayout": {
+    "myTasks": "Мои задачи",
+    "myUpdates": "Мои обновления"
+  },
+  "employeeTasks": {
+    "title": "Мои задачи",
+    "subtitle": "Задачи, назначенные вам. Нажмите, чтобы открыть и отправить обновление.",
+    "loadErrorTitle": "Не удалось загрузить задачи",
+    "loadErrorDesc": "Проверьте соединение и попробуйте снова.",
+    "emptyTitle": "Задач пока нет",
+    "emptyDesc": "Когда администратор назначит вам задачу, она появится здесь."
+  },
+  "employeeUpdates": {
+    "title": "Мои обновления",
+    "subtitle": "Статусы отправленных вами обновлений.",
+    "empty": "Обновлений пока нет",
+    "emptyDesc": "Откройте задачу и отправьте первое обновление.",
+    "rejectReason": "Причина отклонения:"
+  },
+  "fileGrid": {},
+  "language": {
+    "ru": "Русский",
+    "tr": "Türkçe",
+    "switch": "Язык"
+  },
+  "login": {
+    "subtitle": "Система управления задачами",
+    "title": "Вход в систему",
+    "hint": "Введите email и пароль",
+    "email": "Email",
+    "password": "Пароль",
+    "submit": "Войти",
+    "failed": "Не удалось войти"
+  },
+  "notificationBell": {
+    "title": "Уведомления",
+    "markAllRead": "Прочитать все",
+    "empty": "Уведомлений пока нет"
+  },
+  "notificationTitle": {
+    "task_assigned": "Вам назначена задача",
+    "update_submitted": "Новое обновление на модерацию",
+    "update_approved": "Ваше обновление принято",
+    "update_rejected": "Обновление отклонено",
+    "decision_requested": "Требуется ваше решение",
+    "decision_made": "Директор принял решение",
+    "deadline_soon": "Приближается дедлайн"
+  },
+  "notificationType": {
+    "task_assigned": "Новая задача",
+    "update_submitted": "Обновление на модерацию",
+    "update_approved": "Обновление принято",
+    "update_rejected": "Обновление отклонено",
+    "decision_requested": "Требуется решение",
+    "decision_made": "Решение принято",
+    "deadline_soon": "Приближается дедлайн"
+  },
+  "passwordInput": {
+    "hide": "Скрыть пароль",
+    "show": "Показать пароль"
+  },
+  "profileDialog": {
+    "title": "Профиль",
+    "changePassword": "Смена пароля",
+    "currentPassword": "Текущий пароль",
+    "newPassword": "Новый пароль",
+    "repeatPassword": "Повторите новый пароль",
+    "submitBtn": "Изменить пароль",
+    "passwordTooShort": "Новый пароль не короче 8 символов",
+    "passwordMismatch": "Пароли не совпадают",
+    "passwordChanged": "Пароль изменён"
+  },
+  "projectStatus": {
+    "active": "Активен",
+    "archived": "В архиве"
+  },
+  "role": {
+    "admin": "Администратор",
+    "director": "Директор",
+    "employee": "Сотрудник"
+  },
+  "sheet": {
+    "close": "Закрыть"
+  },
+  "taskCard": {
+    "awaitingDecision": "Ждёт решения"
+  },
+  "taskPage": {
+    "unavailableTitle": "Задача недоступна",
+    "unavailableDesc": "Возможно, она вам не назначена или была удалена.",
+    "awaitingDirector": "Ждёт решения директора",
+    "deadline": "Дедлайн: {{date}}",
+    "overdue": "просрочен",
+    "assignees": "Исполнители:",
+    "requestDecision": "Запросить решение директора",
+    "submitUpdate": "Отправить обновление",
+    "files": "Файлы",
+    "timeline": "Хронология"
+  },
+  "taskPriority": {
+    "low": "Низкий",
+    "medium": "Средний",
+    "high": "Высокий",
+    "urgent": "Срочно"
+  },
+  "taskStatus": {
+    "new": "Новая",
+    "in_progress": "В работе",
+    "review": "На проверке",
+    "awaiting_decision": "Ждёт решения",
+    "completed": "Завершена",
+    "paused": "Приостановлена",
+    "cancelled": "Отменена"
+  },
+  "themeToggle": {
+    "enableLight": "Включить светлую тему",
+    "enableDark": "Включить тёмную тему",
+    "light": "Светлая тема",
+    "dark": "Тёмная тема"
+  },
+  "timeline": {
+    "empty": "Событий пока нет",
+    "statusChanged": "Статус → {{status}}",
+    "progressChanged": "Прогресс {{from}}% → {{to}}%",
+    "updateApproved": "Обновление принято",
+    "updateApprovedWithText": "Обновление принято: {{text}}",
+    "decisionRequested": "Запрошено решение директора",
+    "decisionRequestedWithTitle": "Запрошено решение: {{title}}",
+    "decisionMade": "Решение принято",
+    "decisionMadeOption": "Решение принято: выбран «{{option}}»",
+    "decisionMadeApproved": "Решение принято: согласовано",
+    "decisionMadeRejected": "Решение принято: отклонено"
+  },
+  "updateForm": {
+    "errTooShort": "Сообщение слишком короткое",
+    "sentForReview": "Обновление отправлено на проверку",
+    "submitFailed": "Не удалось отправить",
+    "textPlaceholder": "Опишите, что сделано по задаче…",
+    "dropzone": "Перетащите файлы сюда или нажмите, чтобы выбрать",
+    "dropzoneHint": "Фото, PDF, Word, Excel · до 20 МБ",
+    "removeFile": "Удалить файл",
+    "submit": "Отправить"
+  },
+  "updateStatus": {
+    "pending": "На проверке",
+    "approved": "Принято",
+    "rejected": "Отклонено"
+  }
+}

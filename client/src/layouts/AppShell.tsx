@@ -1,9 +1,11 @@
 import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { LogOut, Menu } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { Logo } from "@/components/common/Logo";
 import { ThemeToggle } from "@/components/common/ThemeToggle";
+import { LanguageSwitcher } from "@/components/common/LanguageSwitcher";
 import { NotificationBell } from "@/features/notifications/NotificationBell";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -11,7 +13,6 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { ProfileDialog } from "@/features/profile/ProfileDialog";
 import { logout } from "@/api/client";
 import { useAuthStore } from "@/stores/auth";
-import { ROLE_LABELS } from "@/lib/labels";
 import { initials } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
@@ -61,6 +62,7 @@ function NavList({
 }
 
 function UserCard() {
+  const { t } = useTranslation();
   const user = useAuthStore((s) => s.user);
   const navigate = useNavigate();
   if (!user) return null;
@@ -81,7 +83,7 @@ function UserCard() {
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-semibold">{user.name}</p>
                 <p className="text-xs text-muted-foreground">
-                  {ROLE_LABELS[user.role]}
+                  {t(`role.${user.role}`)}
                 </p>
               </div>
             </button>
@@ -89,7 +91,7 @@ function UserCard() {
         />
         <button
           type="button"
-          aria-label="Выйти"
+          aria-label={t("appShell.logout")}
           onClick={async () => {
             await logout();
             navigate("/login", { replace: true });
@@ -111,6 +113,7 @@ export function AppShell({
   items: NavItem[];
   title: string;
 }) {
+  const { t } = useTranslation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
 
@@ -147,7 +150,7 @@ export function AppShell({
                 variant="ghost"
                 size="icon"
                 className="lg:hidden"
-                aria-label="Открыть меню разделов"
+                aria-label={t("appShell.openMenu")}
                 data-testid="mobile-menu-trigger"
               >
                 <Menu className="h-5 w-5" />
@@ -166,6 +169,7 @@ export function AppShell({
 
           <h1 className="text-lg font-bold tracking-tight">{heading}</h1>
           <div className="flex-1" />
+          <LanguageSwitcher />
           <ThemeToggle />
           <NotificationBell />
         </header>

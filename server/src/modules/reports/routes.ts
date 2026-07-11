@@ -13,7 +13,7 @@ export default async function reportsRoutes(app: FastifyInstance) {
         req.query,
       );
       const data = await gatherReportData(year, month, projectId);
-      const buffer = await buildMonthlyReport(data);
+      const buffer = await buildMonthlyReport(data, req.locale);
       const filename = `report-${year}-${String(month).padStart(2, "0")}.docx`;
 
       reply

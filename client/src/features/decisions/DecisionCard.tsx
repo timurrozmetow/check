@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 import { Check, Loader2, ThumbsDown, ThumbsUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -19,6 +20,7 @@ export function DecisionCard({
   request: DecisionRequestDetail;
   index?: number;
 }) {
+  const { t } = useTranslation();
   const decide = useDecide();
   const [selected, setSelected] = useState<number | null>(null);
   const [comment, setComment] = useState("");
@@ -29,9 +31,9 @@ export function DecisionCard({
     setSelected(optionId);
     try {
       await decide.mutateAsync({ id: request.id, optionId, comment: comment || undefined });
-      toast.success("Решение принято");
+      toast.success(t("decisionCard.decisionMade"));
     } catch (e) {
-      toast.error(e instanceof RequestError ? e.message : "Ошибка");
+      toast.error(e instanceof RequestError ? e.message : t("common.error"));
       setSelected(null);
     }
   }
@@ -43,9 +45,9 @@ export function DecisionCard({
         approved,
         comment: comment || undefined,
       });
-      toast.success(approved ? "Согласовано" : "Отклонено");
+      toast.success(approved ? t("decisionCard.approved") : t("decisionCard.rejected"));
     } catch (e) {
-      toast.error(e instanceof RequestError ? e.message : "Ошибка");
+      toast.error(e instanceof RequestError ? e.message : t("common.error"));
     }
   }
 
@@ -64,7 +66,7 @@ export function DecisionCard({
             color={request.task.projectColor}
           />
           <span className="text-xs text-muted-foreground">
-            Задача: {request.task.title}
+            {t("decisionCard.taskLabel", { title: request.task.title })}
           </span>
         </div>
         <h2 className="text-xl font-bold sm:text-2xl">{request.title}</h2>
@@ -122,11 +124,11 @@ export function DecisionCard({
                       isChosen ? (
                         <div className="flex items-center justify-center gap-2 rounded-lg bg-primary/10 py-2 text-sm font-semibold text-primary">
                           <Check className="h-4 w-4" />
-                          Выбрано
+                          {t("decisionCard.chosen")}
                         </div>
                       ) : (
                         <div className="py-2 text-center text-sm text-muted-foreground">
-                          Не выбрано
+                          {t("decisionCard.notChosen")}
                         </div>
                       )
                     ) : (
@@ -139,7 +141,7 @@ export function DecisionCard({
                         {isPending && (
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                         )}
-                        Выбрать этот вариант
+                        {t("decisionCard.chooseOption")}
                       </Button>
                     )}
                   </div>
@@ -163,7 +165,7 @@ export function DecisionCard({
                 ) : (
                   <ThumbsDown className="h-5 w-5" />
                 )}
-                {request.approved ? "Согласовано" : "Отклонено"}
+                {request.approved ? t("decisionCard.approved") : t("decisionCard.rejected")}
               </div>
             ) : (
               <div className="grid grid-cols-2 gap-3">
@@ -174,7 +176,7 @@ export function DecisionCard({
                   onClick={() => submitApproval(true)}
                 >
                   <ThumbsUp className="mr-2 h-5 w-5" />
-                  Согласовать
+                  {t("decisionCard.approve")}
                 </Button>
                 <Button
                   size="lg"
@@ -184,7 +186,7 @@ export function DecisionCard({
                   onClick={() => submitApproval(false)}
                 >
                   <ThumbsDown className="mr-2 h-5 w-5" />
-                  Отклонить
+                  {t("decisionCard.reject")}
                 </Button>
               </div>
             )}
@@ -194,7 +196,7 @@ export function DecisionCard({
         {!decided && (
           <div className="mt-5">
             <Textarea
-              placeholder="Комментарий (необязательно)…"
+              placeholder={t("decisionCard.commentPlaceholder")}
               value={comment}
               onChange={(e) => setComment(e.target.value)}
               rows={2}
@@ -205,7 +207,7 @@ export function DecisionCard({
         {decided && request.directorComment && (
           <div className="mt-4 rounded-xl bg-secondary/60 p-4">
             <p className="text-xs font-semibold text-muted-foreground">
-              Комментарий директора:
+              {t("decisionCard.directorComment")}
             </p>
             <p className="mt-1 text-sm">{request.directorComment}</p>
           </div>

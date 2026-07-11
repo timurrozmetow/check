@@ -39,14 +39,14 @@ async function assertCanAttach(
       .from(taskUpdates)
       .where(eq(taskUpdates.id, entityId))
       .limit(1);
-    if (!upd) throw notFound("Обновление не найдено");
+    if (!upd) throw notFound("error.updateNotFound");
     if (role === "admin") return;
     if (upd.authorId === userId && upd.status === "pending") return;
-    throw forbidden("Нельзя прикрепить файл к этому обновлению");
+    throw forbidden("error.cannotAttachFileToUpdate");
   }
 
   // task / decision_request / decision_option — только admin
-  if (role !== "admin") throw forbidden("Недостаточно прав");
+  if (role !== "admin") throw forbidden("error.forbidden");
 
   let exists = false;
   if (entityType === "task") {
@@ -71,7 +71,7 @@ async function assertCanAttach(
       .limit(1);
     exists = Boolean(row);
   }
-  if (!exists) throw notFound("Объект для прикрепления не найден");
+  if (!exists) throw notFound("error.attachTargetNotFound");
 }
 
 interface SavedFile {
@@ -96,7 +96,7 @@ async function saveOne(part: IncomingFile): Promise<SavedFile> {
   if (!expectedExt || (expectedExt !== actualExt && !isExtCompatible(mime, actualExt))) {
     // сливаем поток, чтобы multipart не завис
     part.file.resume();
-    throw badRequest("Недопустимый тип файла", "UNSUPPORTED_TYPE");
+    throw badRequest("error.unsupportedFileType", "UNSUPPORTED_TYPE");
   }
 
   const now = new Date();
@@ -115,7 +115,7 @@ async function saveOne(part: IncomingFile): Promise<SavedFile> {
 
   if (part.file.truncated) {
     await fs.unlink(fullPath).catch(() => {});
-    throw badRequest("Файл превышает допустимый размер", "FILE_TOO_LARGE");
+    throw badRequest("error.fileTooLarge", "FILE_TOO_LARGE");
   }
 
   const stat = await fs.stat(fullPath);
@@ -193,12 +193,12 @@ export async function deleteFile(
     .from(files)
     .where(eq(files.id, fileId))
     .limit(1);
-  if (!file) throw notFound("Файл не найден");
+  if (!file) throw notFound("error.fileNotFound");
 
   if (role !== "admin") {
     // Разрешаем удалять только автору вложения к pending-обновлению
     if (file.entityType !== "task_update" || file.uploadedBy !== userId) {
-      throw forbidden("Недостаточно прав");
+      throw forbidden("error.forbidden");
     }
     const [upd] = await db
       .select({ status: taskUpdates.status })
@@ -206,7 +206,7 @@ export async function deleteFile(
       .where(eq(taskUpdates.id, file.entityId))
       .limit(1);
     if (!upd || upd.status !== "pending") {
-      throw forbidden("Обновление уже промодерировано");
+      throw forbidden("error.updateAlreadyModerated");
     }
   }
 

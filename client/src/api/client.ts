@@ -1,7 +1,13 @@
 import { useAuthStore } from "@/stores/auth";
+import i18n from "@/i18n";
 import type { ApiError, User } from "@/api/types";
 
 const BASE = "/api/v1";
+
+/** Текущий язык интерфейса для передачи на сервер (локализация ошибок/отчёта). */
+function currentLang(): string {
+  return i18n.language?.startsWith("tr") ? "tr" : "ru";
+}
 
 export class RequestError extends Error {
   constructor(
@@ -47,7 +53,7 @@ interface RequestOptions {
 
 async function rawRequest(path: string, opts: RequestOptions): Promise<Response> {
   const token = useAuthStore.getState().accessToken;
-  const headers: Record<string, string> = {};
+  const headers: Record<string, string> = { "X-Lang": currentLang() };
   if (token) headers.Authorization = `Bearer ${token}`;
   if (opts.body !== undefined) headers["Content-Type"] = "application/json";
 
@@ -121,7 +127,7 @@ export async function apiDownload(path: string, filename: string): Promise<void>
 export async function login(email: string, password: string) {
   const res = await fetch(`${BASE}/auth/login`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", "X-Lang": currentLang() },
     credentials: "include",
     body: JSON.stringify({ email, password }),
   });
