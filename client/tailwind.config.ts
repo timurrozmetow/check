@@ -11,6 +11,12 @@ export default {
       screens: { "2xl": "1400px" },
     },
     extend: {
+      // Брейкпоинты для ультрашироких экранов и 4K-телевизоров
+      // (базовые sm…2xl остаются от Tailwind).
+      screens: {
+        "3xl": "1920px",
+        "4xl": "2560px",
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",

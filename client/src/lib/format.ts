@@ -19,10 +19,18 @@ export function formatDateTime(iso: string | null): string {
   return format(new Date(iso), "d MMMM, HH:mm", { locale: dfLocale() });
 }
 
-/** «через 3 дня» / «3 gün içinde» */
+/**
+ * Относительное время уведомления: «5 минут назад» / «5 dakika önce».
+ * Уведомление — запись о случившемся, поэтому будущее время (рассинхрон
+ * часов клиента и сервера или смещение TZ) не имеет смысла — прижимаем
+ * к «сейчас», чтобы не показывать «через N часов».
+ */
 export function formatRelative(iso: string | null): string {
   if (!iso) return "";
-  return formatDistanceToNow(new Date(iso), {
+  const date = new Date(iso);
+  const now = new Date();
+  const clamped = date.getTime() > now.getTime() ? now : date;
+  return formatDistanceToNow(clamped, {
     locale: dfLocale(),
     addSuffix: true,
   });

@@ -21,6 +21,7 @@ export function Lottie({
   speed = 1,
   className,
   onComplete,
+  onReady,
 }: {
   src: string;
   loop?: boolean;
@@ -29,6 +30,9 @@ export function Lottie({
   speed?: number;
   className?: string;
   onComplete?: () => void;
+  /** Вызывается, когда анимация загружена и готова к отрисовке (можно
+      показать её вместо мгновенного спиннера-заглушки). */
+  onReady?: () => void;
 }) {
   return (
     <DotLottieReact
@@ -40,7 +44,12 @@ export function Lottie({
       renderConfig={{ autoResize: true, devicePixelRatio: 2 }}
       className={className}
       dotLottieRefCallback={(dl) => {
-        if (dl && onComplete) dl.addEventListener("complete", onComplete);
+        if (!dl) return;
+        if (onComplete) dl.addEventListener("complete", onComplete);
+        if (onReady) {
+          if (dl.isLoaded) onReady();
+          else dl.addEventListener("load", onReady);
+        }
       }}
     />
   );

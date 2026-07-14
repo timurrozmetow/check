@@ -168,7 +168,9 @@ export function AppShell({
             </SheetContent>
           </Sheet>
 
-          <h1 className="text-lg font-bold tracking-tight">{heading}</h1>
+          <h1 className="min-w-0 truncate text-lg font-bold tracking-tight">
+            {heading}
+          </h1>
           <div className="flex-1" />
           <GlobalSearch />
           <LanguageSwitcher />
@@ -176,7 +178,7 @@ export function AppShell({
           <NotificationBell />
         </header>
 
-        <main className="flex-1 px-4 py-6 md:px-6 lg:px-8">
+        <main className="flex-1 px-4 py-6 md:px-6 lg:px-8 3xl:px-12 3xl:py-8 4xl:px-16">
           <Outlet />
         </main>
       </div>

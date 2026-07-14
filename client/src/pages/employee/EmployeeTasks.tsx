@@ -42,7 +42,7 @@ export function EmployeeTasks() {
   const filtering = query.trim() !== "" || status !== ANY_STATUS;
 
   return (
-    <div className="mx-auto max-w-5xl space-y-5">
+    <div className="mx-auto max-w-5xl space-y-5 3xl:max-w-[100rem] 4xl:max-w-[120rem]">
       <div>
         <h1 className="text-xl font-bold">{t("employeeTasks.title")}</h1>
         <p className="text-sm text-muted-foreground">
@@ -118,7 +118,10 @@ export function EmployeeTasks() {
           }
         />
       ) : (
-        <motion.div layout className="grid gap-4 md:grid-cols-2">
+        <motion.div
+          layout
+          className="grid gap-4 md:grid-cols-2 3xl:grid-cols-3 4xl:grid-cols-4"
+        >
           {visible.map((task, i) => (
             <TaskCard
               key={task.id}

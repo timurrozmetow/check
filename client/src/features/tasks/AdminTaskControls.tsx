@@ -126,6 +126,28 @@ export function AdminTaskControls({ task }: { task: TaskDetail }) {
           </span>
         </div>
       </div>
+
+      {/* При 100% готовности со статусом не «завершена» — мягко предлагаем
+          завершить (статус остаётся ручным, авто-смены нет). */}
+      {progress === 100 &&
+        task.status !== "completed" &&
+        task.status !== "cancelled" && (
+          <div className="flex flex-col gap-2 rounded-xl bg-primary/10 px-4 py-3 text-sm sm:flex-row sm:items-center sm:justify-between">
+            <span className="font-medium text-primary">
+              {t("adminTaskControls.completeHint")}
+            </span>
+            <Button
+              size="sm"
+              className="shrink-0"
+              onClick={() =>
+                changeStatus.mutate({ id: task.id, status: "completed" })
+              }
+              disabled={changeStatus.isPending}
+            >
+              {t("adminTaskControls.markCompleted")}
+            </Button>
+          </div>
+        )}
     </div>
   );
 }

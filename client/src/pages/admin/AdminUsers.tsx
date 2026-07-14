@@ -19,6 +19,7 @@ import { UserAvatar } from "@/components/common/UserAvatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/common/EmptyState";
 import { PasswordInput } from "@/components/common/PasswordInput";
+import { useUnsavedGuard } from "@/components/common/useUnsavedGuard";
 import { cn } from "@/lib/utils";
 import {
   Dialog,
@@ -128,6 +129,12 @@ function CreateUserDialog({
     }
   }, [open]);
 
+  const dirty =
+    name !== "" || email !== "" || password !== "" || role !== "employee";
+  const { guardProps, confirmDialog } = useUnsavedGuard(dirty, () =>
+    onOpenChange(false),
+  );
+
   async function submit() {
     const next: typeof errors = {};
     if (name.trim().length < 2) next.name = t("adminUsers.nameMin");
@@ -152,7 +159,8 @@ function CreateUserDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="rounded-2xl">
+      {confirmDialog}
+      <DialogContent className="rounded-2xl" {...guardProps}>
         <DialogHeader>
           <DialogTitle>{t("adminUsers.newUser")}</DialogTitle>
           <DialogDescription>
@@ -521,7 +529,7 @@ export function AdminUsers() {
   const [createOpen, setCreateOpen] = useState(false);
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6">
+    <div className="mx-auto max-w-6xl space-y-6 3xl:max-w-[96rem]">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-xl font-bold">{t("adminUsers.title")}</h1>

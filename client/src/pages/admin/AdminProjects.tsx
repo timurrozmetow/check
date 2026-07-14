@@ -37,6 +37,7 @@ import { ProjectChip } from "@/components/common/ProjectChip";
 import { DonutProgress } from "@/components/common/DonutProgress";
 import { EmptyState } from "@/components/common/EmptyState";
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
+import { useUnsavedGuard } from "@/components/common/useUnsavedGuard";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   useCreateProject,
@@ -82,6 +83,15 @@ function ProjectFormDialog({
   const isEdit = project !== null;
   const busy = create.isPending || update.isPending;
 
+  // Незакрытые изменения относительно исходных значений.
+  const dirty =
+    name !== (project?.name ?? "") ||
+    description !== (project?.description ?? "") ||
+    color !== (project?.color ?? PROJECT_COLORS[0]);
+  const { guardProps, confirmDialog } = useUnsavedGuard(dirty, () =>
+    onOpenChange(false),
+  );
+
   // Синхронизируем значения формы при открытии диалога.
   useEffect(() => {
     if (open) {
@@ -126,7 +136,8 @@ function ProjectFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
+      {confirmDialog}
+      <DialogContent className="max-w-md" {...guardProps}>
         <DialogHeader>
           <DialogTitle>
             {isEdit
@@ -413,7 +424,7 @@ export function AdminProjects() {
   }
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6">
+    <div className="mx-auto max-w-6xl space-y-6 3xl:max-w-[110rem] 4xl:max-w-[130rem]">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-xl font-bold">{t("adminProjects.title")}</h1>
@@ -428,7 +439,7 @@ export function AdminProjects() {
       </div>
 
       {isLoading ? (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 3xl:grid-cols-4 4xl:grid-cols-5">
           {[0, 1, 2].map((i) => (
             <Skeleton key={i} className="h-44 rounded-2xl" />
           ))}
@@ -446,7 +457,7 @@ export function AdminProjects() {
           }
         />
       ) : (
-        <motion.div layout className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <motion.div layout className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 3xl:grid-cols-4 4xl:grid-cols-5">
           <AnimatePresence mode="popLayout">
             {projects?.map((p, i) => (
               <ProjectCard key={p.id} project={p} index={i} onEdit={openEdit} />

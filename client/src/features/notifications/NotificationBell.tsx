@@ -10,9 +10,10 @@ import {
 } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { useMarkRead, useNotifications } from "@/api/hooks";
+import { useAuthStore } from "@/stores/auth";
 import { formatRelative } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import { notificationBody } from "./format";
+import { notificationBody, notificationHref } from "./format";
 import { useNotificationsCtx } from "./NotificationsProvider";
 
 export function NotificationBell() {
@@ -20,6 +21,7 @@ export function NotificationBell() {
   const { data } = useNotifications();
   const markRead = useMarkRead();
   const navigate = useNavigate();
+  const role = useAuthStore((s) => s.user?.role);
   const { ringKey } = useNotificationsCtx();
   const [ringing, setRinging] = useState(false);
 
@@ -81,7 +83,7 @@ export function NotificationBell() {
                   animate={{ opacity: 1 }}
                   onClick={() => {
                     if (!n.isRead) markRead.mutate([n.id]);
-                    if (n.link) navigate(n.link);
+                    if (n.link && role) navigate(notificationHref(n.link, role));
                   }}
                   className={cn(
                     "flex w-full flex-col gap-0.5 border-b border-border/60 px-4 py-3 text-left transition-colors hover:bg-secondary/60",

@@ -71,7 +71,7 @@ export function AdminTasks() {
   }, [tasks, query, sort]);
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6">
+    <div className="mx-auto max-w-6xl space-y-6 3xl:max-w-[110rem] 4xl:max-w-[130rem]">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-xl font-bold">{t("adminTasks.title")}</h1>
@@ -166,7 +166,10 @@ export function AdminTasks() {
           action={<CreateTaskDialog />}
         />
       ) : (
-        <motion.div layout className="grid gap-4 md:grid-cols-2">
+        <motion.div
+          layout
+          className="grid gap-4 md:grid-cols-2 3xl:grid-cols-3 4xl:grid-cols-4"
+        >
           <AnimatePresence mode="popLayout">
             {visibleTasks.map((task, i) => (
               <TaskCard

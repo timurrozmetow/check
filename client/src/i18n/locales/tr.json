@@ -150,7 +150,9 @@
     "progress": "İlerleme",
     "decrease": "%5 azalt",
     "progressSlider": "Görev ilerlemesi (yüzde)",
-    "increase": "%5 artır"
+    "increase": "%5 artır",
+    "completeHint": "İlerleme %100 — görev tamamlandı olarak işaretlensin mi?",
+    "markCompleted": "Tamamlandı olarak işaretle"
   },
   "adminTasks": {
     "title": "Görevler",
@@ -291,6 +293,12 @@
   },
   "dialog": {
     "close": "Kapat"
+  },
+  "unsavedChanges": {
+    "title": "Kaydetmeden kapatılsın mı?",
+    "description": "Girdiğiniz veriler kaydedilmedi ve kaybolacak.",
+    "confirm": "Kaydetmeden kapat",
+    "cancel": "Düzenlemeye devam et"
   },
   "directorDashboard": {
     "kpiActive": "Aktif görevler",

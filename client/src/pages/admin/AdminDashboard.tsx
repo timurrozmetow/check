@@ -55,18 +55,18 @@ export function AdminDashboard() {
 
   if (isLoading) {
     return (
-      <div className="mx-auto max-w-6xl space-y-8">
+      <div className="mx-auto max-w-6xl space-y-8 3xl:max-w-[110rem] 4xl:max-w-[130rem]">
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
           {[0, 1, 2, 3].map((i) => (
             <Skeleton key={i} className="h-28 rounded-2xl" />
           ))}
         </div>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 3xl:grid-cols-4">
           {[0, 1, 2].map((i) => (
             <Skeleton key={i} className="h-24 rounded-2xl" />
           ))}
         </div>
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-4 md:grid-cols-2 3xl:grid-cols-3 4xl:grid-cols-4">
           {[0, 1, 2, 3].map((i) => (
             <Skeleton key={i} className="h-40 rounded-2xl" />
           ))}
@@ -76,7 +76,7 @@ export function AdminDashboard() {
   }
 
   return (
-    <div className="mx-auto max-w-6xl space-y-8">
+    <div className="mx-auto max-w-6xl space-y-8 3xl:max-w-[110rem] 4xl:max-w-[130rem]">
       {/* KPI */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <KpiCard label={t("adminDashboard.kpiTotal")} value={kpi.total} icon={ListTodo} index={0} />
@@ -111,7 +111,7 @@ export function AdminDashboard() {
             <FolderKanban className="h-5 w-5 text-primary" />
             <h2 className="text-lg font-bold">{t("adminDashboard.projectsTitle")}</h2>
           </div>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 3xl:grid-cols-4">
             {projects?.map((p, i) => (
               <motion.div
                 key={p.id}
@@ -164,7 +164,7 @@ export function AdminDashboard() {
             description={t("adminDashboard.emptyDescription")}
           />
         ) : (
-          <motion.div layout className="grid gap-4 md:grid-cols-2">
+          <motion.div layout className="grid gap-4 md:grid-cols-2 3xl:grid-cols-3 4xl:grid-cols-4">
             <AnimatePresence mode="popLayout">
               {visibleTasks.map((task, i) => (
                 <TaskCard

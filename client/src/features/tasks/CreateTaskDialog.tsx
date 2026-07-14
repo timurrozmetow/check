@@ -21,6 +21,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { useUnsavedGuard } from "@/components/common/useUnsavedGuard";
 import { useCreateTask, useProjects, useUsers } from "@/api/hooks";
 import { ALL_PRIORITIES } from "@/lib/constants";
 import { initials } from "@/lib/format";
@@ -59,6 +60,18 @@ export function CreateTaskDialog({ trigger }: { trigger?: ReactNode }) {
   const employees = (users ?? []).filter((u) => u.role === "employee");
   const today = todayISODate();
   const deadlineInPast = deadline !== "" && deadline < today;
+
+  // Незакрытые изменения: предупреждаем при Escape/клике мимо.
+  const dirty =
+    title.trim() !== "" ||
+    description.trim() !== "" ||
+    projectId !== "" ||
+    assigneeIds.length > 0 ||
+    deadline !== "";
+  const { guardProps, confirmDialog } = useUnsavedGuard(dirty, () => {
+    reset();
+    setOpen(false);
+  });
 
   function reset() {
     setTitle("");
@@ -115,7 +128,11 @@ export function CreateTaskDialog({ trigger }: { trigger?: ReactNode }) {
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="max-h-[85vh] max-w-2xl overflow-y-auto">
+      {confirmDialog}
+      <DialogContent
+        className="max-h-[85vh] max-w-2xl overflow-y-auto"
+        {...guardProps}
+      >
         <DialogHeader>
           <DialogTitle>{t("createTaskDialog.newTask")}</DialogTitle>
         </DialogHeader>
