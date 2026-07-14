@@ -10,10 +10,17 @@ cd "$(dirname "$0")/.."
 if [ ! -f .env ]; then
   echo "Нет .env — скопируй .env.example в .env и заполни."; exit 1
 fi
-set -a; . ./.env; set +a
 
-DOMAIN="${DOMAIN:-t12.site}"
-EMAIL="${LETSENCRYPT_EMAIL:-}"
+# Безопасно читаем только нужные ключи (без выполнения .env — иначе
+# значения со спецсимволами/пробелами, напр. cron, ломают шелл).
+env_val() {
+  grep -E "^[[:space:]]*$1=" .env 2>/dev/null | tail -n1 | cut -d= -f2- \
+    | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' \
+          -e 's/^"//' -e 's/"$//' -e "s/^'//" -e "s/'$//"
+}
+DOMAIN="$(env_val DOMAIN)"; DOMAIN="${DOMAIN:-t12.site}"
+DOMAIN_ALIASES="$(env_val DOMAIN_ALIASES)"
+EMAIL="$(env_val LETSENCRYPT_EMAIL)"
 data_path="./docker/certbot"
 rsa_key_size=4096
 
