@@ -9,8 +9,10 @@ import {
 import {
   approveUpdate,
   createUpdate,
+  deleteUpdate,
   listModeration,
   listMyUpdates,
+  listTaskUpdates,
   rejectUpdate,
 } from "./service";
 
@@ -40,6 +42,18 @@ export default async function updatesRoutes(app: FastifyInstance) {
     updates: await listMyUpdates(req.user.sub),
   }));
 
+  // GET /api/v1/updates/for-task/:taskId — обновления задачи (с вложениями)
+  app.get(
+    "/for-task/:taskId",
+    { preHandler: [app.authenticate] },
+    async (req) => {
+      const { taskId } = taskIdParamSchema.parse(req.params);
+      return {
+        updates: await listTaskUpdates(taskId, req.user.role, req.user.sub),
+      };
+    },
+  );
+
   // POST /api/v1/updates/:id/approve — admin
   app.post(
     "/:id/approve",
@@ -61,4 +75,11 @@ export default async function updatesRoutes(app: FastifyInstance) {
       return { update: await rejectUpdate(id, req.user.sub, reason) };
     },
   );
+
+  // DELETE /api/v1/updates/:id — автор отзывает своё pending-обновление (или админ)
+  app.delete("/:id", { preHandler: [app.authenticate] }, async (req) => {
+    const { id } = idParamSchema.parse(req.params);
+    await deleteUpdate(id, req.user.role, req.user.sub);
+    return { ok: true };
+  });
 }

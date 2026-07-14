@@ -82,6 +82,9 @@ export const IMAGE_MIME_TYPES = ["image/jpeg", "image/png", "image/webp"];
 /** Шаг прогресса задачи в процентах. */
 export const PROGRESS_STEP = 5;
 
+/** Cookie с низкопривилегированным токеном для доступа к статике /uploads. */
+export const UPLOADS_COOKIE = "up_token";
+
 /** Статусы задач, считающиеся «активными» для сводок. */
 export const ACTIVE_TASK_STATUSES: TaskStatus[] = [
   "new",

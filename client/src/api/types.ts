@@ -157,6 +157,7 @@ export interface AppNotification {
   type: NotificationType;
   title: string;
   body: string | null;
+  params: Record<string, unknown> | null;
   link: string | null;
   isRead: boolean;
   createdAt: string;

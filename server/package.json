@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch --clear-screen=false src/index.ts",
-    "build": "tsup src/index.ts --format esm --target node20 --out-dir dist",
+    "build": "tsup src/index.ts src/db/migrate.ts src/db/seed.ts --format esm --target node20 --out-dir dist",
     "start": "node dist/index.js",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",

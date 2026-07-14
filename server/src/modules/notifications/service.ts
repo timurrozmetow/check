@@ -1,6 +1,7 @@
 import { and, count, desc, eq, inArray } from "drizzle-orm";
 import { db } from "../../db/index";
 import { notifications, type NotificationRow } from "../../db/schema";
+import { normalizePayload } from "../../shared/activity";
 import type { NotificationType } from "../../shared/constants";
 
 /** DTO уведомления по контракту API. */
@@ -9,6 +10,7 @@ export interface NotificationDto {
   type: NotificationType;
   title: string;
   body: string | null;
+  params: Record<string, unknown> | null;
   link: string | null;
   isRead: boolean;
   createdAt: Date;
@@ -20,6 +22,7 @@ function toDto(row: NotificationRow): NotificationDto {
     type: row.type,
     title: row.title,
     body: row.body,
+    params: normalizePayload(row.params),
     link: row.link,
     isRead: row.isRead,
     createdAt: row.createdAt,

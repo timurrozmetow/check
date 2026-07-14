@@ -184,6 +184,7 @@ export function useCreateUpdate() {
     onSuccess: (_r, vars) => {
       qc.invalidateQueries({ queryKey: ["my-updates"] });
       qc.invalidateQueries({ queryKey: ["task-timeline", vars.taskId] });
+      qc.invalidateQueries({ queryKey: ["task-updates", vars.taskId] });
     },
   });
 }
@@ -193,6 +194,16 @@ export function useModeration() {
     queryKey: ["moderation"],
     queryFn: () => api<{ updates: ModerationItem[] }>("/updates/moderation"),
     select: (d) => d.updates,
+  });
+}
+
+/** Обновления по задаче (с вложениями) — для страницы задачи. */
+export function useTaskUpdates(id: number | null) {
+  return useQuery({
+    queryKey: ["task-updates", id],
+    queryFn: () => api<{ updates: UpdateItem[] }>(`/updates/for-task/${id}`),
+    select: (d) => d.updates,
+    enabled: id !== null,
   });
 }
 
@@ -217,6 +228,7 @@ export function useApproveUpdate() {
       // инвалидируем карточку задачи (id апдейта не несёт taskId, поэтому по префиксу).
       qc.invalidateQueries({ queryKey: ["task"] });
       qc.invalidateQueries({ queryKey: ["task-timeline"] });
+      qc.invalidateQueries({ queryKey: ["task-updates"] });
     },
   });
 }
@@ -226,7 +238,25 @@ export function useRejectUpdate() {
   return useMutation({
     mutationFn: ({ id, reason }: { id: number; reason: string }) =>
       api(`/updates/${id}/reject`, { method: "POST", body: { reason } }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["moderation"] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["moderation"] });
+      qc.invalidateQueries({ queryKey: ["task-updates"] });
+    },
+  });
+}
+
+/** Отозвать/удалить обновление: автор — своё pending, админ — любое. */
+export function useDeleteUpdate() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => api(`/updates/${id}`, { method: "DELETE" }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["my-updates"] });
+      qc.invalidateQueries({ queryKey: ["moderation"] });
+      qc.invalidateQueries({ queryKey: ["tasks"] });
+      qc.invalidateQueries({ queryKey: ["task-timeline"] });
+      qc.invalidateQueries({ queryKey: ["task-updates"] });
+    },
   });
 }
 

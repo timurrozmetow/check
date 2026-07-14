@@ -3,7 +3,7 @@ import { ru, tr } from "date-fns/locale";
 import i18n from "@/i18n";
 
 /** Локаль date-fns под текущий язык интерфейса. */
-function dfLocale() {
+export function dfLocale() {
   return i18n.language?.startsWith("tr") ? tr : ru;
 }
 

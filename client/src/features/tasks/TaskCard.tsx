@@ -5,8 +5,8 @@ import { CalendarDays, Gavel, MessageSquare } from "lucide-react";
 import { ProgressBar } from "@/components/common/ProgressBar";
 import { ProjectChip } from "@/components/common/ProjectChip";
 import { PriorityBadge, StatusBadge } from "@/components/common/StatusBadge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { formatDate, initials, isOverdue } from "@/lib/format";
+import { UserAvatar } from "@/components/common/UserAvatar";
+import { formatDate, isOverdue } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { TaskListItem } from "@/api/types";
 
@@ -80,15 +80,14 @@ export function TaskCard({
 
         <div className="flex -space-x-2">
           {task.assignees.slice(0, 3).map((a) => (
-            <Avatar
+            <UserAvatar
               key={a.id}
-              className="h-7 w-7 border-2 border-card"
+              name={a.name}
+              avatar={a.avatar}
               title={a.name}
-            >
-              <AvatarFallback className="bg-primary/15 text-[11px] font-semibold text-primary">
-                {initials(a.name)}
-              </AvatarFallback>
-            </Avatar>
+              className="h-7 w-7 border-2 border-card"
+              fallbackClassName="text-[11px]"
+            />
           ))}
           {task.assignees.length > 3 && (
             <span className="grid h-7 w-7 place-items-center rounded-full border-2 border-card bg-secondary text-[11px] font-semibold text-muted-foreground">

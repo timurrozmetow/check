@@ -45,11 +45,25 @@
     "overview": "Genel Bakış",
     "projects": "Projeler",
     "tasks": "Görevler",
+    "board": "Pano",
+    "calendar": "Takvim",
     "moderation": "Moderasyon",
     "decisions": "Kararlar",
     "users": "Kullanıcılar",
     "reports": "Raporlar",
     "title": "Yönetici Paneli"
+  },
+  "board": {
+    "title": "Görev panosu",
+    "subtitle": "Durumu değiştirmek için kartları sütunlar arasında sürükleyin.",
+    "empty": "Boş"
+  },
+  "calendar": {
+    "title": "Son tarih takvimi",
+    "subtitle": "Son tarihli görevler tarihlere göre dizildi · toplam {{count}}",
+    "prev": "Önceki ay",
+    "next": "Sonraki ay",
+    "today": "Bugün"
   },
   "adminModeration": {
     "title": "Güncelleme moderasyonu",
@@ -299,6 +313,7 @@
   },
   "directorLayout": {
     "dashboard": "Kontrol paneli",
+    "calendar": "Takvim",
     "pendingDecisions": "Karar bekliyor",
     "title": "Direktör paneli"
   },
@@ -312,6 +327,10 @@
   "employeeTasks": {
     "title": "Görevlerim",
     "subtitle": "Size atanan görevler. Açmak ve güncelleme göndermek için tıklayın.",
+    "searchPlaceholder": "Görevlerde ara…",
+    "anyStatus": "Herhangi bir durum",
+    "noMatchTitle": "Sonuç bulunamadı",
+    "noMatchDesc": "Aramayı veya durum filtresini değiştirin.",
     "loadErrorTitle": "Görevler yüklenemedi",
     "loadErrorDesc": "Bağlantınızı kontrol edip tekrar deneyin.",
     "emptyTitle": "Henüz görev yok",
@@ -322,9 +341,16 @@
     "subtitle": "Gönderdiğiniz güncellemelerin durumları.",
     "empty": "Henüz güncelleme yok",
     "emptyDesc": "Bir görev açın ve ilk güncellemenizi gönderin.",
-    "rejectReason": "Reddetme nedeni:"
+    "rejectReason": "Reddetme nedeni:",
+    "retract": "Geri çek",
+    "retractConfirmTitle": "Güncelleme geri çekilsin mi?",
+    "retractConfirmDesc": "Güncelleme silinecek ve moderasyon kuyruğundan kaldırılacak. Yalnızca inceleme beklerken geri çekilebilir.",
+    "retracted": "Güncelleme geri çekildi"
   },
-  "fileGrid": {},
+  "fileGrid": {
+    "download": "İndir",
+    "downloadError": "Dosya indirilemedi"
+  },
   "language": {
     "ru": "Русский",
     "tr": "Türkçe",
@@ -343,6 +369,11 @@
     "title": "Bildirimler",
     "markAllRead": "Tümünü okundu işaretle",
     "empty": "Henüz bildirim yok"
+  },
+  "notificationBody": {
+    "decisionChoice": "«{{title}}» için «{{option}}» seçeneği seçildi",
+    "decisionApproved": "«{{title}}» — onaylandı",
+    "decisionRejected": "«{{title}}» — reddedildi"
   },
   "notificationTitle": {
     "task_assigned": "Size görev atandı",
@@ -368,6 +399,10 @@
   },
   "profileDialog": {
     "title": "Profil",
+    "changeAvatar": "Fotoğrafı değiştir",
+    "removeAvatar": "Kaldır",
+    "avatarUpdated": "Profil fotoğrafı güncellendi",
+    "avatarRemoved": "Profil fotoğrafı kaldırıldı",
     "changePassword": "Parola değişikliği",
     "currentPassword": "Mevcut parola",
     "newPassword": "Yeni parola",
@@ -386,6 +421,10 @@
     "director": "Direktör",
     "employee": "Çalışan"
   },
+  "search": {
+    "placeholder": "Görev ara…",
+    "empty": "Sonuç bulunamadı"
+  },
   "sheet": {
     "close": "Kapat"
   },
@@ -402,7 +441,12 @@
     "requestDecision": "Direktör kararı iste",
     "submitUpdate": "Güncelleme gönder",
     "files": "Dosyalar",
-    "timeline": "Zaman çizelgesi"
+    "updatesHeading": "Göreve ait güncellemeler",
+    "timeline": "Zaman çizelgesi",
+    "deleteTask": "Görevi sil",
+    "deleteConfirmTitle": "«{{title}}» görevi silinsin mi?",
+    "deleteConfirmDesc": "Bu işlem geri alınamaz: görev, güncellemeleri, karar istekleri, ekleri ve geçmişi kalıcı olarak silinir.",
+    "taskDeleted": "Görev silindi"
   },
   "taskPriority": {
     "low": "Düşük",
@@ -418,6 +462,16 @@
     "completed": "Tamamlandı",
     "paused": "Duraklatıldı",
     "cancelled": "İptal edildi"
+  },
+  "taskSummary": {
+    "heading": "Görev özeti",
+    "assignees": "Sorumlular",
+    "status": "Durum",
+    "lastUpdate": "Son güncelleme",
+    "decision": "Kararlar",
+    "decisionPending": "kararınızı bekliyor",
+    "decisionNone": "bekleyen yok",
+    "deadline": "Son tarih"
   },
   "themeToggle": {
     "enableLight": "Açık temaya geç",
@@ -442,6 +496,10 @@
     "errTooShort": "Mesaj çok kısa",
     "sentForReview": "Güncelleme incelemeye gönderildi",
     "submitFailed": "Gönderilemedi",
+    "sending": "Gönderiliyor…",
+    "sentBanner": "Gönderildi · inceleme bekliyor",
+    "filesFailed": "Güncelleme gönderildi ancak dosyalar yüklenemedi: {{msg}}",
+    "filesFailedGeneric": "Güncelleme gönderildi ancak dosyalar yüklenemedi",
     "textPlaceholder": "Görev için yapılanları açıklayın…",
     "dropzone": "Dosyaları buraya sürükleyin veya seçmek için tıklayın",
     "dropzoneHint": "Fotoğraf, PDF, Word, Excel · en fazla 20 MB",

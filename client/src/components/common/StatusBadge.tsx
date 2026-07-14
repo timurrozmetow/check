@@ -50,6 +50,13 @@ export function UpdateStatusBadge({
   const { t } = useTranslation();
   return (
     <span className={cn(base, UPDATE_STATUS_BADGE[status], className)}>
+      {status === "pending" && (
+        // Пульсирующая точка — визуальный сигнал «ожидает проверки».
+        <span className="relative flex h-2 w-2" aria-hidden="true">
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-warning/70" />
+          <span className="relative inline-flex h-2 w-2 rounded-full bg-warning" />
+        </span>
+      )}
       {t(`updateStatus.${status}`)}
     </span>
   );

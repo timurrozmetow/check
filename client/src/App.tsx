@@ -19,14 +19,16 @@ import { AdminModeration } from "@/pages/admin/AdminModeration";
 import { AdminDecisions } from "@/pages/admin/AdminDecisions";
 import { AdminUsers } from "@/pages/admin/AdminUsers";
 import { AdminReports } from "@/pages/admin/AdminReports";
+import { BoardPage } from "@/pages/admin/BoardPage";
 // Director
 import { DirectorDashboard } from "@/pages/director/DirectorDashboard";
 import { DirectorDecisions } from "@/pages/director/DirectorDecisions";
 // Employee
 import { EmployeeTasks } from "@/pages/employee/EmployeeTasks";
 import { EmployeeUpdates } from "@/pages/employee/EmployeeUpdates";
-// Общая карточка задачи
+// Общие
 import { TaskPage } from "@/pages/TaskPage";
+import { CalendarPage } from "@/pages/CalendarPage";
 
 export default function App() {
   const initializing = useAuthStore((s) => s.initializing);
@@ -55,6 +57,8 @@ export default function App() {
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/admin/projects" element={<AdminProjects />} />
           <Route path="/admin/tasks" element={<AdminTasks />} />
+          <Route path="/admin/board" element={<BoardPage />} />
+          <Route path="/admin/calendar" element={<CalendarPage />} />
           <Route path="/admin/moderation" element={<AdminModeration />} />
           <Route path="/admin/decisions" element={<AdminDecisions />} />
           <Route path="/admin/users" element={<AdminUsers />} />
@@ -71,6 +75,7 @@ export default function App() {
           }
         >
           <Route path="/director" element={<DirectorDashboard />} />
+          <Route path="/director/calendar" element={<CalendarPage />} />
           <Route path="/director/decisions" element={<DirectorDecisions />} />
           <Route path="/director/tasks/:id" element={<TaskPage />} />
         </Route>

@@ -7,7 +7,8 @@ import multipart from "@fastify/multipart";
 import rateLimit from "@fastify/rate-limit";
 import fastifyStatic from "@fastify/static";
 import { env, isProd } from "./shared/env";
-import authPlugin from "./plugins/auth";
+import { UPLOADS_COOKIE } from "./shared/constants";
+import authPlugin, { type JwtPayload } from "./plugins/auth";
 import errorHandler from "./plugins/error-handler";
 import authRoutes from "./modules/auth/routes";
 import usersRoutes from "./modules/users/routes";
@@ -45,6 +46,9 @@ export async function buildApp() {
           },
         },
     bodyLimit: 1024 * 1024, // JSON-тела; файлы идут через multipart со своим лимитом
+    // В проде приложение стоит за nginx — доверяем X-Forwarded-*,
+    // чтобы req.ip (rate-limit, логи) отражал реального клиента.
+    trustProxy: isProd,
   });
 
   await app.register(cors, {
@@ -64,6 +68,32 @@ export async function buildApp() {
     },
   });
 
+  // Авторизация (jwt + authenticate) — до раздачи статики, чтобы хук ниже
+  // мог валидировать cookie-токен.
+  await app.register(authPlugin);
+
+  // Статику /uploads отдаём ТОЛЬКО при валидной cookie-сессии (up_token):
+  // <img> не умеет слать Authorization, поэтому авторизуем через cookie.
+  // Хук добавлен ДО регистрации static, чтобы применяться к его маршрутам.
+  app.addHook("onRequest", async (req, reply) => {
+    const rawUrl = req.raw.url ?? "";
+    if (!rawUrl.startsWith("/uploads/")) return;
+    const token = req.cookies?.[UPLOADS_COOKIE];
+    let ok = false;
+    if (token) {
+      try {
+        ok = (app.jwt.verify(token) as JwtPayload).type === "uploads";
+      } catch {
+        ok = false;
+      }
+    }
+    if (!ok) {
+      return reply
+        .code(403)
+        .send({ error: { code: "FORBIDDEN", message: "Forbidden" } });
+    }
+  });
+
   // Раздача загруженных файлов (в проде это делает Nginx)
   const uploadsRoot = path.resolve(env.UPLOADS_DIR);
   fs.mkdirSync(uploadsRoot, { recursive: true });
@@ -74,7 +104,6 @@ export async function buildApp() {
   });
 
   await app.register(errorHandler);
-  await app.register(authPlugin);
 
   app.get("/api/v1/health", async () => ({ ok: true }));
 

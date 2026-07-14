@@ -9,7 +9,7 @@ export interface JwtPayload {
   sub: number;
   role: Role;
   name: string;
-  type: "access" | "refresh";
+  type: "access" | "refresh" | "uploads";
 }
 
 declare module "@fastify/jwt" {

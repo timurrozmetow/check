@@ -2,6 +2,7 @@ import { and, asc, count, desc, eq, inArray } from "drizzle-orm";
 import { db, type Tx } from "../../db/index";
 import {
   activityLog,
+  decisionOptions,
   decisionRequests,
   projects,
   taskAssignees,
@@ -13,6 +14,7 @@ import type { Role, TaskStatus } from "../../shared/constants";
 import { logActivity, normalizePayload } from "../../shared/activity";
 import { notify, type NotifyInput } from "../../shared/notify";
 import { getFilesFor, type FileInfo } from "../../shared/file-info";
+import { deleteFilesForEntities } from "../files/service";
 import { forbidden, notFound } from "../../shared/errors";
 import type { CreateTaskInput, UpdateTaskInput } from "./schemas";
 
@@ -492,5 +494,38 @@ export async function deleteTask(taskId: number): Promise<void> {
     .where(eq(tasks.id, taskId))
     .limit(1);
   if (!task) throw notFound("error.taskNotFound");
+
+  // Строки task_updates / decision_* / activity_log / assignees удалит каскад
+  // внешнего ключа. А вот вложения (files) внешним ключом не связаны —
+  // подчищаем их (в БД и на диске) вручную, до удаления задачи.
+  const updateIds = (
+    await db
+      .select({ id: taskUpdates.id })
+      .from(taskUpdates)
+      .where(eq(taskUpdates.taskId, taskId))
+  ).map((r) => r.id);
+  const decisionIds = (
+    await db
+      .select({ id: decisionRequests.id })
+      .from(decisionRequests)
+      .where(eq(decisionRequests.taskId, taskId))
+  ).map((r) => r.id);
+  const optionIds =
+    decisionIds.length > 0
+      ? (
+          await db
+            .select({ id: decisionOptions.id })
+            .from(decisionOptions)
+            .where(inArray(decisionOptions.requestId, decisionIds))
+        ).map((r) => r.id)
+      : [];
+
+  await deleteFilesForEntities([
+    { entityType: "task", entityIds: [taskId] },
+    { entityType: "task_update", entityIds: updateIds },
+    { entityType: "decision_request", entityIds: decisionIds },
+    { entityType: "decision_option", entityIds: optionIds },
+  ]);
+
   await db.delete(tasks).where(eq(tasks.id, taskId));
 }

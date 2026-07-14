@@ -198,6 +198,8 @@ export const notifications = mysqlTable(
     type: mysqlEnum("type", NOTIFICATION_TYPES).notNull(),
     title: varchar("title", { length: 200 }).notNull(),
     body: varchar("body", { length: 500 }),
+    /** Структурные данные для локализации тела на клиенте (напр. decision_made). */
+    params: json("params").$type<Record<string, unknown>>(),
     link: varchar("link", { length: 255 }),
     isRead: boolean("is_read").notNull().default(false),
     createdAt: timestamp("created_at").notNull().defaultNow(),

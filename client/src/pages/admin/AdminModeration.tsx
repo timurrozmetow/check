@@ -6,12 +6,12 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { UserAvatar } from "@/components/common/UserAvatar";
 import { EmptyState } from "@/components/common/EmptyState";
 import { Skeleton } from "@/components/ui/skeleton";
 import { FileGrid } from "@/features/tasks/FileGrid";
 import { useApproveUpdate, useModeration, useRejectUpdate } from "@/api/hooks";
-import { formatDateTime, initials } from "@/lib/format";
+import { formatDateTime } from "@/lib/format";
 import { toast } from "sonner";
 import { RequestError } from "@/api/client";
 import type { ModerationItem } from "@/api/types";
@@ -60,11 +60,12 @@ function ModerationRow({ item }: { item: ModerationItem }) {
     >
       <Card className="p-5 shadow-card">
         <div className="mb-3 flex items-center gap-3">
-          <Avatar className="h-9 w-9">
-            <AvatarFallback className="bg-primary/15 text-sm font-semibold text-primary">
-              {initials(item.author.name)}
-            </AvatarFallback>
-          </Avatar>
+          <UserAvatar
+            name={item.author.name}
+            avatar={item.author.avatar}
+            className="h-9 w-9"
+            fallbackClassName="text-sm"
+          />
           <div className="min-w-0 flex-1">
             <p className="text-sm font-semibold">{item.author.name}</p>
             <p className="truncate text-xs text-muted-foreground">

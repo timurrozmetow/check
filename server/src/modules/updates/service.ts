@@ -11,6 +11,7 @@ import type { Role } from "../../shared/constants";
 import { logActivity } from "../../shared/activity";
 import { notify, type NotifyInput } from "../../shared/notify";
 import { getFilesFor, type FileInfo } from "../../shared/file-info";
+import { deleteFilesForEntities } from "../files/service";
 import { getAdminIds } from "../../shared/recipients";
 import { badRequest, forbidden, notFound } from "../../shared/errors";
 
@@ -119,6 +120,63 @@ export async function createUpdate(
   return buildUpdateItem(updateId);
 }
 
+/**
+ * Обновления по конкретной задаче — для страницы задачи.
+ * Админ и директор видят все обновления (с вложениями сотрудников);
+ * сотрудник — только свои. Так начальник видит файлы, приложенные к задаче.
+ */
+export async function listTaskUpdates(
+  taskId: number,
+  role: Role,
+  userId: number,
+): Promise<UpdateItem[]> {
+  const [task] = await db
+    .select({ id: tasks.id })
+    .from(tasks)
+    .where(eq(tasks.id, taskId))
+    .limit(1);
+  if (!task) throw notFound("error.taskNotFound");
+
+  const conditions = [eq(taskUpdates.taskId, taskId)];
+  if (role === "employee") {
+    if (!(await isAssignee(taskId, userId))) {
+      throw forbidden("error.taskNotAssigned");
+    }
+    conditions.push(eq(taskUpdates.authorId, userId));
+  }
+
+  const rows = await db
+    .select({
+      u: taskUpdates,
+      authorId: users.id,
+      authorName: users.name,
+      authorAvatar: users.avatar,
+    })
+    .from(taskUpdates)
+    .innerJoin(users, eq(taskUpdates.authorId, users.id))
+    .where(and(...conditions))
+    .orderBy(desc(taskUpdates.createdAt));
+
+  if (rows.length === 0) return [];
+  const filesMap = await getFilesFor(
+    db,
+    "task_update",
+    rows.map((r) => r.u.id),
+  );
+
+  return rows.map((r) => ({
+    id: r.u.id,
+    taskId: r.u.taskId,
+    author: { id: r.authorId, name: r.authorName, avatar: r.authorAvatar },
+    text: r.u.text,
+    status: r.u.status,
+    rejectReason: r.u.rejectReason,
+    createdAt: r.u.createdAt,
+    reviewedAt: r.u.reviewedAt,
+    files: filesMap.get(r.u.id) ?? [],
+  }));
+}
+
 export type ModerationItem = UpdateItem & {
   task: { id: number; title: string; projectName: string };
 };
@@ -210,6 +268,40 @@ async function loadPendingUpdate(updateId: number) {
     throw badRequest("error.updateAlreadyReviewed", "ALREADY_REVIEWED");
   }
   return update;
+}
+
+/**
+ * Удаляет обновление. Автор может отозвать только СВОЁ обновление и только
+ * пока оно на модерации (pending) — тогда оно пропадает и из очереди админа
+ * (рассинхрона нет). Админ может удалить любое.
+ */
+export async function deleteUpdate(
+  updateId: number,
+  role: Role,
+  userId: number,
+): Promise<void> {
+  const [update] = await db
+    .select({
+      id: taskUpdates.id,
+      authorId: taskUpdates.authorId,
+      status: taskUpdates.status,
+    })
+    .from(taskUpdates)
+    .where(eq(taskUpdates.id, updateId))
+    .limit(1);
+  if (!update) throw notFound("error.updateNotFound");
+
+  if (role !== "admin") {
+    if (update.authorId !== userId) throw forbidden("error.forbidden");
+    if (update.status !== "pending") {
+      throw badRequest("error.updateAlreadyModerated", "ALREADY_REVIEWED");
+    }
+  }
+
+  await deleteFilesForEntities([
+    { entityType: "task_update", entityIds: [updateId] },
+  ]);
+  await db.delete(taskUpdates).where(eq(taskUpdates.id, updateId));
 }
 
 export async function approveUpdate(

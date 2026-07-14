@@ -2,7 +2,13 @@ import argon2 from "argon2";
 import { eq } from "drizzle-orm";
 import { db } from "../../db/index";
 import { users, type UserRow } from "../../db/schema";
-import { AppError, unauthorized } from "../../shared/errors";
+import { AppError, badRequest, unauthorized } from "../../shared/errors";
+import { IMAGE_MIME_TYPES } from "../../shared/constants";
+import {
+  deleteUploadFile,
+  saveOne,
+  type IncomingFile,
+} from "../files/service";
 
 export type PublicUser = Omit<UserRow, "passwordHash">;
 
@@ -53,4 +59,43 @@ export async function changeOwnPassword(
   }
   const passwordHash = await argon2.hash(newPassword);
   await db.update(users).set({ passwordHash }).where(eq(users.id, userId));
+}
+
+/** Загружает и ставит аватар текущему пользователю (использует уменьшенную копию). */
+export async function setOwnAvatar(
+  userId: number,
+  part: IncomingFile,
+): Promise<PublicUser> {
+  if (!IMAGE_MIME_TYPES.includes(part.mimetype)) {
+    part.file.resume(); // слить поток, чтобы multipart не завис
+    throw badRequest("error.unsupportedFileType", "UNSUPPORTED_TYPE");
+  }
+  const saved = await saveOne(part);
+  // Для аватара достаточно уменьшенной webp-копии; полноразмерный оригинал удаляем.
+  let url: string;
+  if (saved.thumbRelPath) {
+    await deleteUploadFile(`/uploads/${saved.relPath}`);
+    url = `/uploads/${saved.thumbRelPath}`;
+  } else {
+    url = `/uploads/${saved.relPath}`;
+  }
+
+  const old = await getUserById(userId);
+  await db.update(users).set({ avatar: url }).where(eq(users.id, userId));
+  if (old?.avatar) await deleteUploadFile(old.avatar);
+
+  const updated = await getUserById(userId);
+  if (!updated) throw unauthorized();
+  return toPublicUser(updated);
+}
+
+/** Убирает аватар текущего пользователя. */
+export async function removeOwnAvatar(userId: number): Promise<PublicUser> {
+  const old = await getUserById(userId);
+  await db.update(users).set({ avatar: null }).where(eq(users.id, userId));
+  if (old?.avatar) await deleteUploadFile(old.avatar);
+
+  const updated = await getUserById(userId);
+  if (!updated) throw unauthorized();
+  return toPublicUser(updated);
 }

@@ -57,8 +57,13 @@ async function rawRequest(path: string, opts: RequestOptions): Promise<Response>
   if (token) headers.Authorization = `Bearer ${token}`;
   if (opts.body !== undefined) headers["Content-Type"] = "application/json";
 
+  const hasBody = opts.formData !== undefined || opts.body !== undefined;
+  // GET/HEAD c телом бросает TypeError ещё до отправки — если тело есть,
+  // а метод не задан, это ошибка вызова: используем POST, а не молчаливый GET.
+  const method = opts.method ?? (hasBody ? "POST" : "GET");
+
   return fetch(`${BASE}${path}`, {
-    method: opts.method ?? "GET",
+    method,
     headers,
     credentials: "include",
     body:

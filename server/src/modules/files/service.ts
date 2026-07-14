@@ -1,10 +1,10 @@
-import { createWriteStream } from "node:fs";
+import { createReadStream, createWriteStream } from "node:fs";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
 import { pipeline } from "node:stream/promises";
 import sharp from "sharp";
-import { and, eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { db } from "../../db/index";
 import {
   decisionOptions,
@@ -182,6 +182,70 @@ export async function saveFiles(
 
 export { assertCanAttach, saveOne };
 export type { SavedFile, IncomingFile };
+
+/** Удаляет файл из uploads по url (`/uploads/<path>`) или относительному пути. */
+export async function deleteUploadFile(urlOrPath: string): Promise<void> {
+  const rel = urlOrPath.replace(/^\/uploads\//, "");
+  if (!rel) return;
+  await fs.unlink(path.join(uploadsRoot, rel)).catch(() => {});
+}
+
+/**
+ * Готовит файл к скачиванию: проверяет наличие строки и файла на диске,
+ * отдаёт поток + метаданные. Требует авторизации на уровне маршрута
+ * (в отличие от статической раздачи /uploads, это скачивание под токеном).
+ */
+export async function openFileForDownload(fileId: number): Promise<{
+  stream: NodeJS.ReadableStream;
+  mime: string;
+  size: number;
+  originalName: string;
+}> {
+  const [row] = await db
+    .select()
+    .from(files)
+    .where(eq(files.id, fileId))
+    .limit(1);
+  if (!row) throw notFound("error.fileNotFound");
+
+  const abs = path.join(uploadsRoot, row.path);
+  const stat = await fs.stat(abs).catch(() => null);
+  if (!stat) throw notFound("error.fileNotFound");
+
+  return {
+    stream: createReadStream(abs),
+    mime: row.mime,
+    size: stat.size,
+    originalName: row.originalName,
+  };
+}
+
+/**
+ * Удаляет вложения (строки в БД + файлы на диске) для набора сущностей.
+ * Таблица files не связана внешним ключом с task/task_update/decision_*,
+ * поэтому при удалении задачи/обновления их вложения нужно чистить явно —
+ * иначе останутся «сироты» в БД и на диске.
+ */
+export async function deleteFilesForEntities(
+  entries: { entityType: FileEntityType; entityIds: number[] }[],
+): Promise<void> {
+  for (const { entityType, entityIds } of entries) {
+    if (entityIds.length === 0) continue;
+    const where = and(
+      eq(files.entityType, entityType),
+      inArray(files.entityId, entityIds),
+    );
+    const rows = await db.select().from(files).where(where);
+    if (rows.length === 0) continue;
+    await db.delete(files).where(where);
+    for (const f of rows) {
+      await fs.unlink(path.join(uploadsRoot, f.path)).catch(() => {});
+      if (f.thumbPath) {
+        await fs.unlink(path.join(uploadsRoot, f.thumbPath)).catch(() => {});
+      }
+    }
+  }
+}
 
 export async function deleteFile(
   fileId: number,

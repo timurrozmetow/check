@@ -1,5 +1,6 @@
-import { useRef, useState } from "react";
-import { Loader2, Paperclip, Send, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { CheckCircle2, Loader2, Paperclip, Send, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useCreateUpdate } from "@/api/hooks";
@@ -19,7 +20,15 @@ export function UpdateForm({ taskId }: { taskId: number }) {
   const [files, setFiles] = useState<File[]>([]);
   const [dragOver, setDragOver] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [sent, setSent] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Плашка «Отправлено» сама скрывается через несколько секунд.
+  useEffect(() => {
+    if (!sent) return;
+    const id = setTimeout(() => setSent(false), 3500);
+    return () => clearTimeout(id);
+  }, [sent]);
 
   function addFiles(list: FileList | null) {
     if (!list) return;
@@ -27,22 +36,40 @@ export function UpdateForm({ taskId }: { taskId: number }) {
   }
 
   async function submit() {
+    if (busy) return; // защита от повторной отправки (дублей на модерации)
     if (text.trim().length < 3) {
       toast.error(t("updateForm.errTooShort"));
       return;
     }
     setBusy(true);
+    setSent(false);
     try {
       const res = await create.mutateAsync({ taskId, text: text.trim() });
+      // Обновление уже создано на сервере. Загрузка файлов — вторичный шаг:
+      // её провал НЕ должен выглядеть как провал отправки, иначе сотрудник
+      // жмёт «Отправить» повторно и плодит дубли в очереди модерации.
       if (files.length > 0) {
-        await uploadFiles("task_update", res.update.id, files);
+        try {
+          await uploadFiles("task_update", res.update.id, files);
+        } catch (e) {
+          toast.warning(
+            e instanceof RequestError
+              ? t("updateForm.filesFailed", { msg: e.message })
+              : t("updateForm.filesFailedGeneric"),
+          );
+        }
       }
       qc.invalidateQueries({ queryKey: ["my-updates"] });
-      toast.success(t("updateForm.sentForReview"));
+      // Обновляем ленту обновлений задачи (там теперь и вложения) после загрузки файлов.
+      qc.invalidateQueries({ queryKey: ["task-updates", taskId] });
       setText("");
       setFiles([]);
+      setSent(true);
+      toast.success(t("updateForm.sentForReview"));
     } catch (e) {
-      toast.error(e instanceof RequestError ? e.message : t("updateForm.submitFailed"));
+      toast.error(
+        e instanceof RequestError ? e.message : t("updateForm.submitFailed"),
+      );
     } finally {
       setBusy(false);
     }
@@ -53,7 +80,10 @@ export function UpdateForm({ taskId }: { taskId: number }) {
       <Textarea
         placeholder={t("updateForm.textPlaceholder")}
         value={text}
-        onChange={(e) => setText(e.target.value)}
+        onChange={(e) => {
+          setText(e.target.value);
+          if (sent) setSent(false);
+        }}
         rows={3}
       />
 
@@ -116,14 +146,65 @@ export function UpdateForm({ taskId }: { taskId: number }) {
         </div>
       )}
 
-      <div className="flex justify-end">
+      <div className="flex items-center justify-end gap-3">
+        <AnimatePresence mode="wait">
+          {busy ? (
+            <motion.div
+              key="sending"
+              initial={{ opacity: 0, x: 8 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0 }}
+              className="mr-auto flex items-center gap-2 text-sm font-medium text-primary"
+            >
+              <span className="flex gap-1">
+                {[0, 1, 2].map((i) => (
+                  <motion.span
+                    key={i}
+                    className="h-1.5 w-1.5 rounded-full bg-primary"
+                    animate={{ opacity: [0.3, 1, 0.3], y: [0, -2, 0] }}
+                    transition={{
+                      duration: 0.9,
+                      repeat: Infinity,
+                      delay: i * 0.15,
+                      ease: "easeInOut",
+                    }}
+                  />
+                ))}
+              </span>
+              {t("updateForm.sending")}
+            </motion.div>
+          ) : sent ? (
+            <motion.div
+              key="sent"
+              initial={{ opacity: 0, y: -6, scale: 0.96 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.96 }}
+              transition={{ type: "spring", stiffness: 420, damping: 26 }}
+              className="mr-auto flex items-center gap-2 rounded-full border border-success/30 bg-success/10 px-3 py-1.5 text-sm font-medium text-success"
+            >
+              <motion.span
+                initial={{ scale: 0, rotate: -30 }}
+                animate={{ scale: 1, rotate: 0 }}
+                transition={{ delay: 0.05, type: "spring", stiffness: 500, damping: 18 }}
+              >
+                <CheckCircle2 className="h-4 w-4" />
+              </motion.span>
+              {t("updateForm.sentBanner")}
+              <span className="relative ml-0.5 flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success/70" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-success" />
+              </span>
+            </motion.div>
+          ) : null}
+        </AnimatePresence>
+
         <Button onClick={submit} disabled={busy}>
           {busy ? (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
           ) : (
             <Send className="mr-2 h-4 w-4" />
           )}
-          {t("updateForm.submit")}
+          {busy ? t("updateForm.sending") : t("updateForm.submit")}
         </Button>
       </div>
     </div>

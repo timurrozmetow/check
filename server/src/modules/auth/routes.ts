@@ -1,11 +1,14 @@
-import type { FastifyInstance } from "fastify";
+import type { FastifyInstance, FastifyReply } from "fastify";
 import { env, isProd } from "../../shared/env";
-import { unauthorized } from "../../shared/errors";
+import { badRequest, unauthorized } from "../../shared/errors";
+import { UPLOADS_COOKIE } from "../../shared/constants";
 import type { JwtPayload } from "../../plugins/auth";
 import { changePasswordSchema, loginSchema } from "./schemas";
 import {
   changeOwnPassword,
   getUserById,
+  removeOwnAvatar,
+  setOwnAvatar,
   toPublicUser,
   verifyCredentials,
 } from "./service";
@@ -13,6 +16,24 @@ import {
 const REFRESH_COOKIE = "refresh_token";
 
 export default async function authRoutes(app: FastifyInstance) {
+  /** Ставит cookie для просмотра вложений (низкопривилегированный токен, path=/). */
+  function setUploadsCookie(
+    reply: FastifyReply,
+    base: { sub: number; role: JwtPayload["role"]; name: string },
+  ) {
+    const token = app.jwt.sign(
+      { ...base, type: "uploads" } satisfies JwtPayload,
+      { expiresIn: env.JWT_REFRESH_TTL },
+    );
+    reply.setCookie(UPLOADS_COOKIE, token, {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: isProd,
+      path: "/",
+      maxAge: 60 * 60 * 24 * 30,
+    });
+  }
+
   app.post(
     "/login",
     {
@@ -41,6 +62,7 @@ export default async function authRoutes(app: FastifyInstance) {
         path: "/api/v1/auth",
         maxAge: 60 * 60 * 24 * 30,
       });
+      setUploadsCookie(reply, base);
 
       return { accessToken, user: toPublicUser(user) };
     },
@@ -72,11 +94,18 @@ export default async function authRoutes(app: FastifyInstance) {
       { expiresIn: env.JWT_ACCESS_TTL },
     );
 
+    setUploadsCookie(reply, {
+      sub: user.id,
+      role: user.role,
+      name: user.name,
+    });
+
     return { accessToken, user: toPublicUser(user) };
   });
 
   app.post("/logout", async (_req, reply) => {
     reply.clearCookie(REFRESH_COOKIE, { path: "/api/v1/auth" });
+    reply.clearCookie(UPLOADS_COOKIE, { path: "/" });
     return { ok: true };
   });
 
@@ -97,4 +126,16 @@ export default async function authRoutes(app: FastifyInstance) {
       return { ok: true };
     },
   );
+
+  // Аватар текущего пользователя
+  app.post("/avatar", { preHandler: [app.authenticate] }, async (req) => {
+    if (!req.isMultipart()) throw badRequest("error.multipartExpected");
+    const part = await req.file();
+    if (!part) throw badRequest("error.filesMissing");
+    return { user: await setOwnAvatar(req.user.sub, part) };
+  });
+
+  app.delete("/avatar", { preHandler: [app.authenticate] }, async (req) => {
+    return { user: await removeOwnAvatar(req.user.sub) };
+  });
 }

@@ -5,6 +5,7 @@ import { idParamSchema } from "./schemas";
 import {
   assertCanAttach,
   deleteFile,
+  openFileForDownload,
   saveFiles,
   saveOne,
   type SavedFile,
@@ -68,6 +69,24 @@ export default async function filesRoutes(app: FastifyInstance) {
     );
     return { files: result };
   });
+
+  // GET /api/v1/files/:id/download — скачивание под токеном, как attachment
+  app.get(
+    "/:id/download",
+    { preHandler: [app.authenticate] },
+    async (req, reply) => {
+      const { id } = idParamSchema.parse(req.params);
+      const { stream, mime, size, originalName } =
+        await openFileForDownload(id);
+      // RFC 5987: имя файла в UTF-8 (пробелы/скобки/кириллица корректно).
+      const encoded = encodeURIComponent(originalName);
+      reply
+        .header("Content-Type", mime)
+        .header("Content-Length", size)
+        .header("Content-Disposition", `attachment; filename*=UTF-8''${encoded}`);
+      return reply.send(stream);
+    },
+  );
 
   // DELETE /api/v1/files/:id
   app.delete("/:id", { preHandler: [app.authenticate] }, async (req) => {

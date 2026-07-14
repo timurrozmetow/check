@@ -4,6 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { useAuthStore } from "@/stores/auth";
+import { notificationBody } from "./format";
 
 interface NotificationsContextValue {
   /** Счётчик «звона» колокольчика — меняется при новом уведомлении. */
@@ -47,12 +48,21 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
           type: string;
           title: string;
           body: string | null;
+          params: Record<string, unknown> | null;
         };
         toast(
           tRef.current(`notificationTitle.${data.type}`, {
             defaultValue: data.title,
           }),
-          { description: data.body ?? undefined },
+          {
+            description:
+              notificationBody(
+                tRef.current,
+                data.type,
+                data.params,
+                data.body,
+              ) ?? undefined,
+          },
         );
       } catch {
         /* ignore */

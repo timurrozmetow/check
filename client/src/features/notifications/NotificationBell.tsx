@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { useMarkRead, useNotifications } from "@/api/hooks";
 import { formatRelative } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { notificationBody } from "./format";
 import { useNotificationsCtx } from "./NotificationsProvider";
 
 export function NotificationBell() {
@@ -95,11 +96,14 @@ export function NotificationBell() {
                       <p className="text-sm font-medium leading-snug">
                         {t(`notificationTitle.${n.type}`, { defaultValue: n.title })}
                       </p>
-                      {n.body && (
-                        <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">
-                          {n.body}
-                        </p>
-                      )}
+                      {(() => {
+                        const body = notificationBody(t, n.type, n.params, n.body);
+                        return body ? (
+                          <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">
+                            {body}
+                          </p>
+                        ) : null;
+                      })()}
                       <p className="mt-1 text-[11px] text-muted-foreground/70">
                         {formatRelative(n.createdAt)}
                       </p>

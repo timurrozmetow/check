@@ -1,8 +1,11 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { FileText, FileSpreadsheet, Download, X } from "lucide-react";
 import { formatFileSize } from "@/lib/utils";
+import { downloadFile } from "@/api/upload";
+import { RequestError } from "@/api/client";
 import type { FileInfo } from "@/api/types";
 
 function isImage(mime: string) {
@@ -18,6 +21,21 @@ function docIcon(mime: string) {
 export function FileGrid({ files }: { files: FileInfo[] }) {
   const { t } = useTranslation();
   const [lightbox, setLightbox] = useState<FileInfo | null>(null);
+  const [downloadingId, setDownloadingId] = useState<number | null>(null);
+
+  async function download(file: FileInfo) {
+    setDownloadingId(file.id);
+    try {
+      await downloadFile(file.id, file.originalName);
+    } catch (e) {
+      toast.error(
+        e instanceof RequestError ? e.message : t("fileGrid.downloadError"),
+      );
+    } finally {
+      setDownloadingId(null);
+    }
+  }
+
   if (files.length === 0) return null;
 
   const images = files.filter((f) => isImage(f.mime));
@@ -49,12 +67,14 @@ export function FileGrid({ files }: { files: FileInfo[] }) {
         <div className="space-y-2">
           {docs.map((doc) => {
             const Icon = docIcon(doc.mime);
+            const busy = downloadingId === doc.id;
             return (
-              <a
+              <button
                 key={doc.id}
-                href={doc.url}
-                download={doc.originalName}
-                className="flex items-center gap-3 rounded-xl border border-border bg-card px-3 py-2.5 transition-colors hover:bg-secondary"
+                type="button"
+                onClick={() => download(doc)}
+                disabled={busy}
+                className="flex w-full items-center gap-3 rounded-xl border border-border bg-card px-3 py-2.5 text-left transition-colors hover:bg-secondary disabled:opacity-60"
               >
                 <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary">
                   <Icon className="h-[18px] w-[18px]" />
@@ -67,8 +87,13 @@ export function FileGrid({ files }: { files: FileInfo[] }) {
                     {formatFileSize(doc.size)}
                   </p>
                 </div>
-                <Download className="h-4 w-4 shrink-0 text-muted-foreground" />
-              </a>
+                <Download
+                  className={
+                    "h-4 w-4 shrink-0 text-muted-foreground" +
+                    (busy ? " animate-pulse" : "")
+                  }
+                />
+              </button>
             );
           })}
         </div>
@@ -86,14 +111,24 @@ export function FileGrid({ files }: { files: FileInfo[] }) {
                 alt={lightbox.originalName}
                 className="max-h-[80vh] w-full rounded-xl object-contain"
               />
-              <button
-                type="button"
-                onClick={() => setLightbox(null)}
-                aria-label={t("common.close")}
-                className="absolute right-3 top-3 grid h-9 w-9 place-items-center rounded-full bg-black/60 text-white transition-colors hover:bg-black/80"
-              >
-                <X className="h-5 w-5" />
-              </button>
+              <div className="absolute right-3 top-3 flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => download(lightbox)}
+                  aria-label={t("fileGrid.download")}
+                  className="grid h-9 w-9 place-items-center rounded-full bg-black/60 text-white transition-colors hover:bg-black/80"
+                >
+                  <Download className="h-5 w-5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setLightbox(null)}
+                  aria-label={t("common.close")}
+                  className="grid h-9 w-9 place-items-center rounded-full bg-black/60 text-white transition-colors hover:bg-black/80"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
             </div>
           )}
         </DialogContent>

@@ -8,6 +8,8 @@ export interface NotifyInput {
   type: NotificationType;
   title: string;
   body?: string;
+  /** Структурные данные для локализации тела на клиенте (напр. decision_made). */
+  params?: Record<string, unknown>;
   /** Внутренний роут приложения, например /tasks/5 */
   link?: string;
 }
@@ -24,6 +26,7 @@ export async function notify(dbOrTx: Db | Tx, items: NotifyInput[]) {
       type: n.type,
       title: n.title,
       body: n.body ?? null,
+      params: n.params ?? null,
       link: n.link ?? null,
     })),
   );
@@ -32,6 +35,7 @@ export async function notify(dbOrTx: Db | Tx, items: NotifyInput[]) {
       type: n.type,
       title: n.title,
       body: n.body ?? null,
+      params: n.params ?? null,
       link: n.link ?? null,
     });
   }

@@ -1,10 +1,12 @@
 import {
+  CalendarDays,
   CheckSquare,
   FileText,
   FolderKanban,
   Gavel,
   LayoutDashboard,
   ShieldCheck,
+  Trello,
   Users,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -20,6 +22,8 @@ export function AdminLayout() {
     { to: "/admin", label: t("adminLayout.overview"), icon: LayoutDashboard },
     { to: "/admin/projects", label: t("adminLayout.projects"), icon: FolderKanban },
     { to: "/admin/tasks", label: t("adminLayout.tasks"), icon: CheckSquare },
+    { to: "/admin/board", label: t("adminLayout.board"), icon: Trello },
+    { to: "/admin/calendar", label: t("adminLayout.calendar"), icon: CalendarDays },
     {
       to: "/admin/moderation",
       label: t("adminLayout.moderation"),

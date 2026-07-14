@@ -321,9 +321,15 @@ export async function decideDecision(
       ...assigneeRows.map((r) => r.userId),
     ]);
 
+    // body — фолбэк на русском (для старых клиентов), params — для локализации.
     const body = chosen
       ? `«${request.title}» — выбран вариант «${chosen.title}»`
       : `«${request.title}» — ${approvedValue ? "согласовано" : "отклонено"}`;
+    const params: Record<string, unknown> = {
+      title: request.title,
+      decision: chosen ? "choice" : approvedValue ? "approved" : "rejected",
+      ...(chosen ? { option: chosen.title } : {}),
+    };
 
     await notify(
       tx,
@@ -333,6 +339,7 @@ export async function decideDecision(
           type: "decision_made",
           title: "Директор принял решение",
           body,
+          params,
           link: `/tasks/${request.taskId}`,
         }),
       ),

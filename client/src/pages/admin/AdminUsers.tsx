@@ -15,7 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { UserAvatar } from "@/components/common/UserAvatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/common/EmptyState";
 import { PasswordInput } from "@/components/common/PasswordInput";
@@ -49,7 +49,6 @@ import {
 } from "@/api/hooks";
 import { RequestError } from "@/api/client";
 import { useAuthStore } from "@/stores/auth";
-import { initials } from "@/lib/format";
 import type { Role, User } from "@/api/types";
 import { toast } from "sonner";
 import i18n from "@/i18n";
@@ -447,11 +446,12 @@ function UserRow({ user, index }: { user: User; index: number }) {
       }}
     >
       <Card className="flex items-center gap-3 p-4 shadow-card sm:gap-4">
-        <Avatar className="h-11 w-11 shrink-0">
-          <AvatarFallback className="bg-primary/15 text-sm font-semibold text-primary">
-            {initials(user.name)}
-          </AvatarFallback>
-        </Avatar>
+        <UserAvatar
+          name={user.name}
+          avatar={user.avatar}
+          className="h-11 w-11 shrink-0"
+          fallbackClassName="text-sm"
+        />
 
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">

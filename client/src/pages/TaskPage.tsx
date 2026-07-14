@@ -1,21 +1,42 @@
+import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { ArrowLeft, CalendarDays, Gavel, Paperclip } from "lucide-react";
+import {
+  ArrowLeft,
+  CalendarDays,
+  Gavel,
+  MessageSquare,
+  Paperclip,
+  Trash2,
+} from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ProgressBar } from "@/components/common/ProgressBar";
 import { ProjectChip } from "@/components/common/ProjectChip";
-import { PriorityBadge, StatusBadge } from "@/components/common/StatusBadge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import {
+  PriorityBadge,
+  StatusBadge,
+  UpdateStatusBadge,
+} from "@/components/common/StatusBadge";
+import { ConfirmDialog } from "@/components/common/ConfirmDialog";
+import { UserAvatar } from "@/components/common/UserAvatar";
 import { Timeline } from "@/features/tasks/Timeline";
+import { TaskSummary } from "@/features/tasks/TaskSummary";
 import { FileGrid } from "@/features/tasks/FileGrid";
 import { AdminTaskControls } from "@/features/tasks/AdminTaskControls";
 import { UpdateForm } from "@/features/updates/UpdateForm";
 import { CreateDecisionDialog } from "@/features/decisions/CreateDecisionDialog";
-import { useTask, useTaskTimeline } from "@/api/hooks";
+import {
+  useDeleteTask,
+  useTask,
+  useTaskTimeline,
+  useTaskUpdates,
+} from "@/api/hooks";
+import { RequestError } from "@/api/client";
 import { useAuthStore } from "@/stores/auth";
-import { formatDate, initials, isOverdue } from "@/lib/format";
+import { formatDate, formatDateTime, isOverdue } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 export function TaskPage() {
@@ -24,9 +45,24 @@ export function TaskPage() {
   const taskId = id ? Number(id) : null;
   const navigate = useNavigate();
   const role = useAuthStore((s) => s.user?.role);
+  const deleteTask = useDeleteTask();
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   const { data: task, isLoading, error } = useTask(taskId);
   const { data: timeline } = useTaskTimeline(taskId);
+  const { data: updates } = useTaskUpdates(taskId);
+
+  async function handleDelete() {
+    if (taskId === null) return;
+    try {
+      await deleteTask.mutateAsync(taskId);
+      toast.success(t("taskPage.taskDeleted"));
+      navigate(-1);
+    } catch (e) {
+      toast.error(e instanceof RequestError ? e.message : t("common.error"));
+      throw e; // не закрывать диалог при ошибке
+    }
+  }
 
   if (isLoading) {
     return (
@@ -109,15 +145,14 @@ export function TaskPage() {
             <span className="text-sm text-muted-foreground">{t("taskPage.assignees")}</span>
             <div className="flex -space-x-2">
               {task.assignees.map((a) => (
-                <Avatar
+                <UserAvatar
                   key={a.id}
-                  className="h-7 w-7 border-2 border-card"
+                  name={a.name}
+                  avatar={a.avatar}
                   title={a.name}
-                >
-                  <AvatarFallback className="bg-primary/15 text-[11px] font-semibold text-primary">
-                    {initials(a.name)}
-                  </AvatarFallback>
-                </Avatar>
+                  className="h-7 w-7 border-2 border-card"
+                  fallbackClassName="text-[11px]"
+                />
               ))}
               {task.assignees.length === 0 && (
                 <span className="text-sm text-muted-foreground">—</span>
@@ -131,7 +166,15 @@ export function TaskPage() {
       {role === "admin" && (
         <>
           <AdminTaskControls task={task} />
-          <div className="flex justify-end">
+          <div className="flex flex-wrap justify-end gap-2">
+            <Button
+              variant="ghost"
+              className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+              onClick={() => setConfirmDelete(true)}
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              {t("taskPage.deleteTask")}
+            </Button>
             <CreateDecisionDialog
               taskId={task.id}
               trigger={
@@ -142,6 +185,14 @@ export function TaskPage() {
               }
             />
           </div>
+          <ConfirmDialog
+            open={confirmDelete}
+            onOpenChange={setConfirmDelete}
+            title={t("taskPage.deleteConfirmTitle", { title: task.title })}
+            description={t("taskPage.deleteConfirmDesc")}
+            confirmLabel={t("taskPage.deleteTask")}
+            onConfirm={handleDelete}
+          />
         </>
       )}
 
@@ -164,11 +215,66 @@ export function TaskPage() {
         </Card>
       )}
 
-      {/* Хронология */}
-      <Card className="p-5 shadow-card sm:p-6">
-        <h2 className="mb-4 text-lg font-bold">{t("taskPage.timeline")}</h2>
-        <Timeline events={timeline ?? []} />
-      </Card>
+      {/* Обновления по задаче (с вложениями сотрудников) */}
+      {(updates?.length ?? 0) > 0 && (
+        <Card className="p-5 shadow-card sm:p-6">
+          <h2 className="mb-4 flex items-center gap-2 text-lg font-bold">
+            <MessageSquare className="h-5 w-5" />
+            {t("taskPage.updatesHeading")}
+          </h2>
+          <div className="space-y-4">
+            {updates?.map((u) => (
+              <div
+                key={u.id}
+                className="rounded-xl border border-border bg-secondary/30 p-4"
+              >
+                <div className="mb-2 flex flex-wrap items-center gap-2">
+                  <UserAvatar
+                    name={u.author.name}
+                    avatar={u.author.avatar}
+                    className="h-7 w-7"
+                    fallbackClassName="text-[11px]"
+                  />
+                  <span className="text-sm font-semibold">{u.author.name}</span>
+                  <UpdateStatusBadge status={u.status} />
+                  <span className="ml-auto text-xs text-muted-foreground">
+                    {formatDateTime(u.createdAt)}
+                  </span>
+                </div>
+                <p className="whitespace-pre-wrap text-sm text-muted-foreground">
+                  {u.text}
+                </p>
+                {u.files.length > 0 && (
+                  <div className="mt-3">
+                    <FileGrid files={u.files} />
+                  </div>
+                )}
+                {u.status === "rejected" && u.rejectReason && (
+                  <div className="mt-3 rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">
+                    <span className="font-semibold">
+                      {t("employeeUpdates.rejectReason")}{" "}
+                    </span>
+                    {u.rejectReason}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </Card>
+      )}
+
+      {/* Директору — сводка вместо технической хронологии; остальным — лента событий */}
+      {role === "director" ? (
+        <Card className="p-5 shadow-card sm:p-6">
+          <h2 className="mb-2 text-lg font-bold">{t("taskSummary.heading")}</h2>
+          <TaskSummary task={task} lastUpdate={updates?.[0]} />
+        </Card>
+      ) : (
+        <Card className="p-5 shadow-card sm:p-6">
+          <h2 className="mb-4 text-lg font-bold">{t("taskPage.timeline")}</h2>
+          <Timeline events={timeline ?? []} />
+        </Card>
+      )}
     </div>
   );
 }

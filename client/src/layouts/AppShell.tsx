@@ -7,13 +7,13 @@ import { Logo } from "@/components/common/Logo";
 import { ThemeToggle } from "@/components/common/ThemeToggle";
 import { LanguageSwitcher } from "@/components/common/LanguageSwitcher";
 import { NotificationBell } from "@/features/notifications/NotificationBell";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { GlobalSearch } from "@/features/search/GlobalSearch";
+import { UserAvatar } from "@/components/common/UserAvatar";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { ProfileDialog } from "@/features/profile/ProfileDialog";
 import { logout } from "@/api/client";
 import { useAuthStore } from "@/stores/auth";
-import { initials } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 export interface NavItem {
@@ -75,11 +75,12 @@ function UserCard() {
               type="button"
               className="flex min-w-0 flex-1 items-center gap-3 rounded-lg text-left transition-colors hover:opacity-80"
             >
-              <Avatar className="h-9 w-9">
-                <AvatarFallback className="bg-primary/15 text-sm font-semibold text-primary">
-                  {initials(user.name)}
-                </AvatarFallback>
-              </Avatar>
+              <UserAvatar
+                name={user.name}
+                avatar={user.avatar}
+                className="h-9 w-9"
+                fallbackClassName="text-sm"
+              />
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-semibold">{user.name}</p>
                 <p className="text-xs text-muted-foreground">
@@ -169,6 +170,7 @@ export function AppShell({
 
           <h1 className="text-lg font-bold tracking-tight">{heading}</h1>
           <div className="flex-1" />
+          <GlobalSearch />
           <LanguageSwitcher />
           <ThemeToggle />
           <NotificationBell />

@@ -47,11 +47,25 @@
     "overview": "Обзор",
     "projects": "Проекты",
     "tasks": "Задачи",
+    "board": "Доска",
+    "calendar": "Календарь",
     "moderation": "Модерация",
     "decisions": "Решения",
     "users": "Пользователи",
     "reports": "Отчёты",
     "title": "Панель администратора"
+  },
+  "board": {
+    "title": "Доска задач",
+    "subtitle": "Перетаскивайте карточки между колонками, чтобы менять статус.",
+    "empty": "Пусто"
+  },
+  "calendar": {
+    "title": "Календарь дедлайнов",
+    "subtitle": "Задачи с дедлайном разложены по датам · всего {{count}}",
+    "prev": "Предыдущий месяц",
+    "next": "Следующий месяц",
+    "today": "Сегодня"
   },
   "adminModeration": {
     "title": "Модерация обновлений",
@@ -303,6 +317,7 @@
   },
   "directorLayout": {
     "dashboard": "Дашборд",
+    "calendar": "Календарь",
     "pendingDecisions": "Ждут решения",
     "title": "Кабинет директора"
   },
@@ -316,6 +331,10 @@
   "employeeTasks": {
     "title": "Мои задачи",
     "subtitle": "Задачи, назначенные вам. Нажмите, чтобы открыть и отправить обновление.",
+    "searchPlaceholder": "Поиск по задачам…",
+    "anyStatus": "Любой статус",
+    "noMatchTitle": "Ничего не найдено",
+    "noMatchDesc": "Измените поиск или фильтр статуса.",
     "loadErrorTitle": "Не удалось загрузить задачи",
     "loadErrorDesc": "Проверьте соединение и попробуйте снова.",
     "emptyTitle": "Задач пока нет",
@@ -326,9 +345,16 @@
     "subtitle": "Статусы отправленных вами обновлений.",
     "empty": "Обновлений пока нет",
     "emptyDesc": "Откройте задачу и отправьте первое обновление.",
-    "rejectReason": "Причина отклонения:"
+    "rejectReason": "Причина отклонения:",
+    "retract": "Отозвать",
+    "retractConfirmTitle": "Отозвать обновление?",
+    "retractConfirmDesc": "Обновление будет удалено и исчезнет из очереди на модерацию. Отозвать можно только пока оно на проверке.",
+    "retracted": "Обновление отозвано"
   },
-  "fileGrid": {},
+  "fileGrid": {
+    "download": "Скачать",
+    "downloadError": "Не удалось скачать файл"
+  },
   "language": {
     "ru": "Русский",
     "tr": "Türkçe",
@@ -347,6 +373,11 @@
     "title": "Уведомления",
     "markAllRead": "Прочитать все",
     "empty": "Уведомлений пока нет"
+  },
+  "notificationBody": {
+    "decisionChoice": "по «{{title}}» выбран вариант «{{option}}»",
+    "decisionApproved": "«{{title}}» — согласовано",
+    "decisionRejected": "«{{title}}» — отклонено"
   },
   "notificationTitle": {
     "task_assigned": "Вам назначена задача",
@@ -372,6 +403,10 @@
   },
   "profileDialog": {
     "title": "Профиль",
+    "changeAvatar": "Сменить фото",
+    "removeAvatar": "Убрать",
+    "avatarUpdated": "Фото профиля обновлено",
+    "avatarRemoved": "Фото профиля удалено",
     "changePassword": "Смена пароля",
     "currentPassword": "Текущий пароль",
     "newPassword": "Новый пароль",
@@ -390,6 +425,10 @@
     "director": "Директор",
     "employee": "Сотрудник"
   },
+  "search": {
+    "placeholder": "Поиск задач…",
+    "empty": "Ничего не найдено"
+  },
   "sheet": {
     "close": "Закрыть"
   },
@@ -406,7 +445,12 @@
     "requestDecision": "Запросить решение директора",
     "submitUpdate": "Отправить обновление",
     "files": "Файлы",
-    "timeline": "Хронология"
+    "updatesHeading": "Обновления по задаче",
+    "timeline": "Хронология",
+    "deleteTask": "Удалить задачу",
+    "deleteConfirmTitle": "Удалить задачу «{{title}}»?",
+    "deleteConfirmDesc": "Действие необратимо: задача, её обновления, запросы решений, вложения и история будут удалены безвозвратно.",
+    "taskDeleted": "Задача удалена"
   },
   "taskPriority": {
     "low": "Низкий",
@@ -422,6 +466,16 @@
     "completed": "Завершена",
     "paused": "Приостановлена",
     "cancelled": "Отменена"
+  },
+  "taskSummary": {
+    "heading": "Сводка по задаче",
+    "assignees": "Исполнители",
+    "status": "Статус",
+    "lastUpdate": "Последнее обновление",
+    "decision": "Решения",
+    "decisionPending": "ожидает вашего решения",
+    "decisionNone": "нет ожидающих",
+    "deadline": "Дедлайн"
   },
   "themeToggle": {
     "enableLight": "Включить светлую тему",
@@ -446,6 +500,10 @@
     "errTooShort": "Сообщение слишком короткое",
     "sentForReview": "Обновление отправлено на проверку",
     "submitFailed": "Не удалось отправить",
+    "sending": "Отправляется…",
+    "sentBanner": "Отправлено · ждёт проверки",
+    "filesFailed": "Обновление отправлено, но файлы не загрузились: {{msg}}",
+    "filesFailedGeneric": "Обновление отправлено, но файлы не загрузились",
     "textPlaceholder": "Опишите, что сделано по задаче…",
     "dropzone": "Перетащите файлы сюда или нажмите, чтобы выбрать",
     "dropzoneHint": "Фото, PDF, Word, Excel · до 20 МБ",

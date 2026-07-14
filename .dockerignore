@@ -1,0 +1,16 @@
+node_modules
+**/node_modules
+**/dist
+**/.turbo
+client/dist
+server/dist
+server/uploads
+docker/certbot
+.git
+.github
+*.log
+.env
+.env.*
+!.env.example
+**/.DS_Store
+scratchpad
