@@ -1,3 +1,4 @@
+import { forwardRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { AnimatePresence, motion } from "framer-motion";
@@ -49,18 +50,16 @@ function typeLabel(
 }
 
 /** Компактная карточка-сводка ожидающего запроса (без кнопок решения). */
-function PendingCard({
-  request,
-  index,
-}: {
-  request: DecisionRequestDetail;
-  index: number;
-}) {
+const PendingCard = forwardRef<
+  HTMLDivElement,
+  { request: DecisionRequestDetail; index: number }
+>(function PendingCard({ request, index }, ref) {
   const navigate = useNavigate();
   const { t } = useTranslation();
 
   return (
     <motion.div
+      ref={ref}
       layout
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
@@ -110,16 +109,13 @@ function PendingCard({
       </Card>
     </motion.div>
   );
-}
+});
 
 /** Карточка решённого запроса с итогом решения директора. */
-function DecidedCard({
-  request,
-  index,
-}: {
-  request: DecisionRequestDetail;
-  index: number;
-}) {
+const DecidedCard = forwardRef<
+  HTMLDivElement,
+  { request: DecisionRequestDetail; index: number }
+>(function DecidedCard({ request, index }, ref) {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const selectedOption =
@@ -129,6 +125,7 @@ function DecidedCard({
 
   return (
     <motion.div
+      ref={ref}
       layout
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
@@ -214,7 +211,7 @@ function DecidedCard({
       </Card>
     </motion.div>
   );
-}
+});
 
 function TabCount({ count }: { count: number }) {
   if (count === 0) return null;

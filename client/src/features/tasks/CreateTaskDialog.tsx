@@ -30,6 +30,16 @@ import { useTranslation } from "react-i18next";
 import { RequestError } from "@/api/client";
 import type { TaskPriority } from "@/api/types";
 
+/** Максимальная длина названия задачи (мягкий лимит на клиенте). */
+const TITLE_MAX = 120;
+
+/** Сегодня в формате YYYY-MM-DD (локальная зона) — для min у date-инпута. */
+function todayISODate(): string {
+  const d = new Date();
+  d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+  return d.toISOString().slice(0, 10);
+}
+
 /** Диалог создания задачи админом: проект, исполнители, приоритет, дедлайн. */
 export function CreateTaskDialog({ trigger }: { trigger?: ReactNode }) {
   const { t } = useTranslation();
@@ -47,6 +57,8 @@ export function CreateTaskDialog({ trigger }: { trigger?: ReactNode }) {
   const [errors, setErrors] = useState<{ title?: string; project?: string }>({});
 
   const employees = (users ?? []).filter((u) => u.role === "employee");
+  const today = todayISODate();
+  const deadlineInPast = deadline !== "" && deadline < today;
 
   function reset() {
     setTitle("");
@@ -114,8 +126,9 @@ export function CreateTaskDialog({ trigger }: { trigger?: ReactNode }) {
             <Input
               placeholder={t("createTaskDialog.titlePlaceholder")}
               value={title}
+              maxLength={TITLE_MAX}
               onChange={(e) => {
-                setTitle(e.target.value);
+                setTitle(e.target.value.slice(0, TITLE_MAX));
                 if (errors.title) setErrors((p) => ({ ...p, title: undefined }));
               }}
               aria-invalid={!!errors.title}
@@ -123,11 +136,23 @@ export function CreateTaskDialog({ trigger }: { trigger?: ReactNode }) {
                 errors.title && "border-destructive focus-visible:ring-destructive",
               )}
             />
-            {errors.title && (
-              <p className="text-xs font-medium text-destructive">
-                {errors.title}
-              </p>
-            )}
+            <div className="flex items-center justify-between gap-2">
+              {errors.title ? (
+                <p className="text-xs font-medium text-destructive">
+                  {errors.title}
+                </p>
+              ) : (
+                <span />
+              )}
+              <span
+                className={cn(
+                  "shrink-0 text-xs tabular-nums text-muted-foreground",
+                  title.length >= TITLE_MAX && "font-medium text-warning",
+                )}
+              >
+                {title.length}/{TITLE_MAX}
+              </span>
+            </div>
           </div>
 
           <div className="space-y-1.5">
@@ -200,8 +225,19 @@ export function CreateTaskDialog({ trigger }: { trigger?: ReactNode }) {
             <Input
               type="date"
               value={deadline}
+              min={today}
               onChange={(e) => setDeadline(e.target.value)}
+              aria-invalid={deadlineInPast}
+              className={cn(
+                deadlineInPast &&
+                  "border-warning focus-visible:ring-warning",
+              )}
             />
+            {deadlineInPast && (
+              <p className="text-xs font-medium text-warning">
+                {t("createTaskDialog.deadlinePast")}
+              </p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -215,21 +251,20 @@ export function CreateTaskDialog({ trigger }: { trigger?: ReactNode }) {
                 {employees.map((u) => {
                   const checked = assigneeIds.includes(u.id);
                   return (
-                    <button
+                    <label
                       key={u.id}
-                      type="button"
-                      onClick={() => toggleAssignee(u.id)}
                       className={cn(
-                        "flex items-center gap-3 rounded-xl border p-2.5 text-left transition-colors",
+                        "flex cursor-pointer items-center gap-3 rounded-xl border p-2.5 text-left transition-colors",
                         checked
                           ? "border-primary bg-primary/5"
                           : "border-border hover:bg-secondary/40",
                       )}
                     >
+                      {/* Чекбокс — единственный интерактивный элемент; клик по
+                          всей строке через <label> переключает его один раз. */}
                       <Checkbox
                         checked={checked}
                         onCheckedChange={() => toggleAssignee(u.id)}
-                        onClick={(e) => e.stopPropagation()}
                       />
                       <Avatar className="h-8 w-8">
                         <AvatarFallback className="bg-primary/15 text-xs font-semibold text-primary">
@@ -239,7 +274,7 @@ export function CreateTaskDialog({ trigger }: { trigger?: ReactNode }) {
                       <span className="min-w-0 flex-1 truncate text-sm font-medium">
                         {u.name}
                       </span>
-                    </button>
+                    </label>
                   );
                 })}
               </div>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { forwardRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { AnimatePresence, motion } from "framer-motion";
@@ -16,7 +16,10 @@ import { RequestError } from "@/api/client";
 import { formatDateTime } from "@/lib/format";
 import type { MyUpdateItem } from "@/api/types";
 
-function UpdateRow({ update: u, index }: { update: MyUpdateItem; index: number }) {
+const UpdateRow = forwardRef<
+  HTMLDivElement,
+  { update: MyUpdateItem; index: number }
+>(function UpdateRow({ update: u, index }, ref) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const del = useDeleteUpdate();
@@ -35,6 +38,7 @@ function UpdateRow({ update: u, index }: { update: MyUpdateItem; index: number }
 
   return (
     <motion.div
+      ref={ref}
       layout
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
@@ -94,7 +98,7 @@ function UpdateRow({ update: u, index }: { update: MyUpdateItem; index: number }
       />
     </motion.div>
   );
-}
+});
 
 export function EmployeeUpdates() {
   const { data: updates, isLoading } = useMyUpdates();

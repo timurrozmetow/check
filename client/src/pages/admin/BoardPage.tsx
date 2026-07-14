@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type DragEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Trello } from "lucide-react";
@@ -21,7 +21,7 @@ function BoardCard({
   onOpen,
 }: {
   task: TaskListItem;
-  onDragStart: () => void;
+  onDragStart: (e: DragEvent<HTMLDivElement>) => void;
   onDragEnd: () => void;
   onOpen: () => void;
 }) {
@@ -138,7 +138,12 @@ export function BoardPage() {
                     <BoardCard
                       key={task.id}
                       task={task}
-                      onDragStart={() => setDragId(task.id)}
+                      onDragStart={(e) => {
+                        setDragId(task.id);
+                        // Firefox не начинает drag без setData в dragstart.
+                        e.dataTransfer.setData("text/plain", String(task.id));
+                        e.dataTransfer.effectAllowed = "move";
+                      }}
                       onDragEnd={() => setDragId(null)}
                       onOpen={() => navigate(`/admin/tasks/${task.id}`)}
                     />

@@ -261,6 +261,7 @@
     "projectRequired": "Выберите проект",
     "priorityLabel": "Приоритет",
     "deadlineLabel": "Дедлайн (необязательно)",
+    "deadlinePast": "Дата в прошлом — задача сразу станет просроченной.",
     "assigneesLabel": "Исполнители",
     "noEmployees": "Нет доступных сотрудников.",
     "createBtn": "Создать задачу",

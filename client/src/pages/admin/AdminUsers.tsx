@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { forwardRef, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -414,7 +414,10 @@ function ResetPasswordDialog({
 
 /* ---------- Строка пользователя ---------- */
 
-function UserRow({ user, index }: { user: User; index: number }) {
+const UserRow = forwardRef<
+  HTMLDivElement,
+  { user: User; index: number }
+>(function UserRow({ user, index }, ref) {
   const { t } = useTranslation();
   const currentUser = useAuthStore((s) => s.user);
   const update = useUpdateUser();
@@ -435,6 +438,7 @@ function UserRow({ user, index }: { user: User; index: number }) {
 
   return (
     <motion.div
+      ref={ref}
       layout
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
@@ -507,7 +511,7 @@ function UserRow({ user, index }: { user: User; index: number }) {
       </Card>
     </motion.div>
   );
-}
+});
 
 /* ---------- Страница ---------- */
 

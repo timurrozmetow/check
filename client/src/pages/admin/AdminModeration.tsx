@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { forwardRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { motion, AnimatePresence } from "framer-motion";
 import { Check, Loader2, ShieldCheck, X } from "lucide-react";
@@ -16,7 +16,10 @@ import { toast } from "sonner";
 import { RequestError } from "@/api/client";
 import type { ModerationItem } from "@/api/types";
 
-function ModerationRow({ item }: { item: ModerationItem }) {
+const ModerationRow = forwardRef<
+  HTMLDivElement,
+  { item: ModerationItem }
+>(function ModerationRow({ item }, ref) {
   const { t } = useTranslation();
   const approve = useApproveUpdate();
   const reject = useRejectUpdate();
@@ -53,6 +56,7 @@ function ModerationRow({ item }: { item: ModerationItem }) {
 
   return (
     <motion.div
+      ref={ref}
       layout
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
@@ -149,7 +153,7 @@ function ModerationRow({ item }: { item: ModerationItem }) {
       </Card>
     </motion.div>
   );
-}
+});
 
 export function AdminModeration() {
   const { t } = useTranslation();

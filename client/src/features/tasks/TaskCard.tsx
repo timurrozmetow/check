@@ -1,3 +1,4 @@
+import { forwardRef } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -10,16 +11,15 @@ import { formatDate, isOverdue } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { TaskListItem } from "@/api/types";
 
-export function TaskCard({
-  task,
-  basePath,
-  index = 0,
-}: {
-  task: TaskListItem;
-  /** Базовый путь для перехода к задаче, напр. "/admin/tasks". */
-  basePath: string;
-  index?: number;
-}) {
+export const TaskCard = forwardRef<
+  HTMLButtonElement,
+  {
+    task: TaskListItem;
+    /** Базовый путь для перехода к задаче, напр. "/admin/tasks". */
+    basePath: string;
+    index?: number;
+  }
+>(function TaskCard({ task, basePath, index = 0 }, ref) {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const overdue =
@@ -27,16 +27,23 @@ export function TaskCard({
     isOverdue(task.deadline) &&
     task.status !== "completed" &&
     task.status !== "cancelled";
+  // Завершённые/отменённые задачи «гаснут» серым, но остаются кликабельными —
+  // при наведении и клике возвращают полную яркость и открывают детали.
+  const isMuted = task.status === "completed" || task.status === "cancelled";
 
   return (
     <motion.button
+      ref={ref}
       type="button"
       layout
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, delay: Math.min(index * 0.04, 0.3) }}
       onClick={() => navigate(`${basePath}/${task.id}`)}
-      className="flex w-full flex-col gap-3 rounded-2xl border border-border bg-card p-5 text-left shadow-card transition-transform hover:-translate-y-0.5"
+      className={cn(
+        "flex w-full flex-col gap-3 rounded-2xl border border-border bg-card p-5 text-left shadow-card transition-all hover:-translate-y-0.5",
+        isMuted && "opacity-60 grayscale-[0.35] hover:opacity-100 hover:grayscale-0",
+      )}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
@@ -98,4 +105,4 @@ export function TaskCard({
       </div>
     </motion.button>
   );
-}
+});

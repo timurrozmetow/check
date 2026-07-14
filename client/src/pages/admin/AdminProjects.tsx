@@ -1,4 +1,4 @@
-import { useEffect, useState, type CSSProperties } from "react";
+import { forwardRef, useEffect, useState, type CSSProperties } from "react";
 import { useTranslation } from "react-i18next";
 import { AnimatePresence, motion } from "framer-motion";
 import {
@@ -52,6 +52,9 @@ import i18n from "@/i18n";
 import type { ProjectWithStats } from "@/api/types";
 
 const EASE: [number, number, number, number] = [0.22, 0.7, 0.3, 1];
+
+/** Максимальная длина названия проекта (мягкий лимит на клиенте). */
+const NAME_MAX = 120;
 
 function errorMessage(e: unknown): string {
   return e instanceof RequestError ? e.message : i18n.t("common.error");
@@ -144,8 +147,9 @@ function ProjectFormDialog({
               id="project-name"
               placeholder={t("adminProjects.namePlaceholder")}
               value={name}
+              maxLength={NAME_MAX}
               onChange={(e) => {
-                setName(e.target.value);
+                setName(e.target.value.slice(0, NAME_MAX));
                 if (nameError) setNameError(null);
               }}
               autoFocus
@@ -157,9 +161,21 @@ function ProjectFormDialog({
                 if (e.key === "Enter") submit();
               }}
             />
-            {nameError && (
-              <p className="text-xs font-medium text-destructive">{nameError}</p>
-            )}
+            <div className="flex items-center justify-between gap-2">
+              {nameError ? (
+                <p className="text-xs font-medium text-destructive">{nameError}</p>
+              ) : (
+                <span />
+              )}
+              <span
+                className={cn(
+                  "shrink-0 text-xs tabular-nums text-muted-foreground",
+                  name.length >= NAME_MAX && "font-medium text-warning",
+                )}
+              >
+                {name.length}/{NAME_MAX}
+              </span>
+            </div>
           </div>
 
           <div className="space-y-1.5">
@@ -227,15 +243,14 @@ function ProjectFormDialog({
 
 /* -------------------- Карточка проекта -------------------- */
 
-function ProjectCard({
-  project,
-  index,
-  onEdit,
-}: {
-  project: ProjectWithStats;
-  index: number;
-  onEdit: (p: ProjectWithStats) => void;
-}) {
+const ProjectCard = forwardRef<
+  HTMLDivElement,
+  {
+    project: ProjectWithStats;
+    index: number;
+    onEdit: (p: ProjectWithStats) => void;
+  }
+>(function ProjectCard({ project, index, onEdit }, ref) {
   const { t } = useTranslation();
   const update = useUpdateProject();
   const del = useDeleteProject();
@@ -270,6 +285,7 @@ function ProjectCard({
 
   return (
     <motion.div
+      ref={ref}
       layout
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
@@ -376,7 +392,7 @@ function ProjectCard({
       </Card>
     </motion.div>
   );
-}
+});
 
 /* -------------------- Страница -------------------- */
 

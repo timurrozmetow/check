@@ -259,6 +259,7 @@
     "projectRequired": "Proje seçin",
     "priorityLabel": "Öncelik",
     "deadlineLabel": "Son tarih (isteğe bağlı)",
+    "deadlinePast": "Tarih geçmişte — görev hemen gecikmiş olacak.",
     "assigneesLabel": "Sorumlular",
     "noEmployees": "Uygun çalışan yok.",
     "createBtn": "Görev oluştur",
