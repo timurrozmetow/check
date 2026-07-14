@@ -34,13 +34,7 @@ if [ -z "$EMAIL" ]; then email_arg="--register-unsafely-without-email"; else ema
 
 echo "### Домены: $domains"
 mkdir -p "$data_path/conf" "$data_path/www" "$data_path/conf/live/$DOMAIN"
-
-# Рекомендованные TLS-параметры (их include-ит nginx.conf)
-if [ ! -e "$data_path/conf/options-ssl-nginx.conf" ] || [ ! -e "$data_path/conf/ssl-dhparams.pem" ]; then
-  echo "### Скачиваю рекомендованные TLS-параметры…"
-  curl -sfL https://raw.githubusercontent.com/certbot/certbot/master/certbot-nginx/certbot_nginx/_internal/tls_configs/options-ssl-nginx.conf -o "$data_path/conf/options-ssl-nginx.conf"
-  curl -sfL https://raw.githubusercontent.com/certbot/certbot/master/certbot/certbot/ssl-dhparams.pem -o "$data_path/conf/ssl-dhparams.pem"
-fi
+# TLS-параметры вписаны прямо в nginx.conf — внешние файлы не нужны.
 
 # 1) Временный самоподписанный сертификат, чтобы nginx стартовал на 443
 echo "### Создаю временный сертификат для $DOMAIN…"

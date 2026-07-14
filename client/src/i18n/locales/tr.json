@@ -363,7 +363,13 @@
     "email": "E-posta",
     "password": "Şifre",
     "submit": "Giriş yap",
-    "failed": "Giriş yapılamadı"
+    "failed": "Giriş yapılamadı",
+    "success": "Giriş başarılı"
+  },
+  "notFound": {
+    "title": "Sayfa bulunamadı",
+    "description": "Bağlantı eskimiş ya da sayfa silinmiş olabilir.",
+    "back": "Ana sayfaya"
   },
   "notificationBell": {
     "title": "Bildirimler",

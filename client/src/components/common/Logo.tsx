@@ -14,7 +14,7 @@ export function Logo({
         D
       </div>
       {!compact && (
-        <span className="text-base font-bold tracking-tight">DirectorHub</span>
+        <span className="text-base font-bold tracking-tight">Hub</span>
       )}
     </div>
   );

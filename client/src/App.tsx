@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Navigate, Route, Routes } from "react-router-dom";
+import { Route, Routes } from "react-router-dom";
 import { tryRefresh } from "@/api/client";
 import { useAuthStore } from "@/stores/auth";
 import { NotificationsProvider } from "@/features/notifications/NotificationsProvider";
@@ -29,6 +29,7 @@ import { EmployeeUpdates } from "@/pages/employee/EmployeeUpdates";
 // Общие
 import { TaskPage } from "@/pages/TaskPage";
 import { CalendarPage } from "@/pages/CalendarPage";
+import { NotFoundPage } from "@/pages/NotFoundPage";
 
 export default function App() {
   const initializing = useAuthStore((s) => s.initializing);
@@ -95,7 +96,8 @@ export default function App() {
 
         {/* Корень — редирект по роли */}
         <Route path="/" element={<RoleHome />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
+        {/* Неизвестный маршрут — страница 404 с анимацией */}
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </NotificationsProvider>
   );

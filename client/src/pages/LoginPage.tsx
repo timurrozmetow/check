@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
@@ -6,6 +6,7 @@ import { Loader2 } from "lucide-react";
 import { Logo } from "@/components/common/Logo";
 import { ThemeToggle } from "@/components/common/ThemeToggle";
 import { LanguageSwitcher } from "@/components/common/LanguageSwitcher";
+import { Lottie, ANIM } from "@/components/common/Lottie";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,9 +22,21 @@ export function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [attempt, setAttempt] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [phase, setPhase] = useState<"form" | "success">("form");
+  const targetRef = useRef("/");
+  const navigatedRef = useRef(false);
 
-  if (user) return <Navigate to={roleHome(user.role)} replace />;
+  // Уже авторизован (открыл /login с живой сессией) — сразу домой.
+  // Во время анимации успеха (phase="success") редирект придержим.
+  if (user && phase === "form") return <Navigate to={roleHome(user.role)} replace />;
+
+  function goHome() {
+    if (navigatedRef.current) return;
+    navigatedRef.current = true;
+    navigate(targetRef.current, { replace: true });
+  }
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -31,10 +44,13 @@ export function LoginPage() {
     setLoading(true);
     try {
       const u = await login(email, password);
-      navigate(roleHome(u.role), { replace: true });
+      targetRef.current = roleHome(u.role);
+      setPhase("success");
+      // Подстраховка, если событие "complete" не придёт.
+      setTimeout(goHome, 1800);
     } catch (err) {
       setError(err instanceof RequestError ? err.message : t("login.failed"));
-    } finally {
+      setAttempt((a) => a + 1);
       setLoading(false);
     }
   }
@@ -63,50 +79,68 @@ export function LoginPage() {
           <p className="text-sm text-muted-foreground">{t("login.subtitle")}</p>
         </div>
 
-        <form
-          onSubmit={submit}
-          className="rounded-2xl border border-border bg-card p-6 shadow-card"
-        >
-          <h1 className="mb-1 text-xl font-bold">{t("login.title")}</h1>
-          <p className="mb-6 text-sm text-muted-foreground">{t("login.hint")}</p>
-
-          <div className="space-y-4">
-            <div className="space-y-1.5">
-              <Label htmlFor="email">{t("login.email")}</Label>
-              <Input
-                id="email"
-                type="email"
-                autoComplete="username"
-                placeholder="you@directorhub.ru"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="password">{t("login.password")}</Label>
-              <PasswordInput
-                id="password"
-                autoComplete="current-password"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </div>
+        {phase === "success" ? (
+          <div className="flex flex-col items-center gap-2 rounded-2xl border border-border bg-card p-8 shadow-card">
+            <Lottie
+              src={ANIM.success}
+              loop={false}
+              className="h-40 w-40"
+              onComplete={goHome}
+            />
+            <p className="text-lg font-semibold">{t("login.success")}</p>
           </div>
+        ) : (
+          <form
+            onSubmit={submit}
+            className="rounded-2xl border border-border bg-card p-6 shadow-card"
+          >
+            <h1 className="mb-1 text-xl font-bold">{t("login.title")}</h1>
+            <p className="mb-6 text-sm text-muted-foreground">{t("login.hint")}</p>
 
-          {error && (
-            <p className="mt-4 rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">
-              {error}
-            </p>
-          )}
+            <div className="space-y-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="email">{t("login.email")}</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  autoComplete="username"
+                  placeholder="you@directorhub.ru"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="password">{t("login.password")}</Label>
+                <PasswordInput
+                  id="password"
+                  autoComplete="current-password"
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+              </div>
+            </div>
 
-          <Button type="submit" className="mt-6 w-full" disabled={loading}>
-            {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {t("login.submit")}
-          </Button>
-        </form>
+            {error && (
+              <div className="mt-4 flex items-center gap-3 rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">
+                <Lottie
+                  key={attempt}
+                  src={ANIM.fail}
+                  loop={false}
+                  className="h-10 w-10 shrink-0"
+                />
+                <span>{error}</span>
+              </div>
+            )}
+
+            <Button type="submit" className="mt-6 w-full" disabled={loading}>
+              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {t("login.submit")}
+            </Button>
+          </form>
+        )}
       </motion.div>
     </div>
   );
