@@ -168,7 +168,7 @@ export function AdminTasks() {
       ) : (
         <motion.div
           layout
-          className="grid gap-4 md:grid-cols-2 3xl:grid-cols-3 4xl:grid-cols-4"
+          className="grid grid-cols-1 gap-4 md:grid-cols-2 3xl:grid-cols-3 4xl:grid-cols-4"
         >
           <AnimatePresence mode="popLayout">
             {visibleTasks.map((task, i) => (

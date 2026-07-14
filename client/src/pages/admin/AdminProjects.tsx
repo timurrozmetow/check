@@ -439,7 +439,7 @@ export function AdminProjects() {
       </div>
 
       {isLoading ? (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 3xl:grid-cols-4 4xl:grid-cols-5">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 3xl:grid-cols-4 4xl:grid-cols-5">
           {[0, 1, 2].map((i) => (
             <Skeleton key={i} className="h-44 rounded-2xl" />
           ))}
@@ -457,7 +457,7 @@ export function AdminProjects() {
           }
         />
       ) : (
-        <motion.div layout className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 3xl:grid-cols-4 4xl:grid-cols-5">
+        <motion.div layout className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 3xl:grid-cols-4 4xl:grid-cols-5">
           <AnimatePresence mode="popLayout">
             {projects?.map((p, i) => (
               <ProjectCard key={p.id} project={p} index={i} onEdit={openEdit} />

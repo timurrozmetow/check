@@ -37,7 +37,7 @@ export function TaskCardSkeleton() {
 /** Сетка из нескольких скелетон-карточек (по умолчанию 4). */
 export function TaskCardSkeletonGrid({ count = 4 }: { count?: number }) {
   return (
-    <div className="grid gap-4 md:grid-cols-2 3xl:grid-cols-3 4xl:grid-cols-4">
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 3xl:grid-cols-3 4xl:grid-cols-4">
       {Array.from({ length: count }, (_, i) => (
         <TaskCardSkeleton key={i} />
       ))}

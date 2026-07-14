@@ -112,7 +112,7 @@ export function DirectorDashboard() {
       {(projects?.length ?? 0) > 0 && (
         <section className="space-y-4">
           <h2 className="text-lg font-bold">{t("directorDashboard.projectsTitle")}</h2>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 3xl:grid-cols-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 3xl:grid-cols-4">
             {projects?.map((p) => (
               <button
                 key={p.id}
@@ -162,7 +162,7 @@ export function DirectorDashboard() {
         </div>
 
         {isLoading ? (
-          <div className="grid gap-4 md:grid-cols-2 3xl:grid-cols-3 4xl:grid-cols-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 3xl:grid-cols-3 4xl:grid-cols-4">
             {[0, 1, 2, 3].map((i) => (
               <Skeleton key={i} className="h-40 rounded-2xl" />
             ))}
@@ -170,7 +170,7 @@ export function DirectorDashboard() {
         ) : visibleTasks.length === 0 ? (
           <EmptyState icon={ListTodo} title={t("directorDashboard.emptyTasks")} />
         ) : (
-          <motion.div layout className="grid gap-4 md:grid-cols-2 3xl:grid-cols-3 4xl:grid-cols-4">
+          <motion.div layout className="grid grid-cols-1 gap-4 md:grid-cols-2 3xl:grid-cols-3 4xl:grid-cols-4">
             <AnimatePresence mode="popLayout">
               {visibleTasks.map((task, i) => (
                 <TaskCard
