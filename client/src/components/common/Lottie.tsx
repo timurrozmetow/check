@@ -18,12 +18,15 @@ export function Lottie({
   src,
   loop = true,
   autoplay = true,
+  speed = 1,
   className,
   onComplete,
 }: {
   src: string;
   loop?: boolean;
   autoplay?: boolean;
+  /** Скорость воспроизведения. <1 — плавнее/медленнее. */
+  speed?: number;
   className?: string;
   onComplete?: () => void;
 }) {
@@ -32,6 +35,9 @@ export function Lottie({
       src={src}
       loop={loop}
       autoplay={autoplay}
+      speed={speed}
+      // Сглаживаем края и рендерим на HiDPI без «ступенек».
+      renderConfig={{ autoResize: true, devicePixelRatio: 2 }}
       className={className}
       dotLottieRefCallback={(dl) => {
         if (dl && onComplete) dl.addEventListener("complete", onComplete);

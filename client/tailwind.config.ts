@@ -82,6 +82,9 @@ export default {
           "0%, 100%": { boxShadow: "0 0 0 0 rgba(220,38,38,.35)" },
           "50%": { boxShadow: "0 0 0 6px rgba(220,38,38,0)" },
         },
+        shimmer: {
+          "100%": { transform: "translateX(100%)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -89,6 +92,7 @@ export default {
         "bell-ring": "bell-ring 0.6s ease-in-out",
         "hub-fill": "hub-fill 1.1s cubic-bezier(.22,.7,.3,1) .1s both",
         "hub-pulse": "hub-pulse 2s ease-in-out infinite",
+        shimmer: "shimmer 1.6s ease-in-out infinite",
       },
     },
   },

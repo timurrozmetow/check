@@ -10,9 +10,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/common/EmptyState";
 import { TaskCard } from "@/features/tasks/TaskCard";
+import { TaskCardSkeletonGrid } from "@/features/tasks/TaskCardSkeleton";
 import { CreateTaskDialog } from "@/features/tasks/CreateTaskDialog";
 import { useProjects, useTasks } from "@/api/hooks";
 import { ALL_STATUSES } from "@/lib/constants";
@@ -157,11 +157,7 @@ export function AdminTasks() {
       )}
 
       {isLoading ? (
-        <div className="grid gap-4 md:grid-cols-2">
-          {[0, 1, 2, 3].map((i) => (
-            <Skeleton key={i} className="h-40 rounded-2xl" />
-          ))}
-        </div>
+        <TaskCardSkeletonGrid count={4} />
       ) : visibleTasks.length === 0 ? (
         <EmptyState
           icon={CheckSquare}

@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { Loader2 } from "lucide-react";
 import { Logo } from "@/components/common/Logo";
@@ -79,69 +79,95 @@ export function LoginPage() {
           <p className="text-sm text-muted-foreground">{t("login.subtitle")}</p>
         </div>
 
-        {phase === "success" ? (
-          <div className="flex flex-col items-center gap-2 rounded-2xl border border-border bg-card p-8 shadow-card">
-            <Lottie
-              src={ANIM.success}
-              loop={false}
-              className="h-40 w-40"
-              onComplete={goHome}
-            />
-            <p className="text-lg font-semibold">{t("login.success")}</p>
-          </div>
-        ) : (
-          <form
-            onSubmit={submit}
-            className="rounded-2xl border border-border bg-card p-6 shadow-card"
-          >
-            <h1 className="mb-1 text-xl font-bold">{t("login.title")}</h1>
-            <p className="mb-6 text-sm text-muted-foreground">{t("login.hint")}</p>
+        <form
+          onSubmit={submit}
+          className="rounded-2xl border border-border bg-card p-6 shadow-card"
+        >
+          <h1 className="mb-1 text-xl font-bold">{t("login.title")}</h1>
+          <p className="mb-6 text-sm text-muted-foreground">{t("login.hint")}</p>
 
-            <div className="space-y-4">
-              <div className="space-y-1.5">
-                <Label htmlFor="email">{t("login.email")}</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  autoComplete="username"
-                  placeholder="you@directorhub.ru"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="password">{t("login.password")}</Label>
-                <PasswordInput
-                  id="password"
-                  autoComplete="current-password"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-              </div>
+          <div className="space-y-4">
+            <div className="space-y-1.5">
+              <Label htmlFor="email">{t("login.email")}</Label>
+              <Input
+                id="email"
+                type="email"
+                autoComplete="username"
+                placeholder="you@directorhub.ru"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
             </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="password">{t("login.password")}</Label>
+              <PasswordInput
+                id="password"
+                autoComplete="current-password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
+          </div>
 
+          <AnimatePresence initial={false}>
             {error && (
-              <div className="mt-4 flex items-center gap-3 rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">
+              <motion.div
+                initial={{ opacity: 0, height: 0, marginTop: 0 }}
+                animate={{ opacity: 1, height: "auto", marginTop: 16 }}
+                exit={{ opacity: 0, height: 0, marginTop: 0 }}
+                transition={{ duration: 0.25, ease: "easeOut" }}
+                className="flex items-center gap-3 overflow-hidden rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive"
+              >
                 <Lottie
                   key={attempt}
                   src={ANIM.fail}
                   loop={false}
+                  speed={0.9}
                   className="h-10 w-10 shrink-0"
                 />
                 <span>{error}</span>
-              </div>
+              </motion.div>
             )}
+          </AnimatePresence>
 
-            <Button type="submit" className="mt-6 w-full" disabled={loading}>
-              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {t("login.submit")}
-            </Button>
-          </form>
-        )}
+          <Button type="submit" className="mt-6 w-full" disabled={loading}>
+            {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {t("login.submit")}
+          </Button>
+        </form>
       </motion.div>
+
+      {/* Полноэкранный успех: плавно перекрывает форму после входа. */}
+      <AnimatePresence>
+        {phase === "success" && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.4, ease: "easeOut" }}
+            className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-3 bg-background"
+          >
+            <Lottie
+              src={ANIM.success}
+              loop={false}
+              speed={0.9}
+              className="h-60 w-60 sm:h-72 sm:w-72"
+              onComplete={goHome}
+            />
+            <motion.p
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.25, duration: 0.35 }}
+              className="text-xl font-semibold"
+            >
+              {t("login.success")}
+            </motion.p>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

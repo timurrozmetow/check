@@ -2,10 +2,10 @@ import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { CheckSquare, AlertTriangle, Search } from "lucide-react";
 import { TaskCard } from "@/features/tasks/TaskCard";
+import { TaskCardSkeletonGrid } from "@/features/tasks/TaskCardSkeleton";
 import { EmptyState } from "@/components/common/EmptyState";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Skeleton } from "@/components/ui/skeleton";
 import {
   Select,
   SelectContent,
@@ -80,11 +80,7 @@ export function EmployeeTasks() {
       )}
 
       {isLoading ? (
-        <div className="grid gap-4 md:grid-cols-2">
-          {[0, 1, 2].map((i) => (
-            <Skeleton key={i} className="h-40 rounded-2xl" />
-          ))}
-        </div>
+        <TaskCardSkeletonGrid count={3} />
       ) : isError ? (
         <EmptyState
           icon={AlertTriangle}
