@@ -1,77 +1,126 @@
-# Деплой DirectorHub на t12.site (Docker Compose + Let's Encrypt)
+# Деплой DirectorHub на VPS (GitHub → PM2 + Nginx)
 
-Стек в проде: **nginx** (статика клиента + reverse-proxy) → **API** (Node/Fastify) → **MariaDB**, TLS от **Let's Encrypt** (автопродление). Всё в контейнерах, наружу открыты только 80/443.
+Схема: код в **GitHub**, на VPS — `git pull`. **Nginx** отдаёт статику клиента и проксирует на **API** (Fastify под **PM2**), данные — в **MariaDB**. TLS — **Let's Encrypt** через `certbot --nginx`. Обновления: `git pull` + пересборка.
 
 ```
-Браузер ──443──▶ nginx (web) ──┬─ /            → статика React (client/dist)
-                                ├─ /api/…       → api:4000
-                                └─ /uploads/…   → api:4000 (cookie-гард)
-                          api ──▶ db (MariaDB)
+Браузер ──443──▶ Nginx ──┬─ /            → статика React (client/dist)
+                          ├─ /api/…       → 127.0.0.1:4000 (PM2)
+                          └─ /uploads/…   → 127.0.0.1:4000 (cookie-гард up_token)
+                    API ──▶ MariaDB (127.0.0.1:3306)
 ```
 
-## 1. Предпосылки
-- Сервер (Linux) с установленными **Docker** и **docker compose v2**.
-- DNS: A-запись `t12.site` (и `www.t12.site`) → IP сервера. Проверь: `dig +short t12.site`.
-- Порты **80** и **443** открыты в фаерволе.
+Репозиторий: `https://github.com/timurrozmetow/check.git`, ветка `main`.
 
-## 2. Получить код и настроить .env
+---
+
+## 1. Предпосылки на VPS (Ubuntu/Debian)
+
 ```bash
-git clone <repo> directorhub && cd directorhub
-cp .env.example .env
-nano .env
-```
-Обязательно задай:
-- `DB_ROOT_PASSWORD`, `DB_PASSWORD` — надёжные пароли БД.
-- `JWT_SECRET` — сгенерируй: `openssl rand -hex 32`.
-- `ADMIN_EMAIL`, `ADMIN_PASSWORD` — учётка первого администратора.
-- `CORS_ORIGIN=https://t12.site`.
-- `DOMAIN=t12.site`, `DOMAIN_ALIASES=www.t12.site`, `LETSENCRYPT_EMAIL=...`.
+# Node 20 LTS
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+sudo apt-get install -y nodejs build-essential   # build-essential нужен для argon2/sharp
 
-## 3. Собрать образы
+# MariaDB, Nginx, git, PM2
+sudo apt-get install -y mariadb-server nginx git
+sudo npm install -g pm2
+```
+DNS: A-записи `t12.site` и `www.t12.site` → IP VPS (`dig +short t12.site`). Открыть порты **80** и **443** (`sudo ufw allow 80,443/tcp`).
+
+## 2. База данных
+
 ```bash
-docker compose build
+sudo mysql <<'SQL'
+CREATE DATABASE directorhub CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE USER 'directorhub'@'localhost' IDENTIFIED BY 'СИЛЬНЫЙ_ПАРОЛЬ';
+GRANT ALL PRIVILEGES ON directorhub.* TO 'directorhub'@'localhost';
+FLUSH PRIVILEGES;
+SQL
 ```
 
-## 4. Выпустить TLS-сертификат (один раз)
+## 3. Код и переменные окружения
+
 ```bash
-chmod +x docker/init-letsencrypt.sh
-./docker/init-letsencrypt.sh
-```
-Скрипт поднимет nginx, пройдёт ACME-челлендж по `http://t12.site/.well-known/...` и выпустит боевой сертификат. Если упало — проверь DNS и что порт 80 доступен снаружи.
+sudo mkdir -p /var/www && cd /var/www
+sudo git clone https://github.com/timurrozmetow/check.git directorhub
+sudo chown -R $USER:$USER /var/www/directorhub
+cd /var/www/directorhub
 
-## 5. Запустить всё
+cp server/.env.example server/.env
+nano server/.env
+```
+В `server/.env` для прода задайте:
+- `NODE_ENV=production`, `HOST=127.0.0.1`, `PORT=4000`
+- `DB_USER=directorhub`, `DB_PASSWORD=…`, `DB_NAME=directorhub`
+- `JWT_SECRET` — `openssl rand -hex 32`
+- `CORS_ORIGIN=https://t12.site`
+- `UPLOADS_DIR=/var/www/directorhub/server/uploads` (абсолютный путь; папка в `.gitignore` — `git pull` её не тронет)
+- `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `ADMIN_NAME` — первый администратор
+
+## 4. Сборка, миграции, первый админ
+
 ```bash
-docker compose up -d
+npm ci                          # ставит зависимости обоих воркспейсов
+npm run build                   # server (tsup) + client (vite)
+node server/dist/db/migrate.js  # применить миграции
+node server/dist/db/seed.js     # создать администратора (ТОЛЬКО первый раз)
 ```
-- API на старте **сам применит миграции** и **создаст администратора** (идемпотентно, из `ADMIN_*`).
-- Открой `https://t12.site`, войди под `ADMIN_EMAIL` / `ADMIN_PASSWORD`, при желании смени пароль в профиле.
 
-## 6. Эксплуатация
-- **Логи:** `docker compose logs -f api` (или `web`, `db`, `certbot`).
-- **Статус:** `docker compose ps`.
-- **Миграции** применяются автоматически при каждом старте API. Вручную: `docker compose exec api node dist/db/migrate.js`.
-- **Обновление кода:**
-  ```bash
-  git pull
-  docker compose build
-  docker compose up -d
-  ```
-- **Сертификаты** продлеваются автоматически (сервис `certbot` раз в 12 ч, nginx перезагружается раз в 6 ч).
+## 5. Запуск API под PM2
 
-## 7. Бэкапы
-- **База:** `docker compose exec db sh -c 'mariadb-dump -uroot -p"$MARIADB_ROOT_PASSWORD" directorhub' > backup_$(date +%F).sql`
-- **Вложения:** том `uploads` (или `docker run --rm -v directorhub_uploads:/u -v $PWD:/b alpine tar czf /b/uploads_$(date +%F).tgz -C /u .`).
+```bash
+pm2 start ecosystem.config.cjs
+pm2 save                        # запомнить список процессов
+pm2 startup                     # автозапуск при перезагрузке (выполните выданную команду)
+```
+Проверка: `curl -s http://127.0.0.1:4000/api/v1/health` (или `pm2 logs directorhub-api`).
 
-## 8. Важные замечания
-- **Вложения (`/uploads`)** отдаются только под cookie-сессией (`up_token`) — nginx проксирует их на API, не с диска. Не добавляй прямую раздачу `/uploads` с диска в nginx, иначе обойдёшь авторизацию.
-- Cookie ставятся с флагом `secure` (только по HTTPS) — поэтому прод обязателен за TLS.
-- Первый вход после выката: если держал открытую вкладку со старой сессией, перезагрузи страницу (нужна свежая cookie `up_token`).
-- Порты `api`/`db` наружу не проброшены — доступ только внутри docker-сети через nginx.
+## 6. Nginx + TLS
 
-## Файлы деплоя
-- `docker-compose.yml` — db + api + web + certbot.
-- `docker/api.Dockerfile` — сборка и запуск API (миграции+сид+старт).
-- `docker/web.Dockerfile` — сборка клиента + nginx.
-- `docker/nginx.conf` — конфиг сайта (TLS, прокси, SPA).
-- `docker/init-letsencrypt.sh` — первичный выпуск сертификата.
-- `.env.example` — шаблон переменных.
+```bash
+sudo cp deploy/nginx.conf.example /etc/nginx/sites-available/directorhub
+sudo ln -s /etc/nginx/sites-available/directorhub /etc/nginx/sites-enabled/
+sudo rm -f /etc/nginx/sites-enabled/default
+sudo nginx -t && sudo systemctl reload nginx
+
+# TLS (certbot сам впишет 443-блок и редирект с 80):
+sudo apt-get install -y certbot python3-certbot-nginx
+sudo certbot --nginx -d t12.site -d www.t12.site
+```
+Откройте `https://t12.site`, войдите под `ADMIN_EMAIL` / `ADMIN_PASSWORD`, смените пароль в профиле.
+
+---
+
+## 7. Обновления (каждый релиз)
+
+На VPS из корня репозитория:
+```bash
+./deploy/update.sh
+```
+Скрипт делает: `git pull` → `npm ci` → `npm run build` → миграции → `pm2 reload`. **Сид не запускается** — админ и данные не трогаются. Клиент обновляется автоматически (nginx отдаёт свежий `client/dist`).
+
+Рабочий цикл: правки → коммит и `git push` на локальной машине → `./deploy/update.sh` на VPS.
+
+## 8. Эксплуатация
+
+- Логи API: `pm2 logs directorhub-api` · статус: `pm2 status` · рестарт: `pm2 restart directorhub-api`.
+- Логи nginx: `sudo tail -f /var/log/nginx/error.log`.
+- Сертификат продлевается сам (таймер `certbot.timer`); проверка: `sudo certbot renew --dry-run`.
+
+## 9. Бэкапы
+
+```bash
+# База
+mysqldump -u directorhub -p directorhub > backup_$(date +%F).sql
+# Вложения
+tar czf uploads_$(date +%F).tgz -C /var/www/directorhub/server uploads
+```
+
+## 10. Важные замечания
+
+- **`/uploads` только через API** (cookie `up_token`). Nginx проксирует их на `127.0.0.1:4000`, а не отдаёт `alias`'ом с диска — иначе файлы станут публичными в обход авторизации.
+- **Cookie `secure`** — работают только по HTTPS, поэтому TLS обязателен.
+- **SSE-уведомления** (`/api/v1/notifications/stream`) — шина in-memory, поэтому PM2 держит **один процесс** (`fork`, не cluster). Не увеличивайте `instances`.
+- **`.wasm`**: если анимации-лоадер не грузятся, убедитесь, что nginx отдаёт `application/wasm` (в свежих версиях mime.types это уже есть).
+- **Перенос текущих данных** с локальной базы (по желанию): `mysqldump` локально → импорт на VPS **до** первого `seed`.
+
+> Docker-вариант (`docker-compose.yml`, `docker/`) остаётся в репозитории как альтернатива и в этом сценарии не используется.

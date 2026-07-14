@@ -163,7 +163,7 @@ export function DashboardAnalytics({ tasks }: { tasks: TaskListItem[] }) {
   return (
     <section className="space-y-4">
       <h2 className="text-lg font-bold">{t("dashboardAnalytics.title")}</h2>
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <Card className="p-5 shadow-card">
           <h3 className="mb-4 text-sm font-semibold text-muted-foreground">
             {t("dashboardAnalytics.byStatus")}

@@ -91,7 +91,7 @@ const PendingCard = forwardRef<
             {typeLabel(request, t)}
           </span>
           <span aria-hidden>·</span>
-          <span className="truncate">
+          <span className="min-w-0 truncate">
             {t("adminDecisions.taskLabel", { title: request.task.title })}
           </span>
         </div>
@@ -152,7 +152,7 @@ const DecidedCard = forwardRef<
             {typeLabel(request, t)}
           </span>
           <span aria-hidden>·</span>
-          <span className="truncate">
+          <span className="min-w-0 truncate">
             {t("adminDecisions.taskLabel", { title: request.task.title })}
           </span>
         </div>

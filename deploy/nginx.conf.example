@@ -1,22 +1,25 @@
-# Пример конфигурации Nginx для DirectorHub (reverse proxy + статика + /uploads).
-# Скопируйте в /etc/nginx/sites-available/ и поправьте server_name и пути.
+# Nginx для DirectorHub: статика клиента (SPA) + reverse-proxy на API (PM2).
+# Копия:  /etc/nginx/sites-available/directorhub  →  symlink в sites-enabled/
+# Поправьте server_name и root. TLS добавит certbot автоматически:
+#   sudo certbot --nginx -d t12.site -d www.t12.site
 
 server {
     listen 80;
-    server_name directorhub.example.com;
+    listen [::]:80;
+    server_name t12.site www.t12.site;
 
-    client_max_body_size 25m;   # с запасом над лимитом файла 20 МБ
-
-    # Статика собранного фронтенда (client/dist)
+    # Собранный фронтенд (vite build → client/dist)
     root /var/www/directorhub/client/dist;
     index index.html;
 
-    # SPA-роутинг: всё неизвестное отдаём index.html
-    location / {
-        try_files $uri $uri/ /index.html;
-    }
+    client_max_body_size 25m;        # с запасом над лимитом файла 20 МБ
 
-    # API → Fastify (PM2, порт 4000)
+    gzip on;
+    gzip_comp_level 5;
+    gzip_min_length 1024;
+    gzip_types text/plain text/css application/javascript application/json image/svg+xml application/wasm;
+
+    # --- API → Fastify (PM2) на 127.0.0.1:4000 ---
     location /api/ {
         proxy_pass http://127.0.0.1:4000;
         proxy_http_version 1.1;
@@ -25,17 +28,39 @@ server {
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
 
-        # SSE: отключаем буферизацию и таймауты для /notifications/stream
+        # SSE (/api/v1/notifications/stream): без буферизации, длинный таймаут
+        proxy_set_header Connection "";
         proxy_buffering off;
         proxy_cache off;
         proxy_read_timeout 24h;
     }
 
-    # Загруженные файлы отдаёт Nginx напрямую (быстро, с кэшем)
+    # --- Загруженные файлы: ТОЛЬКО через API (там cookie-авторизация up_token). ---
+    # НЕ раздавать alias'ом с диска — иначе файлы станут публичными в обход авторизации.
     location /uploads/ {
-        alias /var/www/directorhub/server/uploads/;
+        proxy_pass http://127.0.0.1:4000;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout 300s;     # запас на отдачу крупных файлов
+    }
+
+    # --- Хэшированная статика Vite (assets/*.js|css) — кэшируем надолго ---
+    location /assets/ {
         expires 30d;
         add_header Cache-Control "public, immutable";
-        access_log off;
+        try_files $uri =404;
+    }
+
+    # --- SPA: всё остальное → index.html ---
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    # index.html не кэшируем, чтобы обновления фронта подхватывались сразу
+    location = /index.html {
+        add_header Cache-Control "no-cache";
     }
 }
