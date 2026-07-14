@@ -58,9 +58,11 @@ echo "### Удаляю временный сертификат…"
 docker compose run --rm --entrypoint sh certbot -c \
   "rm -rf /etc/letsencrypt/live/$DOMAIN /etc/letsencrypt/archive/$DOMAIN /etc/letsencrypt/renewal/$DOMAIN.conf"
 
-# 4) Запрашиваем боевой сертификат (entrypoint образа = certbot)
+# 4) Запрашиваем боевой сертификат.
+# ВАЖНО: entrypoint сервиса certbot в compose переопределён на цикл автопродления,
+# поэтому для разового выпуска явно возвращаем entrypoint=certbot.
 echo "### Запрашиваю боевой сертификат Let's Encrypt…"
-docker compose run --rm certbot certonly --webroot -w /var/www/certbot \
+docker compose run --rm --entrypoint certbot certbot certonly --webroot -w /var/www/certbot \
   $email_arg $domain_args \
   --rsa-key-size $rsa_key_size --agree-tos --no-eff-email --force-renewal
 
