@@ -76,16 +76,43 @@ pm2 startup                     # автозапуск при перезагру
 
 ## 6. Nginx + TLS
 
+Два варианта. **Вариант A** — простой (certbot сам создаёт TLS-блок). **Вариант B** — полный готовый конфиг `deploy/nginx.t12.conf` (HSTS, security-заголовки, хардненинг по IP).
+
+### Вариант A — автоматический (проще)
 ```bash
 sudo cp deploy/nginx.conf.example /etc/nginx/sites-available/directorhub
-sudo ln -s /etc/nginx/sites-available/directorhub /etc/nginx/sites-enabled/
+sudo ln -sf /etc/nginx/sites-available/directorhub /etc/nginx/sites-enabled/directorhub
 sudo rm -f /etc/nginx/sites-enabled/default
 sudo nginx -t && sudo systemctl reload nginx
 
-# TLS (certbot сам впишет 443-блок и редирект с 80):
 sudo apt-get install -y certbot python3-certbot-nginx
-sudo certbot --nginx -d t12.site -d www.t12.site
+sudo certbot --nginx -d t12.site -d www.t12.site   # впишет 443-блок и продление сам
 ```
+
+### Вариант B — полный конфиг `nginx.t12.conf`
+Он ссылается на сертификат, поэтому TLS выпускаем **до** включения:
+```bash
+sudo apt-get install -y certbot
+sudo mkdir -p /var/www/certbot
+
+# 1) Разовый выпуск (порт 80 должен быть свободен)
+sudo systemctl stop nginx 2>/dev/null || true
+sudo certbot certonly --standalone -d t12.site -d www.t12.site \
+     -m ВАШ_EMAIL --agree-tos --no-eff-email
+
+# 2) Включаем полный конфиг
+sudo cp deploy/nginx.t12.conf /etc/nginx/sites-available/directorhub
+sudo ln -sf /etc/nginx/sites-available/directorhub /etc/nginx/sites-enabled/directorhub
+sudo rm -f /etc/nginx/sites-enabled/default
+sudo nginx -t && sudo systemctl start nginx
+
+# 3) Переводим продление на webroot (без остановки nginx) + reload-хук
+sudo certbot certonly --webroot -w /var/www/certbot -d t12.site -d www.t12.site
+printf '#!/bin/sh\nsystemctl reload nginx\n' | sudo tee /etc/letsencrypt/renewal-hooks/deploy/reload-nginx.sh
+sudo chmod +x /etc/letsencrypt/renewal-hooks/deploy/reload-nginx.sh
+sudo certbot renew --dry-run
+```
+
 Откройте `https://t12.site`, войдите под `ADMIN_EMAIL` / `ADMIN_PASSWORD`, смените пароль в профиле.
 
 ---
