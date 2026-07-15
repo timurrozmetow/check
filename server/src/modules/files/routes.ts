@@ -77,7 +77,7 @@ export default async function filesRoutes(app: FastifyInstance) {
     async (req, reply) => {
       const { id } = idParamSchema.parse(req.params);
       const { stream, mime, size, originalName } =
-        await openFileForDownload(id);
+        await openFileForDownload(id, req.user.role, req.user.sub);
       // RFC 5987: имя файла в UTF-8 (пробелы/скобки/кириллица корректно).
       const encoded = encodeURIComponent(originalName);
       reply

@@ -10,6 +10,7 @@ import {
   decisionOptions,
   decisionRequests,
   files,
+  taskAssignees,
   taskUpdates,
   tasks,
   type FileRow,
@@ -190,12 +191,83 @@ export async function deleteUploadFile(urlOrPath: string): Promise<void> {
   await fs.unlink(path.join(uploadsRoot, rel)).catch(() => {});
 }
 
+/** Сводит вложение к id задачи, к которой оно в итоге относится. */
+async function resolveTaskIdForFile(row: FileRow): Promise<number | null> {
+  switch (row.entityType) {
+    case "task":
+      return row.entityId;
+    case "task_update": {
+      const [u] = await db
+        .select({ taskId: taskUpdates.taskId })
+        .from(taskUpdates)
+        .where(eq(taskUpdates.id, row.entityId))
+        .limit(1);
+      return u?.taskId ?? null;
+    }
+    case "decision_request": {
+      const [d] = await db
+        .select({ taskId: decisionRequests.taskId })
+        .from(decisionRequests)
+        .where(eq(decisionRequests.id, row.entityId))
+        .limit(1);
+      return d?.taskId ?? null;
+    }
+    case "decision_option": {
+      const [o] = await db
+        .select({ requestId: decisionOptions.requestId })
+        .from(decisionOptions)
+        .where(eq(decisionOptions.id, row.entityId))
+        .limit(1);
+      if (!o) return null;
+      const [d] = await db
+        .select({ taskId: decisionRequests.taskId })
+        .from(decisionRequests)
+        .where(eq(decisionRequests.id, o.requestId))
+        .limit(1);
+      return d?.taskId ?? null;
+    }
+    default:
+      return null;
+  }
+}
+
 /**
- * Готовит файл к скачиванию: проверяет наличие строки и файла на диске,
- * отдаёт поток + метаданные. Требует авторизации на уровне маршрута
- * (в отличие от статической раздачи /uploads, это скачивание под токеном).
+ * Право скачать вложение = право видеть задачу, к которой оно относится
+ * (та же модель, что assertAccess в модуле tasks): admin/director видят все
+ * задачи, сотрудник — только назначенные ему. Без этой проверки любой
+ * авторизованный пользователь мог бы перебором id качать чужие вложения (IDOR).
+ * Осиротевший файл (не привязан ни к одной задаче) отдаём только admin/director.
  */
-export async function openFileForDownload(fileId: number): Promise<{
+async function assertCanDownloadFile(
+  row: FileRow,
+  role: Role,
+  userId: number,
+): Promise<void> {
+  if (role === "admin" || role === "director") return;
+
+  const taskId = await resolveTaskIdForFile(row);
+  if (taskId === null) throw forbidden("error.forbidden");
+
+  const [assigned] = await db
+    .select({ userId: taskAssignees.userId })
+    .from(taskAssignees)
+    .where(
+      and(eq(taskAssignees.taskId, taskId), eq(taskAssignees.userId, userId)),
+    )
+    .limit(1);
+  if (!assigned) throw forbidden("error.forbidden");
+}
+
+/**
+ * Готовит файл к скачиванию: проверяет право доступа, наличие строки и файла
+ * на диске, отдаёт поток + метаданные. Скачивание под токеном (в отличие от
+ * статической раздачи /uploads).
+ */
+export async function openFileForDownload(
+  fileId: number,
+  role: Role,
+  userId: number,
+): Promise<{
   stream: NodeJS.ReadableStream;
   mime: string;
   size: number;
@@ -207,6 +279,8 @@ export async function openFileForDownload(fileId: number): Promise<{
     .where(eq(files.id, fileId))
     .limit(1);
   if (!row) throw notFound("error.fileNotFound");
+
+  await assertCanDownloadFile(row, role, userId);
 
   const abs = path.join(uploadsRoot, row.path);
   const stat = await fs.stat(abs).catch(() => null);

@@ -361,26 +361,27 @@ export async function updateTask(
   }
 
   await db.transaction(async (tx) => {
-    await tx
-      .update(tasks)
-      .set({
-        ...(input.title !== undefined ? { title: input.title } : {}),
-        ...(input.description !== undefined
-          ? { description: input.description }
-          : {}),
-        ...(input.projectId !== undefined
-          ? { projectId: input.projectId }
-          : {}),
-        ...(input.priority !== undefined ? { priority: input.priority } : {}),
-        ...(input.deadline !== undefined
-          ? {
-              deadline: parseDeadline(input.deadline),
-              // Новый дедлайн — разрешаем повторное напоминание
-              deadlineRemindedAt: null,
-            }
-          : {}),
-      })
-      .where(eq(tasks.id, taskId));
+    const taskFields = {
+      ...(input.title !== undefined ? { title: input.title } : {}),
+      ...(input.description !== undefined
+        ? { description: input.description }
+        : {}),
+      ...(input.projectId !== undefined ? { projectId: input.projectId } : {}),
+      ...(input.priority !== undefined ? { priority: input.priority } : {}),
+      ...(input.deadline !== undefined
+        ? {
+            deadline: parseDeadline(input.deadline),
+            // Новый дедлайн — разрешаем повторное напоминание
+            deadlineRemindedAt: null,
+          }
+        : {}),
+    };
+    // UPDATE выполняем только если есть что менять в колонках задачи.
+    // Иначе (например, правим ТОЛЬКО исполнителей) Drizzle сгенерирует
+    // «UPDATE tasks SET WHERE id = ?» — синтаксическая ошибка MariaDB → 500.
+    if (Object.keys(taskFields).length > 0) {
+      await tx.update(tasks).set(taskFields).where(eq(tasks.id, taskId));
+    }
 
     if (input.assigneeIds !== undefined) {
       const newIds = await replaceAssignees(tx, taskId, input.assigneeIds);

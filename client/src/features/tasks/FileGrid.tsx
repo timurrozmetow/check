@@ -107,7 +107,10 @@ export function FileGrid({ files }: { files: FileInfo[] }) {
         open={lightbox !== null}
         onOpenChange={(o) => !o && setLightbox(null)}
       >
-        <DialogContent className="max-w-3xl border-none bg-transparent p-0 shadow-none">
+        <DialogContent
+          hideClose
+          className="max-w-3xl border-none bg-transparent p-0 shadow-none"
+        >
           {lightbox && (
             <div className="relative flex min-h-[240px] items-center justify-center">
               {/* Анимация загрузки поверх, пока изображение не открылось. */}
