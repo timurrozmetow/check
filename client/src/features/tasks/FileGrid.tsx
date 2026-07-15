@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { FileText, FileSpreadsheet, Download, X } from "lucide-react";
-import { formatFileSize } from "@/lib/utils";
+import { FileText, FileSpreadsheet, Download, Loader2, X } from "lucide-react";
+import { cn, formatFileSize } from "@/lib/utils";
 import { downloadFile } from "@/api/upload";
 import { RequestError } from "@/api/client";
 import type { FileInfo } from "@/api/types";
@@ -22,6 +22,10 @@ export function FileGrid({ files }: { files: FileInfo[] }) {
   const { t } = useTranslation();
   const [lightbox, setLightbox] = useState<FileInfo | null>(null);
   const [downloadingId, setDownloadingId] = useState<number | null>(null);
+  // Пока полноразмерная картинка грузится — показываем спиннер, а не пустую
+  // модалку с одними кнопками. Сбрасываем при смене открытого изображения.
+  const [imgLoaded, setImgLoaded] = useState(false);
+  useEffect(() => setImgLoaded(false), [lightbox?.id]);
 
   async function download(file: FileInfo) {
     setDownloadingId(file.id);
@@ -105,20 +109,39 @@ export function FileGrid({ files }: { files: FileInfo[] }) {
       >
         <DialogContent className="max-w-3xl border-none bg-transparent p-0 shadow-none">
           {lightbox && (
-            <div className="relative">
+            <div className="relative flex min-h-[240px] items-center justify-center">
+              {/* Анимация загрузки поверх, пока изображение не открылось. */}
+              {!imgLoaded && (
+                <div className="absolute inset-0 grid place-items-center">
+                  <span className="grid h-14 w-14 place-items-center rounded-full bg-black/50 backdrop-blur-sm">
+                    <Loader2 className="h-7 w-7 animate-spin text-white" />
+                  </span>
+                </div>
+              )}
               <img
+                key={lightbox.id}
                 src={lightbox.url}
                 alt={lightbox.originalName}
-                className="max-h-[80vh] w-full rounded-xl object-contain"
+                onLoad={() => setImgLoaded(true)}
+                onError={() => setImgLoaded(true)}
+                className={cn(
+                  "max-h-[80vh] w-full rounded-xl object-contain transition-opacity duration-300",
+                  imgLoaded ? "opacity-100" : "opacity-0",
+                )}
               />
               <div className="absolute right-3 top-3 flex gap-2">
                 <button
                   type="button"
                   onClick={() => download(lightbox)}
+                  disabled={downloadingId === lightbox.id}
                   aria-label={t("fileGrid.download")}
-                  className="grid h-9 w-9 place-items-center rounded-full bg-black/60 text-white transition-colors hover:bg-black/80"
+                  className="grid h-9 w-9 place-items-center rounded-full bg-black/60 text-white transition-colors hover:bg-black/80 disabled:opacity-70"
                 >
-                  <Download className="h-5 w-5" />
+                  {downloadingId === lightbox.id ? (
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                  ) : (
+                    <Download className="h-5 w-5" />
+                  )}
                 </button>
                 <button
                   type="button"
