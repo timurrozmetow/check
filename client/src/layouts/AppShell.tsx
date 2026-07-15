@@ -1,7 +1,7 @@
-import { useMemo, useState } from "react";
+import { Suspense, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
-import { LogOut, Menu } from "lucide-react";
+import { Loader2, LogOut, Menu } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { Logo } from "@/components/common/Logo";
 import { ThemeToggle } from "@/components/common/ThemeToggle";
@@ -179,7 +179,17 @@ export function AppShell({
         </header>
 
         <main className="flex-1 px-4 py-6 md:px-6 lg:px-8 3xl:px-12 3xl:py-8 4xl:px-16">
-          <Outlet />
+          {/* Suspense для лениво-загружаемых страниц: сайдбар/шапка остаются,
+              пока подгружается чанк маршрута. */}
+          <Suspense
+            fallback={
+              <div className="grid min-h-[60vh] place-items-center">
+                <Loader2 className="h-7 w-7 animate-spin text-muted-foreground" />
+              </div>
+            }
+          >
+            <Outlet />
+          </Suspense>
         </main>
       </div>
     </div>

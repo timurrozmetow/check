@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { lazy, useEffect } from "react";
 import { Route, Routes } from "react-router-dom";
 import { tryRefresh } from "@/api/client";
 import { useAuthStore } from "@/stores/auth";
@@ -9,27 +9,60 @@ import { AdminLayout } from "@/layouts/AdminLayout";
 import { DirectorLayout } from "@/layouts/DirectorLayout";
 import { EmployeeLayout } from "@/layouts/EmployeeLayout";
 import { LoginPage } from "@/pages/LoginPage";
+import { NotFoundPage } from "@/pages/NotFoundPage";
 import { LoadingScreen } from "@/components/common/LoadingScreen";
 
-// Admin
-import { AdminDashboard } from "@/pages/admin/AdminDashboard";
-import { AdminProjects } from "@/pages/admin/AdminProjects";
-import { AdminTasks } from "@/pages/admin/AdminTasks";
-import { AdminModeration } from "@/pages/admin/AdminModeration";
-import { AdminDecisions } from "@/pages/admin/AdminDecisions";
-import { AdminUsers } from "@/pages/admin/AdminUsers";
-import { AdminReports } from "@/pages/admin/AdminReports";
-import { BoardPage } from "@/pages/admin/BoardPage";
-// Director
-import { DirectorDashboard } from "@/pages/director/DirectorDashboard";
-import { DirectorDecisions } from "@/pages/director/DirectorDecisions";
-// Employee
-import { EmployeeTasks } from "@/pages/employee/EmployeeTasks";
-import { EmployeeUpdates } from "@/pages/employee/EmployeeUpdates";
-// Общие
-import { TaskPage } from "@/pages/TaskPage";
-import { CalendarPage } from "@/pages/CalendarPage";
-import { NotFoundPage } from "@/pages/NotFoundPage";
+// Страницы грузим лениво (route-split): при входе не тянем весь код админа,
+// директора и сотрудника одним чанком. Все они рендерятся под AppShell, где
+// добавлен Suspense — сайдбар остаётся на месте, пока подгружается чанк страницы.
+const AdminDashboard = lazy(() =>
+  import("@/pages/admin/AdminDashboard").then((m) => ({ default: m.AdminDashboard })),
+);
+const AdminProjects = lazy(() =>
+  import("@/pages/admin/AdminProjects").then((m) => ({ default: m.AdminProjects })),
+);
+const AdminTasks = lazy(() =>
+  import("@/pages/admin/AdminTasks").then((m) => ({ default: m.AdminTasks })),
+);
+const AdminModeration = lazy(() =>
+  import("@/pages/admin/AdminModeration").then((m) => ({ default: m.AdminModeration })),
+);
+const AdminDecisions = lazy(() =>
+  import("@/pages/admin/AdminDecisions").then((m) => ({ default: m.AdminDecisions })),
+);
+const AdminUsers = lazy(() =>
+  import("@/pages/admin/AdminUsers").then((m) => ({ default: m.AdminUsers })),
+);
+const AdminReports = lazy(() =>
+  import("@/pages/admin/AdminReports").then((m) => ({ default: m.AdminReports })),
+);
+const BoardPage = lazy(() =>
+  import("@/pages/admin/BoardPage").then((m) => ({ default: m.BoardPage })),
+);
+const DirectorDashboard = lazy(() =>
+  import("@/pages/director/DirectorDashboard").then((m) => ({
+    default: m.DirectorDashboard,
+  })),
+);
+const DirectorDecisions = lazy(() =>
+  import("@/pages/director/DirectorDecisions").then((m) => ({
+    default: m.DirectorDecisions,
+  })),
+);
+const EmployeeTasks = lazy(() =>
+  import("@/pages/employee/EmployeeTasks").then((m) => ({ default: m.EmployeeTasks })),
+);
+const EmployeeUpdates = lazy(() =>
+  import("@/pages/employee/EmployeeUpdates").then((m) => ({
+    default: m.EmployeeUpdates,
+  })),
+);
+const TaskPage = lazy(() =>
+  import("@/pages/TaskPage").then((m) => ({ default: m.TaskPage })),
+);
+const CalendarPage = lazy(() =>
+  import("@/pages/CalendarPage").then((m) => ({ default: m.CalendarPage })),
+);
 
 export default function App() {
   const initializing = useAuthStore((s) => s.initializing);

@@ -145,3 +145,17 @@
     );
   }
 }
+
+/* Доступность (WCAG 2.3.3): при системной настройке «уменьшить движение»
+   глушим CSS-анимации/переходы (bell-ring, hub-pulse, shimmer, ping, spin…).
+   framer-motion обрабатывается отдельно — через <MotionConfig reducedMotion="user">. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

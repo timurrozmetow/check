@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { FileText, FileSpreadsheet, Download, Loader2, X } from "lucide-react";
 import { cn, formatFileSize } from "@/lib/utils";
 import { downloadFile } from "@/api/upload";
@@ -54,7 +54,7 @@ export function FileGrid({ files }: { files: FileInfo[] }) {
               key={img.id}
               type="button"
               onClick={() => setLightbox(img)}
-              className="group relative aspect-square overflow-hidden rounded-xl border border-border bg-muted"
+              className="group relative aspect-square overflow-hidden rounded-xl border border-border bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
               <img
                 src={img.thumbUrl ?? img.url}
@@ -113,6 +113,9 @@ export function FileGrid({ files }: { files: FileInfo[] }) {
         >
           {lightbox && (
             <div className="relative flex min-h-[240px] items-center justify-center">
+              <DialogTitle className="sr-only">
+                {lightbox.originalName}
+              </DialogTitle>
               {/* Анимация загрузки поверх, пока изображение не открылось. */}
               {!imgLoaded && (
                 <div className="absolute inset-0 grid place-items-center">

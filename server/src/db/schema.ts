@@ -121,7 +121,9 @@ export const taskUpdates = mysqlTable(
     reviewedBy: int("reviewed_by").references(() => users.id),
   },
   (t) => [
-    index("updates_task_idx").on(t.taskId),
+    // Композитный (task_id, status): покрывает и выборку по задаче, и подсчёт
+    // pending-обновлений задачи в enrich() без отдельного индекса по task_id.
+    index("updates_task_status_idx").on(t.taskId, t.status),
     index("updates_status_idx").on(t.status),
     index("updates_author_idx").on(t.authorId),
   ],
@@ -150,7 +152,8 @@ export const decisionRequests = mysqlTable(
     decidedAt: datetime("decided_at"),
   },
   (t) => [
-    index("decisions_task_idx").on(t.taskId),
+    // Композитный (task_id, status): выборка решений задачи + подсчёт pending в enrich().
+    index("decisions_task_status_idx").on(t.taskId, t.status),
     index("decisions_status_idx").on(t.status),
   ],
 );
@@ -204,7 +207,11 @@ export const notifications = mysqlTable(
     isRead: boolean("is_read").notNull().default(false),
     createdAt: timestamp("created_at").notNull().defaultNow(),
   },
-  (t) => [index("notifications_user_idx").on(t.userId, t.isRead)],
+  (t) => [
+    // (user_id, is_read, created_at): список уведомлений пользователя фильтрует
+    // по userId(+isRead) и сортирует по created_at DESC — индекс снимает filesort.
+    index("notifications_user_idx").on(t.userId, t.isRead, t.createdAt),
+  ],
 );
 
 export const activityLog = mysqlTable(

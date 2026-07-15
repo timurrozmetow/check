@@ -41,7 +41,7 @@ export const TaskCard = forwardRef<
       transition={{ duration: 0.3, delay: Math.min(index * 0.04, 0.3) }}
       onClick={() => navigate(`${basePath}/${task.id}`)}
       className={cn(
-        "flex w-full min-w-0 flex-col gap-3 rounded-2xl border border-border bg-card p-5 text-left shadow-card transition-all hover:-translate-y-0.5",
+        "flex w-full min-w-0 flex-col gap-3 rounded-2xl border border-border bg-card p-5 text-left shadow-card transition-all hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
         isMuted && "opacity-60 grayscale-[0.35] hover:opacity-100 hover:grayscale-0",
       )}
     >

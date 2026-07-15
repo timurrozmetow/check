@@ -42,7 +42,7 @@ export function NotificationBell() {
           type="button"
           aria-label={t("notificationBell.title")}
           title={t("notificationBell.title")}
-          className="relative grid h-10 w-10 place-items-center rounded-[10px] border border-border bg-card text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+          className="relative grid h-10 w-10 place-items-center rounded-[10px] border border-border bg-card text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
         >
           <Bell className={cn("h-[18px] w-[18px]", ringing && "animate-bell-ring")} />
           {unread > 0 && (
@@ -86,7 +86,7 @@ export function NotificationBell() {
                     if (n.link && role) navigate(notificationHref(n.link, role));
                   }}
                   className={cn(
-                    "flex w-full flex-col gap-0.5 border-b border-border/60 px-4 py-3 text-left transition-colors hover:bg-secondary/60",
+                    "flex w-full flex-col gap-0.5 border-b border-border/60 px-4 py-3 text-left transition-colors hover:bg-secondary/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
                     !n.isRead && "bg-accent/40",
                   )}
                 >

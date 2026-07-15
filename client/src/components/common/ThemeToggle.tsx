@@ -21,7 +21,7 @@ export function ThemeToggle() {
           type="button"
           onClick={toggle}
           aria-label={isDark ? t("themeToggle.enableLight") : t("themeToggle.enableDark")}
-          className="grid h-10 w-10 place-items-center rounded-[10px] border border-border bg-card text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+          className="grid h-10 w-10 place-items-center rounded-[10px] border border-border bg-card text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
         >
           {isDark ? (
             <Moon className="h-[18px] w-[18px]" />
