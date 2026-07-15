@@ -14,7 +14,8 @@ echo "==> 3/5 сборка (server tsup + client vite)"
 npm run build
 
 echo "==> 4/5 миграции БД (идемпотентно, по журналу)"
-node server/dist/db/migrate.js
+# Запускаем из server/, чтобы dotenv нашёл server/.env (он резолвится от cwd)
+( cd server && node dist/db/migrate.js )
 
 echo "==> 5/5 перезапуск API без даунтайма"
 pm2 reload directorhub-api

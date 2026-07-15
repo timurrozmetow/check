@@ -61,8 +61,11 @@ nano server/.env
 ```bash
 npm ci                          # ставит зависимости обоих воркспейсов
 npm run build                   # server (tsup) + client (vite)
-node server/dist/db/migrate.js  # применить миграции
-node server/dist/db/seed.js     # создать администратора (ТОЛЬКО первый раз)
+# Миграции/сид запускаем ИЗ server/, иначе dotenv не найдёт server/.env (ищет в cwd):
+cd server
+node dist/db/migrate.js         # применить миграции
+node dist/db/seed.js            # создать администратора (ТОЛЬКО первый раз)
+cd ..
 ```
 
 ## 5. Запуск API под PM2
