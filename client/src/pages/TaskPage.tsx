@@ -7,6 +7,7 @@ import {
   Gavel,
   MessageSquare,
   Paperclip,
+  Pencil,
   Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -26,6 +27,7 @@ import { Timeline } from "@/features/tasks/Timeline";
 import { TaskSummary } from "@/features/tasks/TaskSummary";
 import { FileGrid } from "@/features/tasks/FileGrid";
 import { AdminTaskControls } from "@/features/tasks/AdminTaskControls";
+import { EditTaskDialog } from "@/features/tasks/EditTaskDialog";
 import { UpdateForm } from "@/features/updates/UpdateForm";
 import { CreateDecisionDialog } from "@/features/decisions/CreateDecisionDialog";
 import {
@@ -167,6 +169,15 @@ export function TaskPage() {
         <>
           <AdminTaskControls task={task} />
           <div className="flex flex-wrap justify-end gap-2">
+            <EditTaskDialog
+              task={task}
+              trigger={
+                <Button variant="outline">
+                  <Pencil className="mr-2 h-4 w-4" />
+                  {t("taskPage.editTask")}
+                </Button>
+              }
+            />
             <Button
               variant="ghost"
               className="text-destructive hover:bg-destructive/10 hover:text-destructive"

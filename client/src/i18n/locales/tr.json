@@ -267,6 +267,10 @@
     "createBtn": "Görev oluştur",
     "created": "Görev oluşturuldu"
   },
+  "editTaskDialog": {
+    "title": "Görevi düzenle",
+    "saved": "Değişiklikler kaydedildi"
+  },
   "dashboardAnalytics": {
     "title": "Analitik",
     "byStatus": "Duruma göre görevler",
@@ -453,6 +457,7 @@
     "deadline": "Son tarih: {{date}}",
     "overdue": "gecikti",
     "assignees": "Sorumlular:",
+    "editTask": "Düzenle",
     "requestDecision": "Direktör kararı iste",
     "submitUpdate": "Güncelleme gönder",
     "files": "Dosyalar",
@@ -512,6 +517,7 @@
     "sentForReview": "Güncelleme incelemeye gönderildi",
     "submitFailed": "Gönderilemedi",
     "sending": "Gönderiliyor…",
+    "uploading": "Dosyalar yükleniyor…",
     "sentBanner": "Gönderildi · inceleme bekliyor",
     "filesFailed": "Güncelleme gönderildi ancak dosyalar yüklenemedi: {{msg}}",
     "filesFailedGeneric": "Güncelleme gönderildi ancak dosyalar yüklenemedi",

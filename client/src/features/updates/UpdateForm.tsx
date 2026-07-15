@@ -3,8 +3,9 @@ import { AnimatePresence, motion } from "framer-motion";
 import { CheckCircle2, Loader2, Paperclip, Send, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Progress } from "@/components/ui/progress";
 import { useCreateUpdate } from "@/api/hooks";
-import { uploadFiles } from "@/api/upload";
+import { uploadFilesWithProgress } from "@/api/upload";
 import { formatFileSize, cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { RequestError } from "@/api/client";
@@ -21,6 +22,7 @@ export function UpdateForm({ taskId }: { taskId: number }) {
   const [dragOver, setDragOver] = useState(false);
   const [busy, setBusy] = useState(false);
   const [sent, setSent] = useState(false);
+  const [progress, setProgress] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Плашка «Отправлено» сама скрывается через несколько секунд.
@@ -43,6 +45,7 @@ export function UpdateForm({ taskId }: { taskId: number }) {
     }
     setBusy(true);
     setSent(false);
+    setProgress(0);
     try {
       const res = await create.mutateAsync({ taskId, text: text.trim() });
       // Обновление уже создано на сервере. Загрузка файлов — вторичный шаг:
@@ -50,7 +53,12 @@ export function UpdateForm({ taskId }: { taskId: number }) {
       // жмёт «Отправить» повторно и плодит дубли в очереди модерации.
       if (files.length > 0) {
         try {
-          await uploadFiles("task_update", res.update.id, files);
+          await uploadFilesWithProgress(
+            "task_update",
+            res.update.id,
+            files,
+            setProgress,
+          );
         } catch (e) {
           toast.warning(
             e instanceof RequestError
@@ -146,9 +154,30 @@ export function UpdateForm({ taskId }: { taskId: number }) {
         </div>
       )}
 
+      {/* Прогресс отправки файлов: показываем реальную полоску заполнения. */}
+      <AnimatePresence>
+        {busy && files.length > 0 && (
+          <motion.div
+            key="upload-progress"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="space-y-1.5 overflow-hidden"
+          >
+            <div className="flex items-center justify-between text-xs font-medium">
+              <span className="text-muted-foreground">
+                {t("updateForm.uploading")}
+              </span>
+              <span className="tabular-nums text-primary">{progress}%</span>
+            </div>
+            <Progress value={progress} className="h-2" />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <div className="flex items-center justify-end gap-3">
         <AnimatePresence mode="wait">
-          {busy ? (
+          {busy && files.length === 0 ? (
             <motion.div
               key="sending"
               initial={{ opacity: 0, x: 8 }}
