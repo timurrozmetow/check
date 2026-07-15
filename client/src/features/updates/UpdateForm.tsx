@@ -22,6 +22,9 @@ export function UpdateForm({ taskId }: { taskId: number }) {
   const [dragOver, setDragOver] = useState(false);
   const [busy, setBusy] = useState(false);
   const [sent, setSent] = useState(false);
+  // uploading — именно фаза передачи файлов (не создание записи обновления),
+  // чтобы полоска не висела на «0%», пока идёт первичный JSON-POST.
+  const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -52,12 +55,15 @@ export function UpdateForm({ taskId }: { taskId: number }) {
       // её провал НЕ должен выглядеть как провал отправки, иначе сотрудник
       // жмёт «Отправить» повторно и плодит дубли в очереди модерации.
       if (files.length > 0) {
+        setUploading(true);
         try {
           await uploadFilesWithProgress(
             "task_update",
             res.update.id,
             files,
-            setProgress,
+            // Прогресс только вперёд: при повторе после 401 новый XHR
+            // стартует с 0, но полоска не должна прыгать назад.
+            (p) => setProgress((prev) => Math.max(prev, p)),
           );
         } catch (e) {
           toast.warning(
@@ -65,6 +71,8 @@ export function UpdateForm({ taskId }: { taskId: number }) {
               ? t("updateForm.filesFailed", { msg: e.message })
               : t("updateForm.filesFailedGeneric"),
           );
+        } finally {
+          setUploading(false);
         }
       }
       qc.invalidateQueries({ queryKey: ["my-updates"] });
@@ -154,9 +162,10 @@ export function UpdateForm({ taskId }: { taskId: number }) {
         </div>
       )}
 
-      {/* Прогресс отправки файлов: показываем реальную полоску заполнения. */}
+      {/* Реальная полоска заполнения на фазе передачи файлов. Дойдя до 100%,
+          переходим в неопределённое «Обработка…», пока сервер не ответит. */}
       <AnimatePresence>
-        {busy && files.length > 0 && (
+        {uploading && (
           <motion.div
             key="upload-progress"
             initial={{ opacity: 0, height: 0 }}
@@ -166,18 +175,23 @@ export function UpdateForm({ taskId }: { taskId: number }) {
           >
             <div className="flex items-center justify-between text-xs font-medium">
               <span className="text-muted-foreground">
-                {t("updateForm.uploading")}
+                {progress >= 100
+                  ? t("updateForm.processing")
+                  : t("updateForm.uploading")}
               </span>
               <span className="tabular-nums text-primary">{progress}%</span>
             </div>
-            <Progress value={progress} className="h-2" />
+            <Progress
+              value={progress}
+              className={cn("h-2", progress >= 100 && "animate-pulse")}
+            />
           </motion.div>
         )}
       </AnimatePresence>
 
       <div className="flex items-center justify-end gap-3">
         <AnimatePresence mode="wait">
-          {busy && files.length === 0 ? (
+          {busy && !uploading ? (
             <motion.div
               key="sending"
               initial={{ opacity: 0, x: 8 }}

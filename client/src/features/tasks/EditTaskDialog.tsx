@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { Loader2 } from "lucide-react";
 import {
@@ -56,17 +56,24 @@ export function EditTaskDialog({
   const [assigneeIds, setAssigneeIds] = useState<number[]>(initialAssignees);
   const [titleError, setTitleError] = useState<string>();
 
-  // При открытии подтягиваем актуальные значения задачи (задача могла
-  // измениться, пока диалог был закрыт).
-  useEffect(() => {
-    if (open) {
+  // Синхронизируем поля с задачей ТОЛЬКО в момент открытия (false→true), а не
+  // на каждое изменение task: иначе фоновой refetch/правка задачи вторым
+  // админом затрут несохранённые изменения прямо во время редактирования.
+  function handleOpenChange(next: boolean) {
+    if (next) {
       setTitle(task.title);
       setAssigneeIds(initialAssignees);
       setTitleError(undefined);
     }
-  }, [open, task.title, initialAssignees]);
+    setOpen(next);
+  }
 
-  const employees = (users ?? []).filter((u) => u.role === "employee");
+  // В список для выбора включаем всех сотрудников И всех текущих исполнителей
+  // задачи (даже если чья-то роль сменилась с employee) — иначе снять такого
+  // исполнителя было бы нельзя, и он молча возвращался бы при сохранении.
+  const assignableUsers = (users ?? []).filter(
+    (u) => u.role === "employee" || initialAssignees.includes(u.id),
+  );
 
   const titleChanged = title.trim() !== task.title;
   const assigneesChanged = idsKey(assigneeIds) !== idsKey(initialAssignees);
@@ -110,7 +117,7 @@ export function EditTaskDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
       {confirmDialog}
       <DialogContent
@@ -156,13 +163,13 @@ export function EditTaskDialog({
 
           <div className="space-y-2">
             <Label>{t("createTaskDialog.assigneesLabel")}</Label>
-            {employees.length === 0 ? (
+            {assignableUsers.length === 0 ? (
               <p className="rounded-xl bg-secondary/60 p-3 text-sm text-muted-foreground">
                 {t("createTaskDialog.noEmployees")}
               </p>
             ) : (
               <div className="grid gap-2 sm:grid-cols-2">
-                {employees.map((u) => {
+                {assignableUsers.map((u) => {
                   const checked = assigneeIds.includes(u.id);
                   return (
                     <label

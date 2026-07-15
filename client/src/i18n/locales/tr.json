@@ -518,6 +518,7 @@
     "submitFailed": "Gönderilemedi",
     "sending": "Gönderiliyor…",
     "uploading": "Dosyalar yükleniyor…",
+    "processing": "İşleniyor…",
     "sentBanner": "Gönderildi · inceleme bekliyor",
     "filesFailed": "Güncelleme gönderildi ancak dosyalar yüklenemedi: {{msg}}",
     "filesFailedGeneric": "Güncelleme gönderildi ancak dosyalar yüklenemedi",
