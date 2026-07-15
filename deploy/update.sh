@@ -11,7 +11,19 @@ echo "==> 2/5 установка зависимостей"
 npm ci
 
 echo "==> 3/5 сборка (server tsup + client vite)"
-npm run build
+# Циклический чанк из vite manualChunks даёт в рантайме TDZ («Cannot access 'x'
+# before initialization») и белый экран, при этом сама сборка «успешна». Ловим
+# предупреждение из лога и НЕ выкатываем такую сборку.
+if ! build_log="$(npm run build 2>&1)"; then
+  echo "$build_log"
+  echo "✗ Сборка завершилась с ошибкой — деплой остановлен."
+  exit 1
+fi
+echo "$build_log"
+if printf '%s\n' "$build_log" | grep -qi "Circular chunk"; then
+  echo "✗ Обнаружен «Circular chunk» — деплой остановлен (иначе белый экран на проде)."
+  exit 1
+fi
 
 echo "==> 4/5 миграции БД (идемпотентно, по журналу)"
 # Запускаем из server/, чтобы dotenv нашёл server/.env (он резолвится от cwd)

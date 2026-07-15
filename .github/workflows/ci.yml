@@ -43,6 +43,18 @@ jobs:
         run: npm run test -w server
       - name: Сборка клиента
         run: npm run build -w client
+      - name: Установка Chromium (Playwright) для smoke-теста
+        run: npx playwright install --with-deps chromium
+        working-directory: client
+      - name: Smoke-тест прод-сборки (ловит битый бандл — circular chunk / TDZ)
+        # Гоняем именно прод-сборку (vite preview), т.к. dev-режим не бандлит
+        # и не воспроизводит поломки code-split. API не нужен.
+        run: npm run test:e2e:smoke -w client
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: smoke-report
+          path: client/playwright-report/
 
   # Браузерные e2e-тесты (Playwright) на живом приложении
   e2e:

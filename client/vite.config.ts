@@ -15,22 +15,24 @@ export default defineConfig({
   build: {
     rollupOptions: {
       output: {
-        // Стабильные vendor-чанки: библиотеки меняются редко, поэтому их хэш
-        // не сбрасывается на каждый релиз приложения (лучше кэш у клиента),
-        // а тяжёлые пакеты (framer/lottie) выделены отдельно.
+        // Стабильные vendor-чанки для кэша. ВАЖНО про циклы между чанками:
+        // делить node_modules можно только так, чтобы не возникло взаимного
+        // импорта чанков (иначе Rollup выдаёт «Circular chunk» и в рантайме
+        // падает TDZ «Cannot access 'x' before initialization» → белый экран).
+        // Поэтому react-vendor = ТОЛЬКО ядро React (react/react-dom/scheduler):
+        // оно ничего не импортирует из vendor, значит это «лист» графа, и ребро
+        // vendor→react-vendor одностороннее — цикл невозможен. Всё остальное
+        // (в т.ч. react-router-dom, framer, radix — они зависят от vendor-пакетов)
+        // складываем в единый стабильный vendor.
         manualChunks(id) {
           if (!id.includes("node_modules")) return undefined;
-          if (id.includes("@lottiefiles") || id.includes("dotlottie"))
-            return "lottie";
-          if (id.includes("framer-motion")) return "motion";
-          if (id.includes("@radix-ui")) return "radix";
-          if (id.includes("@tanstack")) return "query";
-          if (id.includes("i18next")) return "i18n";
           if (
-            id.includes("node_modules/react") ||
-            id.includes("node_modules/scheduler")
-          )
+            id.includes("node_modules/react/") ||
+            id.includes("node_modules/react-dom/") ||
+            id.includes("node_modules/scheduler/")
+          ) {
             return "react-vendor";
+          }
           return "vendor";
         },
       },
